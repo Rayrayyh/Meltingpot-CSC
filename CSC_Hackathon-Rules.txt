@@ -1,0 +1,247 @@
+About the Challenge
+The CSC Back-to-School Hackathon is a beginner-friendly high school hackathon where students build technology to improve school life.
+
+Your project can be an app, website, tool, AI project, design prototype, or physical gadget. It can help students, teachers, clubs, classrooms, dorms, teams, or schools solve a real problem. Projects can focus on studying, scheduling, communication, organization, wellness, accessibility, campus life, classroom tools, or any other school-related challenge.
+
+AI tools are allowed and encouraged. You may use tools such as ChatGPT, Claude, or other coding and design assistants to brainstorm, code, debug, design, and build your project. Using AI will not lower your score. The goal is to help students explore ideas, build higher-quality projects, and see how computer science can create practical change.
+
+However, teams must disclose how they used AI and must be able to explain their project, their decisions, and how their final product works.
+
+
+Stay Connected
+Follow CSC throughout the hackathon for updates, reminders, project highlights, and future opportunities.
+
+Follow @webbcsc2028 on Instagram for major milestones, project highlights, winner spotlights, event recaps, and future CSC events.
+
+Join the Webb CSC Community on Discord for Q&A, support, and updates throughout submissions, judging, and awards.
+
+Participation in these communities is optional and does not affect eligibility or judging.
+
+
+Get Started
+1. Find a real school-life problem.
+2. Think about who the problem affects and why it matters.
+3. Build an app, website, AI tool, prototype, or gadget that helps solve it.
+4. Use any tools, tutorials, APIs, templates, datasets, or AI assistants that help you learn and build.
+5. Submit your project on Devpost with an explanation, demo or other evidence of your project, and AI-use disclosure.
+
+You may work individually or in teams of up to 4 people. A 1–2 minute demo video is optional but encouraged.
+
+Requirements
+What to Build
+Build an app, website, tool, AI project, or physical gadget that helps students, teachers, or schools solve a real school-life problem. Your project does not need to be perfect or fully finished, but it should clearly show the idea, how it works, and why it would be useful. 
+
+
+What to Submit
+Each team must submit:
+- Project name
+- Short description of the problem you are solving
+- Explanation of what your project does
+- Demo link, website link, video, screenshots, photos, or another way for judges to understand the project
+- List of tools, technologies, APIs, datasets, hardware, or AI tools used
+- AI-use disclosure explaining how your team used AI during the project
+- Team member names
+- Source code, build files, or design files if available
+
+For physical gadgets, submit photos or a short demo video showing the prototype. For apps, websites, and AI tools, submit a demo, GitHub repository, screenshots, or 1–2 minute video that clearly demonstrates the project.
+
+
+Sponsor Tools & Benefits
+Our sponsors are helping make the CSC Back-to-School Hackathon more accessible by giving participants free access to tools and resources they can use to turn their ideas into working projects.
+
+Featherless.ai
+Participants receive one month of access to Featherless.ai’s full model catalog, allowing them to build with hosted AI models without paying for inference.
+- Eligibility: Participants must meet Featherless.ai’s account and model-use requirements. Participants under the age of majority must have permission from a parent or legal guardian to use the service.
+
+Momen
+Every participant receives $100 in Momen credits to build full-stack applications using Momen’s AI-powered no-code development platform.
+- Eligibility: Available to hackathon participants subject to Momen’s applicable account and platform terms.
+
+Momen workshop: Momen will also host an optional online workshop for participants on building AI-powered applications with AI + no-code tools.
+- Date: September 6, 2026 at 6:00 PM PDT
+- Zoom: https://us06web.zoom.us/j/85388074640?pwd=ut5qCWPC8KIVmtcKzFAMSbeMTHxOYa.1
+- Passcode: 017609
+
+Render
+Eligible participants receive $50 in Render credits to deploy and run their projects using Render’s cloud platform.
+- Eligibility: Participants must be 16 years of age or older to use Render. The sponsored participant credits are available from August 30 through October 1, 2026.
+
+Gen.xyz
+Participants can receive a free .xyz domain for one year to give their project a custom home on the web.
+- Eligibility: Limited to the first 300 redemptions on a first-come, first-served basis.
+
+n8n
+The first 250 participants can receive one month of n8n Cloud Pro, giving them access to n8n’s full cloud workflow automation platform during the hackathon.
+- Eligibility: Available to the first 250 hackathon participants on a first-come, first-served basis subject to n8n’s applicable account and platform terms.
+
+Boot.dev
+Participants can receive one month of full Boot.dev access, giving them access to interactive programming courses, projects, and exercises to help them learn and build during the hackathon.
+- Eligibility: Participant access is available to registered hackathon participants and is subject to Boot.dev’s applicable account and platform terms.
+
+Once the hackathon begins, newly registered participants will receive an email with the links, codes, and instructions needed to access the sponsored credits and resources.
+
+Prizes
+$400+ in prizes+ other prizes
+CSC Innovation Gold Award
+$250 in cash
+1 winner
+Sponsor Prizes:
+- Momen: $2,000 in Momen credits
+- Render: $500 in Render credits
+- Featherless.ai: $300 in Featherless credits
+- n8n: One year of n8n Cloud Pro for every member ($600 value per member)
+- Boot.dev: One year of Boot.dev ($399 value)
+- KnowledgeOwl: One year of KnowledgeOwl ($1,080 value)
+- Total: $4,879 value + $600 per additional member
+
+The Gold Award recognizes the strongest overall project: a thoughtful, useful, and well-executed project that best improved school life.
+
+To be eligible for this award and its prizes, teams must opt in and agree to the eligibility terms listed below.
+
+To be eligible for a CSC Innovation Award, teams must opt in and agree to the following:
+
+1. The project must be open source or publicly viewable after submission.
+2. The team must provide a public project link, such as a GitHub repository, website, demo, design file, or project page.
+3. The team gives CSC permission to feature and promote the project on CSC’s Instagram, website, club materials, or other CSC-related channels.
+4. CSC may contact winning teams after the event to discuss opportunities to help share, promote, or expand the project’s reach beyond the hackathon, such as through school communities, student groups, or other relevant environments. Any additional collaboration or promotion beyond CSC’s own channels will be discussed with the team first.
+5. Teams must disclose how they used AI tools, if applicable.
+6. Teams must be able to explain what they built, how it works, and what role outside tools or AI played in the final project.
+
+To be eligible for the sponsor prizes, teams must opt in and agree to the following:
+
+Momen:
+- The Momen award does not require the project to have been built with Momen.
+- Redemption is subject to Momen’s applicable account and platform terms.
+
+Render:
+- To qualify for the credits, the winning project must use Render Workflows.
+- The person redeeming and using the Render credits must be eligible to use Render. Render currently prohibits use or access by anyone under age 16.
+- Redemption remains subject to Render’s applicable terms and sponsor instructions.
+
+Featherless:
+- The recipient must be eligible to use Featherless under its Terms of Service.
+- Users under the age of majority must have a parent or legal guardian consent to Featherless’s Terms on their behalf.
+- After the event, CSC may request the winning team’s Featherless account email so the sponsor can apply the credits.
+
+n8n:
+- Every member of the Gold-winning team is eligible to receive one year of n8n Cloud Pro.
+- The n8n prize does not require the project to have been built with n8n.
+- Each recipient must meet n8n’s applicable account and platform requirements.
+- Redemption is subject to n8n’s applicable terms and sponsor instructions.
+
+Boot.dev:
+- The Boot.dev prize does not require the project to have been built using Boot.dev.
+- The recipient must meet Boot.dev’s applicable account and platform requirements.
+- Redemption is subject to Boot.dev’s applicable terms and sponsor instructions.
+
+KnowledgeOwl:
+- The KnowledgeOwl prize does not require the project to have been built using KnowledgeOwl.
+- The winning team will need to provide an appropriate email address after the event so KnowledgeOwl can set up the gift account.
+- Redemption is subject to KnowledgeOwl’s applicable account and platform terms.
+
+Sponsored credits are non-cash benefits provided by third-party sponsors and are subject to each sponsor’s eligibility, account, and redemption requirements. They are not transferable to cash through CSC.
+
+CSC may spotlight winning projects using the project name, team name, screenshots, demo links, and short descriptions. Personal photos, individual student names, or other identifying information will only be shared when appropriate permission is given. Opting in does not transfer ownership of the project to CSC; creators keep ownership of their work.
+
+Prize distribution may require follow-up communication with the winning team. If needed, CSC may ask for appropriate contact information or parent/guardian support to distribute prizes safely.
+
+CSC Innovation Silver Award
+$100 in cash
+1 winner
+Sponsor Prizes:
+- Momen: $2,000 in Momen credits
+- Render: $300 in Render credits
+- Boot.dev: Three months of Boot.dev ($119 value)
+- Total: $2,419 value
+
+The Silver Award recognizes an excellent project with strong execution, clear usefulness, and meaningful relevance for school communities.
+
+To be eligible for this award and its prizes, teams must opt in and agree to the eligibility terms listed below.
+
+To be eligible for a CSC Innovation Award, teams must opt in and agree to the following:
+
+1. The project must be open source or publicly viewable after submission.
+2. The team must provide a public project link, such as a GitHub repository, website, demo, design file, or project page.
+3. The team gives CSC permission to feature and promote the project on CSC’s Instagram, website, club materials, or other CSC-related channels.
+4. CSC may contact winning teams after the event to discuss opportunities to help share, promote, or expand the project’s reach beyond the hackathon, such as through school communities, student groups, or other relevant environments. Any additional collaboration or promotion beyond CSC’s own channels will be discussed with the team first.
+5. Teams must disclose how they used AI tools, if applicable.
+6. Teams must be able to explain what they built, how it works, and what role outside tools or AI played in the final project.
+
+To be eligible for the sponsor prizes, teams must opt in and agree to the following:
+
+Momen:
+- The Momen award does not require the project to have been built with Momen.
+- Redemption is subject to Momen’s applicable account and platform terms.
+
+Render:
+- To qualify for the credits, the winning project must use Render Workflows.
+- The person redeeming and using the Render credits must be eligible to use Render. Render currently prohibits use or access by anyone under age 16.
+- Redemption remains subject to Render’s applicable terms and sponsor instructions.
+
+Boot.dev:
+- The Boot.dev prize does not require the project to have been built using Boot.dev.
+- The recipient must meet Boot.dev’s applicable account and platform requirements.
+- Redemption is subject to Boot.dev’s applicable terms and sponsor instructions.
+
+Sponsored credits are non-cash benefits provided by third-party sponsors and are subject to each sponsor’s eligibility, account, and redemption requirements. They are not transferable to cash through CSC.
+
+CSC may spotlight winning projects using the project name, team name, screenshots, demo links, and short descriptions. Personal photos, individual student names, or other identifying information will only be shared when appropriate permission is given. Opting in does not transfer ownership of the project to CSC; creators keep ownership of their work.
+
+Prize distribution may require follow-up communication with the winning team. If needed, CSC may ask for appropriate contact information or parent/guardian support to distribute prizes safely.
+
+CSC Innovation Bronze Award
+$50 in cash
+1 winner
+Sponsor Prizes:
+- Momen: $2,000 in Momen credits
+- Render: $100 in Render credits
+- Boot.dev: Three months of Boot.dev ($119 value)
+- Total: $2,219 value
+
+The Bronze Award recognizes a strong project that clearly identifies a real school problem and presents a promising technology-based solution.
+
+To be eligible for this award and its prizes, teams must opt in and agree to the eligibility terms listed below.
+
+To be eligible for a CSC Innovation Award, teams must opt in and agree to the following:
+
+1. The project must be open source or publicly viewable after submission.
+2. The team must provide a public project link, such as a GitHub repository, website, demo, design file, or project page.
+3. The team gives CSC permission to feature and promote the project on CSC’s Instagram, website, club materials, or other CSC-related channels.
+4. CSC may contact winning teams after the event to discuss opportunities to help share, promote, or expand the project’s reach beyond the hackathon, such as through school communities, student groups, or other relevant environments. Any additional collaboration or promotion beyond CSC’s own channels will be discussed with the team first.
+5. Teams must disclose how they used AI tools, if applicable.
+6. Teams must be able to explain what they built, how it works, and what role outside tools or AI played in the final project.
+
+To be eligible for the sponsor prizes, teams must opt in and agree to the following:
+
+Momen:
+- The Momen award does not require the project to have been built with Momen.
+- Redemption is subject to Momen’s applicable account and platform terms.
+
+Render:
+- To qualify for the credits, the winning project must use Render Workflows.
+- The person redeeming and using the Render credits must be eligible to use Render. Render currently prohibits use or access by anyone under age 16.
+- Redemption remains subject to Render’s applicable terms and sponsor instructions.
+
+Boot.dev:
+- The Boot.dev prize does not require the project to have been built using Boot.dev.
+- The recipient must meet Boot.dev’s applicable account and platform requirements.
+- Redemption is subject to Boot.dev’s applicable terms and sponsor instructions.
+
+Sponsored credits are non-cash benefits provided by third-party sponsors and are subject to each sponsor’s eligibility, account, and redemption requirements. They are not transferable to cash through CSC.
+
+CSC may spotlight winning projects using the project name, team name, screenshots, demo links, and short descriptions. Personal photos, individual student names, or other identifying information will only be shared when appropriate permission is given. Opting in does not transfer ownership of the project to CSC; creators keep ownership of their work.
+
+Prize distribution may require follow-up communication with the winning team. If needed, CSC may ask for appropriate contact information or parent/guardian support to distribute prizes safely.
+
+
+Judging Criteria
+Learning
+Can the team clearly identify what they built, why they built it, how it works, and what they learned? AI tools are allowed and will not lower anyone's score, but disclosure must reveal the use of AI and show understanding of the final product.
+Design
+Is the project easy to understand and use? A strong project will have a clear interface, thoughtful design, simple user flow, and practical use cases.
+Creativity
+Is the idea thoughtful, original, or interesting? A strong project does not need to be complicated, but it should show a clear, non-generic approach to improving school life.
+Functionality
+How well does the project work? A strong project should demonstrate the core idea through a working app, website, AI tool, gadget, design prototype, demo, or clear proof of concept.
+Impact
+Does the project address a real school-life problem? A strong project will clearly identify who the problem affects and explain why the solution would be useful for students, teachers, clubs, classrooms, or schools.
