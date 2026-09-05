@@ -23,7 +23,15 @@ export type SyncDeps = {
   deadlineAt: number;
   fetch?: typeof fetch;
   now?: () => number;
+  /**
+   * Which doors land a page and record an outcome. A person's request uses
+   * the lms_sync_* doors, which ask who is calling; the hourly job has no
+   * person and uses the keyed lms_cron_* doors from 0052.
+   */
+  fns?: { apply: string; finish: string };
 };
+
+const PERSON_DOORS = { apply: "lms_sync_apply", finish: "lms_sync_finish" };
 
 export type SyncOutcome = {
   status: "ok" | "partial" | "skipped" | "reconnect" | "error";
@@ -33,7 +41,8 @@ export type SyncOutcome = {
   message?: string;
 };
 
-type BeginPayload = {
+/** What lms_sync_begin and lms_sync_claim_due hand the engine for one pass. */
+export type BeginPayload = {
   connectionId: string;
   provider: string;
   instanceUrl: string | null;
@@ -55,10 +64,9 @@ function messageOf(error: unknown): string {
   return "Something went wrong";
 }
 
+/** A person's pass: claim the link through lms_sync_begin, then run it. */
 export async function runSync(linkId: string, force: boolean, deps: SyncDeps): Promise<SyncOutcome> {
-  const now = deps.now ?? Date.now;
   const counts = { inserted: 0, changed: 0, removed: 0 };
-
   const begun = await deps.rpc("lms_sync_begin", {
     p_link_id: linkId,
     p_force: force,
@@ -72,10 +80,22 @@ export async function runSync(linkId: string, force: boolean, deps: SyncDeps): P
     if (m.includes("reconnect_required")) return { status: "reconnect", ...counts };
     throw new ClassworkError(m, "provider_failed");
   }
-  const begin = begun.data as BeginPayload;
+  return runPass(linkId, begun.data as BeginPayload, deps);
+}
+
+/**
+ * The pass itself, for a link already claimed: refresh the token, walk pages
+ * until done or out of time, record how it went. Shared by a person's request
+ * and the hourly job, which differ only in how the link was claimed and which
+ * doors they land pages through.
+ */
+export async function runPass(linkId: string, begin: BeginPayload, deps: SyncDeps): Promise<SyncOutcome> {
+  const now = deps.now ?? Date.now;
+  const doors = deps.fns ?? PERSON_DOORS;
+  const counts = { inserted: 0, changed: 0, removed: 0 };
 
   const finish = async (status: "ok" | "error" | "reconnect", message: string | null) => {
-    await deps.rpc("lms_sync_finish", {
+    await deps.rpc(doors.finish, {
       p_link_id: linkId,
       p_status: status,
       p_error: message,
@@ -112,7 +132,7 @@ export async function runSync(linkId: string, force: boolean, deps: SyncDeps): P
     while (deps.deadlineAt - now() > PAGE_RESERVE_MS) {
       const page = await deps.adapter.fetchPage(ctx, begin.externalCourseId, cursor);
       const done = page.next === null;
-      const applied = await deps.rpc("lms_sync_apply", {
+      const applied = await deps.rpc(doors.apply, {
         p_link_id: linkId,
         p_items: page.items.map(toPayload),
         p_cursor: page.next ?? {},

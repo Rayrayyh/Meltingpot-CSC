@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs";
+import path from "node:path";
 import { expect, test, type APIRequestContext, type Page } from "@playwright/test";
 
 /**
@@ -286,5 +288,36 @@ test.describe("classwork from Google Classroom", () => {
     await panel.getByRole("button", { name: "Disconnect" }).click();
     await page.getByRole("dialog").getByRole("button", { name: "Disconnect" }).click();
     await expect(panel.getByText("Not connected")).toBeVisible({ timeout: 15_000 });
+  });
+
+  test("the hourly door refuses without its bearer and answers with a claim count with it", async ({ request }) => {
+    // The dev server reads .env.local; so does this, for the one value it needs.
+    let bearer: string | undefined;
+    try {
+      const env = readFileSync(path.join(__dirname, "..", "..", ".env.local"), "utf8");
+      bearer = env.match(/^CLASSWORK_SYNC_TRIGGER_SECRET=(.+)$/m)?.[1]?.trim();
+    } catch {
+      bearer = undefined;
+    }
+    test.skip(!bearer, "no trigger secret in .env.local");
+
+    const refused = await request.post("/api/classwork/sync-due", { data: {} });
+    expect(refused.status()).toBe(401);
+    const wrong = await request.post("/api/classwork/sync-due", {
+      data: {},
+      headers: { authorization: `Bearer ${"x".repeat(44)}` },
+    });
+    expect(wrong.status()).toBe(401);
+
+    const accepted = await request.post("/api/classwork/sync-due", {
+      data: {},
+      headers: { authorization: `Bearer ${bearer}` },
+    });
+    expect(accepted.status()).toBe(200);
+    const body = (await accepted.json()) as { claimed: number; outcomes: unknown[] };
+    expect(typeof body.claimed).toBe("number");
+    expect(Array.isArray(body.outcomes)).toBe(true);
+    // Nothing token shaped in the reply.
+    expect(JSON.stringify(body)).not.toMatch(/refreshToken|rt-|crt-/);
   });
 });

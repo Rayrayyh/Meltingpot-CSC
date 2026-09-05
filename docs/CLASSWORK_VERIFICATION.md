@@ -92,6 +92,23 @@ the stub only (the third e2e test), and settings reads "Not available on this si
 - [ ] Disconnect: Canvas shows the app's token revoked under the person's approved
       integrations.
 
+## Phase 4, the hour
+
+- [ ] Netlify carries `CLASSWORK_SYNC_TRIGGER_SECRET`, and Vault's `classwork_sync_trigger` is
+      the same value.
+- [ ] `select jobname, schedule, active from cron.job` lists `classwork-sync-due` at
+      `17 * * * *`, active.
+- [ ] `curl -X POST https://meltingpot-csc.netlify.app/api/classwork/sync-due` with no bearer
+      answers 401; with the bearer it answers 200 and `{"claimed": n, ...}`.
+- [ ] Link a course, then in the SQL editor set its `sync_finished_at` two hours back and call
+      the job's command by hand (`select net.http_post(...)` as written in 0052). Within a
+      minute `net._http_response` shows a 200 whose body names the link, and the link's
+      `sync_finished_at` is fresh.
+- [ ] Move a due date in Classroom in the evening and look at nothing; next morning the Calendar
+      has it without anyone opening a Pot first.
+- [ ] Lapse a connection (Testing status will do this on its own after seven days): the hour
+      skips its links and nothing errors in `net._http_response`.
+
 ## Record
 
 | Date | Phase | Who | Outcome |

@@ -86,8 +86,10 @@ The database refuses every token read and every import write without it. A wrong
 refused outright; the defence is the key's randomness, not a counter, and the compare is hashed
 on both sides. If it ever leaks, the same rotation is the response.
 
-A third value, `CLASSWORK_SYNC_TRIGGER_SECRET`, is the bearer the hourly cron sends. It is
-stored in Vault as `classwork_sync_trigger` by the cron migration when that phase lands.
+A third value, `CLASSWORK_SYNC_TRIGGER_SECRET`, is the bearer the hourly job sends. The same
+value sits in Vault under `classwork_sync_trigger`, where the job reads it at fire time and
+nowhere else. One was created on 2026-09-05 for the stub run, like the server key; rotate it
+the same way (`update_secret` on that name) and set Netlify to match.
 
 ### Netlify
 
@@ -131,7 +133,13 @@ every connect button says so; nothing breaks.
   considers stale (never synced, finished over fifteen minutes ago, or stuck running), and a
   small client component posts for up to three of them after paint, remembering in the tab what
   it just synced for four minutes. The database has the last word on too soon and in progress.
-  Hourly from Supabase cron through pg_net comes in phase 4.
+- Once an hour, at seventeen past, a pg_cron job (0052) posts through pg_net to
+  `/api/classwork/sync-due` with the trigger bearer. The route runs as anon, calls
+  `lms_sync_claim_due` with the server key for up to five links an hour overdue (connection not
+  lapsed, Pot not archived), and runs each pass through `lms_cron_apply` and
+  `lms_cron_finish`, keyed wrappers granted to anon over the same internal functions. Nothing
+  token shaped is echoed. `select * from cron.job` shows the job; `net._http_response` keeps six
+  hours of its answers. A 401 there means the Vault bearer and Netlify's disagree.
 - A Pot link is made from Pot settings by a maintainer, from the courses their own connected
   account can see (`link_lms_course` with a Pot id, which the ledger records). Above zero links
   the Pot grows a Classwork tab after Feed and a three row strip under its vitals; at zero it

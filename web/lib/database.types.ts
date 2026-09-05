@@ -1119,6 +1119,29 @@ export type Database = {
         Args: { p_connection_id: string; p_error: string | null; p_server_key: string };
         Returns: undefined;
       };
+      lms_sync_claim_due: {
+        Args: { p_server_key: string };
+        Returns: Json;
+      };
+      lms_cron_apply: {
+        Args: {
+          p_cursor: Json;
+          p_done: boolean;
+          p_items: Json;
+          p_link_id: string;
+          p_server_key: string;
+        };
+        Returns: Json;
+      };
+      lms_cron_finish: {
+        Args: {
+          p_error: string | null;
+          p_link_id: string;
+          p_server_key: string;
+          p_status: string;
+        };
+        Returns: undefined;
+      };
     };
     Enums: {
       attachment_kind: AttachmentKind;
