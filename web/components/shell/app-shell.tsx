@@ -77,7 +77,7 @@ export function AppShell({
       <div className="flex flex-1 min-h-0">
         <aside className="mp-side hidden lg:block w-60 shrink-0 overflow-x-clip border-r border-edge bg-surface">
           <div className="sticky top-14 flex h-[calc(100dvh-3.5rem)] flex-col">
-            <div className="min-h-0 flex-1 overflow-y-auto">{nav}</div>
+            <div className="mp-nav-scroll min-h-0 flex-1 overflow-y-auto">{nav}</div>
             {alerts}
             {profile}
           </div>

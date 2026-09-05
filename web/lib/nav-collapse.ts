@@ -28,7 +28,36 @@ export function applyNavCollapsed(next: boolean) {
   } catch {
     // Best effort; the attribute still applies for the session.
   }
+  markAnimating(root);
   window.dispatchEvent(new Event(EVENT));
+}
+
+/**
+ * The rail's width is animated for a second. While it moves, the nav inside it
+ * reflows at widths it was never laid out for, so its content briefly stands
+ * taller than the scroller and a scrollbar flashes down the edge. The bar is
+ * real, not a rendering artefact, and it is gone by the time anyone could use
+ * it. This marks the root for the length of the transition so the scroller can
+ * be told to keep quiet, and clears the mark on the transition's own end event
+ * rather than on a guessed duration, with a timer only as a backstop for the
+ * case where the transition never fires at all.
+ */
+let animationTimer: ReturnType<typeof setTimeout> | undefined;
+
+function markAnimating(root: HTMLElement) {
+  const side = document.querySelector(".mp-side");
+  root.setAttribute("data-nav-animating", "");
+  const done = () => {
+    root.removeAttribute("data-nav-animating");
+    clearTimeout(animationTimer);
+    side?.removeEventListener("transitionend", onEnd);
+  };
+  const onEnd = (event: Event) => {
+    if ((event as TransitionEvent).propertyName === "width") done();
+  };
+  clearTimeout(animationTimer);
+  side?.addEventListener("transitionend", onEnd);
+  animationTimer = setTimeout(done, 1200);
 }
 
 export function subscribeToNav(onChange: () => void) {

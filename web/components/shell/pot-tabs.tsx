@@ -37,7 +37,7 @@ export function PotTabs({
 
   return (
     <nav aria-label="This Pot" className="border-b border-edge">
-      <div className="mx-auto flex w-full max-w-5xl gap-1 overflow-x-auto px-6">
+      <div className="mx-auto flex w-full max-w-5xl gap-1 overflow-x-auto overflow-y-hidden px-6">
         {tabs.map((tab) => {
           const active = tab.match(pathname);
           return (

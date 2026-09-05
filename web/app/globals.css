@@ -805,6 +805,15 @@ html[data-nav="collapsed"] .mp-side {
   width: 4.5rem;
 }
 
+/* While the rail is animating its width the nav inside reflows at widths it was
+   never laid out for, so its content briefly stands taller than the scroller.
+   Hiding the overflow for the length of the move keeps a scrollbar from
+   flashing down the edge; nothing is unreachable, because the transition ends
+   in under a second and the scroller returns. */
+html[data-nav-animating] .mp-nav-scroll {
+  overflow-y: hidden;
+}
+
 .mp-nav-chevrons {
   transition: transform 0.6s cubic-bezier(0.075, 0.82, 0.165, 1);
 }

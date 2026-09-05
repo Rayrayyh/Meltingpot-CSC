@@ -1,17 +1,18 @@
 # MeltingPot
 
-meltingpot.io is a responsive desktop-first web app where students in a class collaboratively build a shared vault of knowledge. A class space is a Pot. Students join with a six-character class code, write completely unformatted notes, an organizer structures them, and the student approves before anything is shared. Corrections to shared notes go through maintainer review. Entered in the Prometheus August AI Challenge, which asks for an educational tool where AI/ML is core to how people learn, teach, or absorb information, and requires an open-source repo (MIT license present), a hosted live URL, and a demo video.
+meltingpot.io is a responsive desktop-first web app where students in a class collaboratively build a shared vault of knowledge. A class space is a Pot. Students join with a six-character class code, write completely unformatted notes, an organizer structures them, and the student approves before anything is shared. Corrections to shared notes go through maintainer review. Entered in the CSC Back-to-School Hackathon, which asks for something that "helps students, teachers, or schools solve a real school-life problem". It was built for, and won, the Pixel Forge hackathon, and was then entered in the Prometheus August AI Challenge; `docs/CSC_HACKATHON.md` holds the current entry's rules and `memory/decisions/021` records the earlier move.
 
-**Submission deadline: Monday 2026-08-31, 11:45 AM Pacific** (18:45 UTC), per the owner on 2026-08-30; this supersedes the Saturday 11:45pm wall recorded earlier. Scope decisions bend toward shipping before it.
+**Submission deadline: 2026-10-05, 12:00am PDT.** Far enough out that nothing needs rushing, which is a different footing from the previous two entries. Eligibility is ages 13 to 18 and students only, which is pass or fail before any judging.
 
-The judging rubric is 100 points in four equal parts: Educational Impact, Creative Use of AI/ML (their words: "AI is core to the functionality, not just an afterthought"), Technical Execution (codebase, UI, UX), and Pitch & Demo. The demo video is capped at two minutes and anything longer is not watched. `memory/decisions/021` records how this project came to be entered here.
+Judging is five criteria with **no published point values**: Learning, Design, Creativity, Functionality, and Impact. Do not assume a 100 point scale; the previous entry's four-by-25 rubric does not apply here. A 1 to 2 minute demo video is optional but encouraged. The submission also requires an AI-use disclosure explaining how AI was used, which `memory/decisions/` and `docs/BUILDLOG.md` already hold the raw material for. Full rules in `docs/CSC_HACKATHON.md`.
 
 ## Read these first
 
-1. `docs/SPEC.md` - the authoritative product spec. It wins every conflict.
-2. `docs/PLAN.md` - the step-by-step execution plan with per-step verification and status. Keep its status column current as steps land.
-3. `memory/` - the knowledge base: `decisions/` (what was chosen and why) and `lessons/` (what was learned the hard way). Follow `memory/README.md` rules: one note per file, one-line summary at top, update instead of duplicating, delete wrong notes.
-4. `docs/reference/REFERENCE_CAPTIONS.md` + the 16 PNGs - UX structure references. Captions say per image what to use and ignore.
+1. `docs/CSC_HACKATHON.md` - the current hackathon's rules, criteria and deadline, and what this repository is missing.
+2. `docs/SPEC.md` - the authoritative product spec. It wins every conflict.
+3. `docs/PLAN.md` - the step-by-step execution plan with per-step verification and status. Keep its status column current as steps land.
+4. `memory/` - the knowledge base: `decisions/` (what was chosen and why) and `lessons/` (what was learned the hard way). Follow `memory/README.md` rules: one note per file, one-line summary at top, update instead of duplicating, delete wrong notes.
+5. `docs/reference/REFERENCE_CAPTIONS.md` + the 16 PNGs - UX structure references. Captions say per image what to use and ignore.
 
 The four historical vision PDFs and the pasted rules text were removed from the repo root before submission; `memory/decisions/001-source-of-truth.md` records why they were never the source of truth.
 
@@ -54,8 +55,10 @@ Cream paper background (#faf4e6), warm white surfaces, near-black ink, brand ora
 
 ## Working agreements
 
-- Follow `docs/PLAN.md` step order; each step ends with lint + typecheck + build green, a commit, and a push to `claude/prometheus-august-challenge`.
-- All work stays on `claude/prometheus-august-challenge` until the project is finished. Do not merge it into `main`, do not open follow-up pull requests to move it there, and do not ask again each round: the owner merges when they decide the project is done. `main` being behind is expected, not a problem to solve.
+- Each change ends with lint + typecheck + build green before a commit, and a push to `claude/csc-back-to-school`.
+- Work stays on `claude/csc-back-to-school`. Do not merge it into `main` and do not open a pull request without being asked: the owner decides when it moves. `main` being behind is expected, not a problem to solve.
+- **Hosting: `meltingpot-csc` on Netlify, not `meltingpot-prometheus`.** That older deploy belongs to the previous entry and is no longer the target. The deploy shape is unchanged: `web/` is the package root and `@netlify/plugin-nextjs` must be declared explicitly, or every route 404s.
+- This repository was copied from the older one at `f2cab37` and is missing four fixes made there on 2026-09-04, one of which is a real bug. `docs/CSC_HACKATHON.md` lists them.
 - Do not schedule recurring pull request check-ins or any other self-firing routine. Report on a PR when the owner asks, or when a GitHub event actually needs a decision.
 - When something breaks, check `memory/lessons/` first, and record any new lesson worth keeping.
 - Log every architectural or scope decision in `memory/decisions/` at the moment it is made.
