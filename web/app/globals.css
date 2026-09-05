@@ -384,6 +384,23 @@ blockquote {
   border-width: 2px;
 }
 
+/*
+ * Windows High Contrast and every other forced colours mode strip author
+ * backgrounds, which is the whole of the drawn caret, while the native caret
+ * the field hides with caret-color: transparent stays hidden. That left such a
+ * reader with no caret at all. Here the native one comes back and the drawn
+ * one leaves, so the field behaves like any other field on that machine.
+ */
+@media (forced-colors: active) {
+  .mp-caret-host {
+    caret-color: auto;
+  }
+
+  .mp-caret-bar {
+    display: none;
+  }
+}
+
 :focus-visible {
   outline: 2px solid var(--focus-ring);
   outline-offset: 2px;

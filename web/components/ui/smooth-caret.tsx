@@ -83,6 +83,12 @@ export function SmoothCaretInput({
   // composition shows its own underlined preedit run and moves the selection
   // around inside it, so a second caret drawn over the top is noise.
   const composing = useRef(false);
+  // Armed on focus, consumed by the first measurement after it. The focus
+  // event itself cannot do the placing: on a click it fires before the browser
+  // has moved the selection to the pointer, so a jump made there lands on the
+  // old position and the real one then arrives as a spring, which is the exact
+  // fly-in this exists to prevent.
+  const placeInstantly = useRef(false);
   const prefersReducedMotion = useReducedMotion();
   const springCaretX = useSpring(caretX, prefersReducedMotion ? RIGID : SPRING);
 
@@ -90,6 +96,8 @@ export function SmoothCaretInput({
     (target: HTMLInputElement) => {
       const measure = measureRef.current;
       if (!measure) return;
+      const instant = placeInstantly.current;
+      placeInstantly.current = false;
 
       const styles = window.getComputedStyle(target);
       // The hidden span has to be the input's font exactly, or every
@@ -172,7 +180,16 @@ export function SmoothCaretInput({
       const x = absolute - target.scrollLeft;
       const minX = Math.min(borderLeft + paddingLeft, origin) - 1;
       const maxX = borderLeft + target.clientWidth - paddingRight;
-      caretX.set(Math.min(x, maxX));
+      // On focus the caret is placed, not flown in. The motion value starts
+      // at 0, so without this a click into the middle of a filled field sent
+      // the bar springing from the left border to the character, a journey
+      // the native caret never makes.
+      if (instant) {
+        caretX.jump(Math.min(x, maxX));
+        springCaretX.jump(Math.min(x, maxX));
+      } else {
+        caretX.set(Math.min(x, maxX));
+      }
       // Hidden while a range is selected: the browser draws that highlight and
       // a caret sitting inside it reads as a second cursor. Hidden mid
       // composition for the same reason, the preedit run is its own cursor.
@@ -180,7 +197,7 @@ export function SmoothCaretInput({
         !hasSelection && !composing.current && x >= minX && x <= maxX + 1 ? 1 : 0,
       );
     },
-    [caretX, caretOpacity],
+    [caretX, springCaretX, caretOpacity],
   );
 
   // Assigned in an effect rather than during render: React reserves render
@@ -197,6 +214,13 @@ export function SmoothCaretInput({
 
     const refresh = () => {
       if (document.activeElement === input) updateRef.current(input);
+    };
+    const onFocus = () => {
+      placeInstantly.current = true;
+      // Two frames: the selection a click sets is in place by then, and if no
+      // selectionchange ever fires (a programmatic focus) this still places
+      // the caret rather than leaving it wherever it last was.
+      requestAnimationFrame(() => requestAnimationFrame(refresh));
     };
     // selectionchange is the only event that fires for arrow keys, clicks into
     // the middle of a value, and select-all alike.
@@ -215,7 +239,7 @@ export function SmoothCaretInput({
 
     document.addEventListener("selectionchange", onSelectionChange);
     input.addEventListener("scroll", refresh);
-    input.addEventListener("focus", refresh);
+    input.addEventListener("focus", onFocus);
     input.addEventListener("compositionstart", onCompositionStart);
     input.addEventListener("compositionend", onCompositionEnd);
     // Webfonts land after first paint and change every measurement.
@@ -229,7 +253,7 @@ export function SmoothCaretInput({
     return () => {
       document.removeEventListener("selectionchange", onSelectionChange);
       input.removeEventListener("scroll", refresh);
-      input.removeEventListener("focus", refresh);
+      input.removeEventListener("focus", onFocus);
       input.removeEventListener("compositionstart", onCompositionStart);
       input.removeEventListener("compositionend", onCompositionEnd);
       document.fonts?.removeEventListener("loadingdone", refresh);
@@ -266,7 +290,7 @@ export function SmoothCaretInput({
           caretOpacity.set(0);
           onBlur?.(e);
         }}
-        className={cn("col-start-1 row-start-1 [caret-color:transparent]", className)}
+        className={cn("mp-caret-host col-start-1 row-start-1 [caret-color:transparent]", className)}
       />
       {/* The measure span sits in a box with no size, so a long value in a
           field near the right edge cannot push a horizontal scrollbar onto the
@@ -279,7 +303,7 @@ export function SmoothCaretInput({
       <motion.span
         ref={caretRef}
         aria-hidden
-        className="pointer-events-none col-start-1 row-start-1 h-[1.1em] w-0.5 self-center rounded-full bg-primary"
+        className="mp-caret-bar pointer-events-none col-start-1 row-start-1 h-[1.1em] w-0.5 self-center rounded-full bg-primary"
         style={{ x: springCaretX, opacity: caretOpacity }}
       />
     </div>
