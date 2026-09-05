@@ -57,15 +57,18 @@ export function SettingsPanel({
     if (ruleBusy) return;
     setRuleBusy(true);
     setError(null);
-    const { error: updateError } = await supabase
+    // .select proves the write landed: the update policy is owner-only and a
+    // refused update returns zero rows without an error, which is not "Saved".
+    const { data: updated, error: updateError } = await supabase
       .from("pots")
       .update({
         ...(next.joinOpen === undefined ? {} : { join_open: next.joinOpen }),
         ...(next.studyGeneration === undefined ? {} : { study_generation: next.studyGeneration }),
       })
-      .eq("id", pot.id);
+      .eq("id", pot.id)
+      .select("id");
     setRuleBusy(false);
-    if (updateError) {
+    if (updateError || !updated || updated.length === 0) {
       setError("That setting could not be saved. Try again.");
       // Put the control back where the Pot actually is.
       setJoinOpen(pot.joinOpen);
@@ -263,6 +266,22 @@ export function SettingsPanel({
         </CardSection>
       </Card>
 
+      {/* The pots update policy is owner-only, so a maintainer's press here
+          would be refused silently. They read the rules; the owner sets them. */}
+      {!isOwner ? (
+        <Card>
+          <CardSection className="space-y-2">
+            <Eyebrow>How this Pot runs</Eyebrow>
+            <p className="text-sm text-ink">
+              Joining is {joinOpen ? "open to anyone with the code" : "closed"}.{" "}
+              {studyGeneration === "members"
+                ? "Anyone in the Pot can build study material."
+                : "Only maintainers build new study material."}
+            </p>
+            <p className="text-[13px] text-ink-muted">Only the owner can change how this Pot runs.</p>
+          </CardSection>
+        </Card>
+      ) : (
       <Card>
         <CardSection className="space-y-5">
           <Eyebrow>How this Pot runs</Eyebrow>
@@ -344,6 +363,7 @@ export function SettingsPanel({
           </div>
         </CardSection>
       </Card>
+      )}
 
       {sectionsSlot}
 

@@ -84,10 +84,13 @@ getting nothing back from any of them.
 
 ## Sensitive data paths
 
-- **Sign up and sign in.** Sign up goes through `register_student`, a definer
+- **Sign up and sign in.** Sign up goes through `sign_up_student`, a definer
   function, because hosted confirmations and the shared mailer make GoTrue
   signup unusable here (memory/lessons/003). It enforces the same five
-  password rules the browser shows. Passwords are stored by Supabase Auth
+  password rules the browser shows, answers an expected refusal (a taken
+  email, a weak password) as a value so the attempt stays counted against
+  the per-address limit, and hands the insert to `register_student`, which
+  no browser role can call since 0053. Passwords are stored by Supabase Auth
   with bcrypt. Sign in is GoTrue with the session in an httpOnly cookie.
 - **Changing a password.** `/me/settings` sets the new password and then
   revokes every other session, so a session opened with the old password

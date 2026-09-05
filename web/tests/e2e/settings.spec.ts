@@ -98,28 +98,31 @@ test.describe("search and settings", () => {
     const visitor = await anon.newPage();
     await visitor.goto("/");
     await visitor.getByLabel("Enter class code").fill(oldCode);
-    await visitor.getByRole("button", { name: "Join Pot" }).click();
+    await visitor.getByRole("button", { name: "See the Pot" }).click();
     await expect(
       visitor.getByText("We couldn't find that Pot. Check the code and try again."),
     ).toBeVisible();
 
     // The new code resolves to the renamed Pot.
     await visitor.getByLabel("Enter class code").fill(newCode);
-    await visitor.getByRole("button", { name: "Join Pot" }).click();
+    await visitor.getByRole("button", { name: "See the Pot" }).click();
     await expect(visitor).toHaveURL(new RegExp(`/join/${newCode}`));
     await expect(visitor.getByRole("heading", { name: "Biology 101H" })).toBeVisible();
     await anon.close();
+
+    // The name goes back, so every spec after this one still finds the seed's
+    // Pot by its title. The code cannot go back; nothing later depends on it.
+    await page.getByLabel("Pot name").fill("Biology 101");
+    await page.getByRole("button", { name: "Save changes" }).click();
+    await expect(page.getByText("Saved", { exact: true })).toBeVisible();
   });
 
   test("maintainers organize sections: add, rename, reorder, delete", async ({
     page,
   }) => {
     await loginAs(page, "maya@meltingpot.dev");
-    await page
-      .getByRole("main")
-      .getByRole("link", { name: /Biology 101/ })
-      .first()
-      .click();
+    await page.getByRole("main").getByRole("link", { name: "Biology 101", exact: true }).click();
+    await expect(page).toHaveURL(/\/p\//, { timeout: 15_000 });
     await page.getByRole("link", { name: "Settings", exact: true }).click();
 
     // Section titles also appear in the left nav, and settings carries other
@@ -179,21 +182,23 @@ test.describe("search and settings", () => {
     await page.getByRole("button", { name: "Create Pot" }).click();
     await page.getByRole("link", { name: "Open your Pot" }).click();
     await page.getByRole("link", { name: "Settings", exact: true }).click();
-    await page.getByRole("button", { name: "Archive Pot" }).click();
-    await page.getByRole("dialog").getByRole("button", { name: "Archive Pot" }).click();
+    await page.getByRole("button", { name: "Archive Pot", exact: true }).click();
+    await page.getByRole("dialog").getByRole("button", { name: "Archive Pot", exact: true }).click();
     await expect(page).toHaveURL(/\/home/, { timeout: 15_000 });
 
     // The archived Pot stays reachable through the collapsed group.
     await page.getByText(/Archived Pots \(/).click();
     await page.getByRole("link", { name: /Archive lifecycle check/ }).click();
     await expect(page.getByText("This Pot is archived")).toBeVisible({ timeout: 15_000 });
-    // No contribute affordance while archived.
-    await expect(page.getByRole("link", { name: "Add contribution" })).toHaveCount(0);
+    // Archived: the only lifecycle action on offer is bringing it back.
+    await expect(page.getByRole("button", { name: "Unarchive Pot" })).toBeVisible();
+    // exact, because "Unarchive Pot" contains this name.
+    await expect(page.getByRole("button", { name: "Archive Pot", exact: true })).toHaveCount(0);
 
     // Unarchive restores it, then delete to leave no residue.
     await page.getByRole("button", { name: "Unarchive Pot" }).click();
     await expect(page.getByText("This Pot is archived")).toHaveCount(0, { timeout: 15_000 });
-    await expect(page.getByRole("link", { name: "Add contribution" }).first()).toBeVisible();
+    await expect(page.getByRole("button", { name: "Archive Pot", exact: true })).toBeVisible();
     await page.getByRole("button", { name: "Delete Pot" }).click();
     // Deleting asks for the Pot's name, because nothing brings one back.
     const confirm = page.getByRole("dialog").getByRole("button", { name: "Delete Pot permanently" });

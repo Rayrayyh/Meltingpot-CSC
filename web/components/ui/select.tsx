@@ -155,7 +155,7 @@ export function Select<T extends string>({
   }
 
   return (
-    <div ref={rootRef} className={cn("relative inline-block", className)}>
+    <div ref={rootRef} data-no-shortcuts className={cn("relative inline-block", className)}>
       <button
         ref={triggerRef}
         id={triggerId}

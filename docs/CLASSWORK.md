@@ -139,7 +139,10 @@ every connect button says so; nothing breaks.
   lapsed, Pot not archived), and runs each pass through `lms_cron_apply` and
   `lms_cron_finish`, keyed wrappers granted to anon over the same internal functions. Nothing
   token shaped is echoed. `select * from cron.job` shows the job; `net._http_response` keeps six
-  hours of its answers. A 401 there means the Vault bearer and Netlify's disagree.
+  hours of its answers. A 401 there means the Vault bearer and Netlify's disagree; a 404 means
+  the URL in the job points at a site without this route (an old deploy, or the wrong site); a
+  503 means the route is up but `CLASSWORK_SERVER_KEY` or `CLASSWORK_SYNC_TRIGGER_SECRET` is
+  unset in Netlify.
 - A Pot link is made from Pot settings by a maintainer, from the courses their own connected
   account can see (`link_lms_course` with a Pot id, which the ledger records). Above zero links
   the Pot grows a Classwork tab after Feed and a three row strip under its vitals; at zero it

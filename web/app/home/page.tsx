@@ -30,8 +30,12 @@ import { requireUser } from "@/lib/data/user";
 
 export const metadata = { title: "Home" };
 
-function greeting(name: string) {
-  const hour = new Date().getHours();
+function greeting(name: string, zone: string) {
+  // The server's clock is not the reader's: the hour is read in their zone,
+  // the same one the record cuts its days in.
+  const hour = Number(
+    new Intl.DateTimeFormat("en-GB", { hour: "numeric", hourCycle: "h23", timeZone: zone }).format(new Date()),
+  );
   const part = hour < 5 ? "Evening" : hour < 12 ? "Morning" : hour < 18 ? "Afternoon" : "Evening";
   return `${part}, ${name.split(" ")[0]}`;
 }
@@ -110,7 +114,7 @@ export default async function HomePage({ searchParams }: PageProps<"/home">) {
         <header className="flex items-end justify-between gap-4">
           <div>
             <h1 className="text-2xl font-semibold tracking-tight">
-              {greeting(user.displayName)}
+              {greeting(user.displayName, zone)}
             </h1>
             <p className="text-sm text-ink-muted mt-1">
               {dashboard.reviewQueue.length > 0

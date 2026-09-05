@@ -106,6 +106,9 @@ async function lookupSeedPot(
   }
 }
 
+/** Shared notes dev_seed writes into Biology 101 (0006 onwards). */
+const SEED_SHARED_NOTES = 6;
+
 /**
  * Names what an earlier run left behind, or null when the seed is untouched.
  * Deliberately cheap: a couple of reads that catch the states the specs
@@ -139,6 +142,26 @@ async function seedLooksUsed(
     const rows = (await decided.json()) as unknown[];
     // The seed itself ships exactly one accepted proposal.
     if (rows.length > 1) return `${rows.length} proposal(s) already decided`;
+  }
+  // Shares accumulate across runs and recordings, and a Pot with more notes
+  // than the seed wrote changes what the feed and study specs see first.
+  const shared = await fetch(
+    `${origin}/rest/v1/shared_notes?select=id&pot_id=eq.${potId}`,
+    { headers },
+  );
+  if (shared.ok) {
+    const rows = (await shared.json()) as unknown[];
+    if (rows.length !== SEED_SHARED_NOTES) {
+      return `${rows.length} shared note(s) where the seed writes ${SEED_SHARED_NOTES}`;
+    }
+  }
+  const pending = await fetch(
+    `${origin}/rest/v1/revision_proposals?select=id&pot_id=eq.${potId}&status=eq.pending`,
+    { headers },
+  );
+  if (pending.ok) {
+    const rows = (await pending.json()) as unknown[];
+    if (rows.length !== 1) return `${rows.length} pending proposal(s) where the seed writes 1`;
   }
   return null;
 }

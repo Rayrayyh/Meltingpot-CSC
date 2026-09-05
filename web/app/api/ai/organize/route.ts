@@ -262,5 +262,8 @@ function safeMixMessage(error: unknown) {
   if (!(error instanceof MixError)) return "The AI response could not be processed.";
   if (error.status === 401 || error.status === 403) return "The mixing key was rejected.";
   if (error.status === 429) return "Mixing is temporarily rate limited.";
-  return error.message.slice(0, 240);
+  if (error.status === 504) return "Organizing took too long. Try again in a moment.";
+  // The provider's wording goes to the server log, not to the writer.
+  console.error("[organize]", error.message);
+  return "The organizer could not reach the model just now.";
 }

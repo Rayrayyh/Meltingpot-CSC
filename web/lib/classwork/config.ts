@@ -32,13 +32,28 @@ function blankToUndefined(value: string | undefined): string | undefined {
 /** Read fresh each time: tests set and clear these, and the cost is nothing. */
 export type EnvLike = Record<string, string | undefined>;
 
+/** Each malformed variable is named once per process, not once per request. */
+const warned = new Set<string>();
+
 export function getClassworkConfig(env: EnvLike = process.env): ClassworkConfig {
-  const picked: Record<string, string | undefined> = {};
-  for (const key of Object.keys(schema.shape)) picked[key] = blankToUndefined(env[key]);
-  const parsed = schema.safeParse(picked);
-  // A malformed value is treated as unset rather than thrown: the site keeps
-  // working with the feature off, and the setup doc says what to check.
-  return parsed.success ? parsed.data : {};
+  // Each value is checked on its own. A malformed one is treated as unset and
+  // named in the server log, rather than thrown or allowed to switch the
+  // whole feature off: a bad Canvas URL leaves Google Classroom working.
+  const out: Record<string, unknown> = {};
+  const dropped: string[] = [];
+  for (const [key, field] of Object.entries(schema.shape)) {
+    const value = blankToUndefined(env[key]);
+    if (value === undefined) continue;
+    const parsed = field.safeParse(value);
+    if (parsed.success) out[key] = parsed.data;
+    else dropped.push(key);
+  }
+  const fresh = dropped.filter((key) => !warned.has(key));
+  if (fresh.length > 0) {
+    for (const key of fresh) warned.add(key);
+    console.warn(`[classwork] ignoring malformed environment values: ${fresh.join(", ")}`);
+  }
+  return out as ClassworkConfig;
 }
 
 /** Which providers this deployment can actually connect. */

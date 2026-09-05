@@ -46,7 +46,18 @@ export async function readerZone(): Promise<string> {
  * created_at, which is the first autosave and can be days earlier. The
  * shared_at lives on the note the share became.
  */
-const SHARE_DATE = "created_at, note:shared_notes!contributions_shared_note_fk(shared_at)";
+const SHARE_DATE = "id, created_at, note:shared_notes!contributions_shared_note_fk(shared_at)";
+
+/** What a completion screen just did, so its own rows can be set aside. */
+export type JustNow = {
+  /** The contribution whose share just landed, with any resources on it. */
+  contributionId?: string;
+  /** The study attempt that was just recorded. */
+  attemptId?: string;
+};
+
+/** One counted moment, tagged with the row it came from. */
+type Moment = { at: string; contributionId?: string; attemptId?: string };
 
 /**
  * A day counts if the person put something in or took something out: sharing
@@ -65,7 +76,7 @@ const SHARE_DATE = "created_at, note:shared_notes!contributions_shared_note_fk(s
  * record, the week strip and the completion screens, so every surface
  * agrees on which days counted. Rows are the caller's own throughout.
  */
-async function countedMoments(userId: string, since?: string): Promise<{ moments: string[]; notesShared: number }> {
+async function countedMoments(userId: string, since?: string): Promise<{ moments: Moment[]; notesShared: number }> {
   const supabase = await supabaseServer();
   const from = since ?? "1970-01-01T00:00:00Z";
   const [shared, studied, accepted, reviewed, attached] = await Promise.all([
@@ -79,7 +90,7 @@ async function countedMoments(userId: string, since?: string): Promise<{ moments
       .limit(1000),
     supabase
       .from("study_attempts")
-      .select("created_at")
+      .select("id, created_at")
       .eq("user_id", userId)
       .gte("created_at", from)
       .order("created_at", { ascending: false })
@@ -101,7 +112,7 @@ async function countedMoments(userId: string, since?: string): Promise<{ moments
       .limit(1000),
     supabase
       .from("attachments")
-      .select("created_at, contribution:contributions!attachments_contribution_id_fkey!inner(status)")
+      .select("created_at, contribution_id, contribution:contributions!attachments_contribution_id_fkey!inner(status)")
       .eq("created_by", userId)
       .eq("contribution.status", "shared")
       .gte("created_at", from)
@@ -112,12 +123,12 @@ async function countedMoments(userId: string, since?: string): Promise<{ moments
     if (result.error) console.error("[record]", result.error.message);
   }
   const moments = [
-    ...(shared.data ?? []).map((row) => row.note?.shared_at ?? row.created_at),
-    ...(studied.data ?? []).map((row) => row.created_at),
-    ...(accepted.data ?? []).map((row) => row.decided_at),
-    ...(reviewed.data ?? []).map((row) => row.decided_at),
-    ...(attached.data ?? []).map((row) => row.created_at),
-  ].filter((moment): moment is string => Boolean(moment));
+    ...(shared.data ?? []).map((row) => ({ at: row.note?.shared_at ?? row.created_at, contributionId: row.id })),
+    ...(studied.data ?? []).map((row) => ({ at: row.created_at, attemptId: row.id })),
+    ...(accepted.data ?? []).map((row) => ({ at: row.decided_at })),
+    ...(reviewed.data ?? []).map((row) => ({ at: row.decided_at })),
+    ...(attached.data ?? []).map((row) => ({ at: row.created_at, contributionId: row.contribution_id ?? undefined })),
+  ].filter((moment): moment is Moment => Boolean(moment.at));
   return { moments, notesShared: shared.count ?? (shared.data ?? []).length };
 }
 
@@ -133,7 +144,7 @@ async function countedMoments(userId: string, since?: string): Promise<{ moments
  */
 export async function getOwnRecord(userId: string): Promise<OwnRecord> {
   const [zone, { moments, notesShared }] = await Promise.all([readerZone(), countedMoments(userId)]);
-  const days = moments.map((moment) => localDate(moment, zone)).filter(Boolean);
+  const days = moments.map((moment) => localDate(moment.at, zone)).filter(Boolean);
   const today = localDate(Date.now(), zone);
   return {
     ...contributionStreak(days, today),
@@ -150,15 +161,27 @@ export async function getOwnRecord(userId: string): Promise<OwnRecord> {
  * sentence they add is true at the moment it is read; a second share or run
  * on the same day gets nothing, because the day was already on the record.
  *
+ * The screen says what it just did. One act can be several moments (a share
+ * with two resources attached is three), so the question is not "exactly one
+ * moment today" but "nothing today other than what this act made". Without
+ * that knowledge, one moment is the only safe reading of first.
+ *
  * Everything from the last two days is fetched and bucketed by the reader's
  * zone here, rather than turned into a UTC window in the query, so a day that
  * starts or ends on a daylight saving change is still cut where it should be.
  * Anything failing reads as false: the screen then says what it always said.
  */
-export async function countedJustNow(userId: string): Promise<boolean> {
+export async function countedJustNow(userId: string, justNow?: JustNow): Promise<boolean> {
   const now = Date.now();
   const since = new Date(now - 48 * 3_600_000).toISOString();
   const [zone, { moments }] = await Promise.all([readerZone(), countedMoments(userId, since)]);
   const today = localDate(now, zone);
-  return moments.filter((moment) => localDate(moment, zone) === today).length === 1;
+  const todays = moments.filter((moment) => localDate(moment.at, zone) === today);
+  if (!justNow) return todays.length === 1;
+  const own = (moment: Moment) =>
+    (justNow.contributionId !== undefined && moment.contributionId === justNow.contributionId) ||
+    (justNow.attemptId !== undefined && moment.attemptId === justNow.attemptId);
+  const made = todays.filter(own).length;
+  // The act counted, and nothing else today had before it.
+  return made > 0 && made === todays.length;
 }

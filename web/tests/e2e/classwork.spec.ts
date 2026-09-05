@@ -277,7 +277,12 @@ test.describe("classwork from Google Classroom", () => {
     });
 
     await page.goto("/calendar");
-    const lab = page.getByTestId("calendar-due").filter({ hasText: "Cell division lab report" });
+    // Filtered to the Canvas pill, so a Google entry an earlier walk left
+    // behind cannot make this one ambiguous.
+    const lab = page
+      .getByTestId("calendar-due")
+      .filter({ hasText: "Cell division lab report" })
+      .filter({ hasText: "Canvas" });
     await expect(lab).toBeVisible({ timeout: 15_000 });
     await expect(lab.getByText("Canvas", { exact: true })).toBeVisible();
     await expect(lab.getByText(labelFor(days.first, days.future))).toBeVisible();

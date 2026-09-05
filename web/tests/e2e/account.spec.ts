@@ -18,10 +18,12 @@ test.describe("account and landing for signed-in people", () => {
     await expect(account).toBeVisible();
     await expect(page.getByText("maya@meltingpot.dev").first()).toBeVisible();
 
-    // The top bar keeps the mark and search only.
+    // The top bar keeps the mark only; search lives in the nav now.
     const topBar = page.locator("header").first();
     await expect(topBar.getByRole("button", { name: "Account menu" })).toHaveCount(0);
-    await expect(topBar.getByLabel("Search")).toBeVisible();
+    await expect(
+      page.getByRole("navigation", { name: "Main" }).getByRole("link", { name: /Search/ }).first(),
+    ).toBeVisible();
 
     // Theme switching moved out of the bar and into settings.
     await expect(page.getByRole("button", { name: /Switch to (light|dark) theme/ })).toHaveCount(0);

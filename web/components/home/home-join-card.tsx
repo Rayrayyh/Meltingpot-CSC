@@ -41,12 +41,25 @@ export function HomeJoinCard({
       setBusy(false);
       return;
     }
-    const { data: potId } = await supabase.rpc("join_pot_with_code", { p_code: code });
+    const { data: potId, error: joinError } = await supabase.rpc("join_pot_with_code", { p_code: code });
     if (potId) {
       router.push(`/p/${potId}`);
       router.refresh();
     } else {
-      setError(INVALID_CODE_MESSAGE);
+      // The code was just found, so a refusal here is about the class, not
+      // the code: say which, rather than calling a closed class "not found".
+      const message = joinError?.message ?? "";
+      setError(
+        message.includes("pot_closed")
+          ? "Joining is closed for this class right now. Ask the owner to reopen it."
+          : message.includes("pot_archived")
+            ? "This class has been archived, so nobody new can join."
+            : message.includes("rate_limited")
+              ? "Too many tries from this network. Wait a few minutes and try again."
+              : joinError
+                ? "Something went wrong. Try again."
+                : INVALID_CODE_MESSAGE,
+      );
       setBusy(false);
     }
   }

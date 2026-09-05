@@ -1,6 +1,6 @@
 # 004 Auth and join flow
 
-Summary: Supabase Auth sessions with registration through the `register_student` RPC (instant, no confirmation email), join-before-signup preserved via a pending-join handoff, and all pre-auth Pot access through the `lookup_pot_by_code` RPC.
+Summary: Supabase Auth sessions with registration through the `register_student` RPC (instant, no confirmation email), join-before-signup preserved via a pending-join handoff, and all pre-auth Pot access through the `lookup_pot_by_code` RPC. Revised 2026-09-05: the browser calls `sign_up_student` (0053), which runs the same checks but returns a refusal instead of raising, so a refused attempt still counts against the rate limit; `register_student` stays as the insert and is no longer callable by a browser role.
 
 ## The decision (revised 2026-08-19 after empirical findings, see lesson 003)
 

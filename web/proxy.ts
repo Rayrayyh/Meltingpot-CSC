@@ -60,7 +60,9 @@ export async function proxy(request: NextRequest) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     url.search = "";
-    url.searchParams.set("next", pathname);
+    // The query travels too: a composer opened from an assignment carries
+    // ?from=, and losing it on the way through sign in loses the prefill.
+    url.searchParams.set("next", `${pathname}${request.nextUrl.search}`);
     return NextResponse.redirect(url);
   }
 
@@ -76,7 +78,7 @@ export async function proxy(request: NextRequest) {
       const url = request.nextUrl.clone();
       url.pathname = "/login/verify";
       url.search = "";
-      url.searchParams.set("next", pathname);
+      url.searchParams.set("next", `${pathname}${request.nextUrl.search}`);
       return NextResponse.redirect(url);
     }
   }

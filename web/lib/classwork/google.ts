@@ -101,6 +101,9 @@ function kindOfWork(work: CourseWork): ImportedItem["kind"] {
   if (work.workType === "SHORT_ANSWER_QUESTION" || work.workType === "MULTIPLE_CHOICE_QUESTION") {
     return "quiz";
   }
+  // Classroom has no quiz type of its own: a quiz assignment is an
+  // assignment carrying a Google Form, which is how teachers make them.
+  if ((work.materials ?? []).some((m) => Boolean(m.form?.formUrl))) return "quiz";
   return "assignment";
 }
 

@@ -1,7 +1,7 @@
 import { getClassworkConfig, providerOrigins } from "@/lib/classwork/config";
 import { htmlToText } from "@/lib/classwork/html-to-text";
 import { providerFetch, readJson } from "@/lib/classwork/http";
-import { externalId, normaliseItem } from "@/lib/classwork/reconcile";
+import { allDayAt, externalId, normaliseItem } from "@/lib/classwork/reconcile";
 import {
   ClassworkError,
   type AdapterContext,
@@ -97,6 +97,7 @@ type CalendarEvent = {
   start_at?: string | null;
   end_at?: string | null;
   all_day?: boolean;
+  all_day_date?: string | null;
   html_url?: string;
   updated_at?: string;
   created_at?: string;
@@ -156,7 +157,10 @@ async function apiGet<T>(ctx: AdapterContext, url: string, label: string): Promi
     fetch: ctx.fetch,
     label,
   });
-  const remaining = Number(response.headers.get("x-rate-limit-remaining"));
+  // A missing header is not an empty bucket: Number(null) is 0, which would
+  // pause every request against an instance or proxy that drops the header.
+  const remainingHeader = response.headers.get("x-rate-limit-remaining");
+  const remaining = remainingHeader === null ? Number.NaN : Number(remainingHeader);
   const body = await readJson<T>(response, label);
   // Canvas asks clients to slow down before the bucket is empty. A short
   // pause here costs less than the 403 that follows an empty one.
@@ -284,13 +288,23 @@ function moduleItem(m: CourseModule): ImportedItem {
   });
 }
 
+/**
+ * An all-day event is a date. Canvas also sends start_at as that date at
+ * midnight in the course's zone, which read in any other zone is the evening
+ * before; the date is stored the way a Classroom due date without a time is.
+ */
+function allDayFrom(date: string, fallback: string | null): string | null {
+  const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(date);
+  return m ? allDayAt(Number(m[1]), Number(m[2]), Number(m[3])) : fallback;
+}
+
 function eventItem(e: CalendarEvent): ImportedItem {
   return normaliseItem({
     externalId: externalId("event", e.id),
     kind: "event",
     title: e.title ?? "Event",
     description: htmlToText(e.description ?? ""),
-    dueAt: e.start_at ?? null,
+    dueAt: e.all_day && e.all_day_date ? allDayFrom(e.all_day_date, e.start_at ?? null) : (e.start_at ?? null),
     dueAllDay: Boolean(e.all_day),
     availableFrom: null,
     postedAt: e.created_at ?? null,

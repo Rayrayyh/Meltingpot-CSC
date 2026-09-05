@@ -145,6 +145,9 @@ describe("canvasAdapter", () => {
 
     const fifth = await a.fetchPage(c, "101", fourth.next);
     expect(fifth.items[0]).toMatchObject({ externalId: "event:21", kind: "event", dueAt: "2026-09-18T14:00:00Z", dueAllDay: false });
+    // An all-day event keeps its date, not the course zone's midnight, which
+    // read from anywhere east of it is the evening before.
+    expect(fifth.items[1]).toMatchObject({ externalId: "event:22", kind: "event", dueAt: "2026-09-25T12:00:00.000Z", dueAllDay: true });
     expect(fifth.next).toBeNull();
 
     expect(seen).toEqual([

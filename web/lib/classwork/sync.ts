@@ -139,7 +139,12 @@ export async function runPass(linkId: string, begin: BeginPayload, deps: SyncDep
         p_done: done,
         p_server_key: deps.serverKey,
       });
-      if (applied.error) throw new ClassworkError(applied.error.message, "provider_failed");
+      if (applied.error) {
+        // The database's own wording is for the server log; the link's
+        // sync_error is read by the class, so it gets a plain sentence.
+        console.error("[classwork] apply failed:", applied.error.message);
+        throw new ClassworkError("Could not save this page of classwork", "provider_failed");
+      }
       const c = applied.data as { inserted?: number; changed?: number; removed?: number };
       counts.inserted += c.inserted ?? 0;
       counts.changed += c.changed ?? 0;

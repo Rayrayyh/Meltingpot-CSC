@@ -281,7 +281,13 @@ export function MainNav({
       if (!target) return false;
       if (target.isContentEditable) return true;
       if (["INPUT", "TEXTAREA", "SELECT"].includes(target.tagName)) return true;
-      return Boolean(target.closest("[data-no-shortcuts]"));
+      // An open listbox, menu or dialog owns its keys: typing "c" to jump to
+      // an option must not also jump to the Calendar.
+      return Boolean(
+        target.closest(
+          '[data-no-shortcuts], [role="listbox"], [role="menu"], [role="dialog"], [role="combobox"], dialog',
+        ),
+      );
     }
 
     function onKeyDown(event: KeyboardEvent) {

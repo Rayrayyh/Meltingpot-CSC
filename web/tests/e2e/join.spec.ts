@@ -17,7 +17,7 @@ test.describe("joining a Pot", () => {
   }) => {
     await page.goto("/");
     await page.getByLabel("Enter class code").fill("bio101");
-    await page.getByRole("button", { name: "Join Pot" }).click();
+    await page.getByRole("button", { name: "See the Pot" }).click();
 
     // Pot preview before any authentication.
     await expect(page).toHaveURL(/\/join\/BIO101/);
@@ -36,7 +36,8 @@ test.describe("joining a Pot", () => {
     const email = `e2e.join.${Date.now()}@meltingpot.dev`;
     await page.getByLabel("Display name").fill("E2E Joiner");
     await page.getByLabel("Email").fill(email);
-    await page.getByLabel("Password", { exact: true }).fill("E2ePassword1");
+    // Meets every rule in lib/auth/password-rules.ts, symbol included (0042).
+    await page.getByLabel("Password", { exact: true }).fill("E2ePassword1!");
     await page.getByRole("button", { name: "Create account and enter" }).click();
 
     // Membership finalized; straight into the Pot, no login wall, no detours.

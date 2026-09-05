@@ -31,7 +31,14 @@ export async function POST(request: Request) {
     .maybeSingle();
   if (!connection) return NextResponse.json({ error: "connection_not_found" }, { status: 404 });
 
-  const key = serverKey();
+  // Unset on this site is a 503 with a name, as every other classwork route
+  // answers, not a bare 500 from the throw.
+  let key: string;
+  try {
+    key = serverKey();
+  } catch {
+    return NextResponse.json({ error: "not_configured" }, { status: 503 });
+  }
   const { data: refreshToken, error } = await supabase.rpc("lms_connection_token", {
     p_connection_id: connection.id,
     p_server_key: key,

@@ -9,7 +9,8 @@ async function loginAs(page: Page, email: string) {
 }
 
 async function openBiologyPot(page: Page) {
-  await page.getByRole("link", { name: "Biology 101" }).first().click();
+  await page.goto("/home");
+  await page.getByRole("main").getByRole("link", { name: "Biology 101", exact: true }).click();
   await expect(page).toHaveURL(/\/p\//, { timeout: 15_000 });
 }
 

@@ -48,6 +48,7 @@ This directory is the project's knowledge base. It makes the repo, not chat hist
 - 035 The notification card collapses the way kolejain.com does: opacity in 0.1s, the rail does the rest
 - 036 One pill slides between Original and Organized: two springs, leading edge first
 - 038 Classwork from Canvas and Google Classroom: read-only import, who links decides who reads, tokens in Vault behind a server key, never a note until a person makes one
+- 039 A bug pass fixes what it confirms, and names what it leaves: the 5 September pass, migration 0053, the two items deferred with reasons
 ### Lessons
 - 001 Reading the spec PDFs in this container requires poppler, not pypdf
 - 002 Next 16 conventions (proxy.ts, async params) and Playwright executablePath in this container

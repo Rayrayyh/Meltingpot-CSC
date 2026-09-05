@@ -4,7 +4,7 @@ import { getClientAuth } from "@/lib/auth/client";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { CaretUpDown, GearSix, Info, SignOut, User } from "@phosphor-icons/react";
 import { Avatar } from "@/components/ui/avatar";
 import { MENU_EASE } from "@/components/ui/select";
@@ -25,6 +25,7 @@ export function NavProfile({
   const [open, setOpen] = useState(false);
   const buttonRef = useRef<HTMLButtonElement>(null);
   const [box, setBox] = useState<{ left: number; bottom: number; width: number } | null>(null);
+  const reduce = useReducedMotion();
 
   const place = useCallback(() => {
     const el = buttonRef.current;
@@ -72,10 +73,10 @@ export function NavProfile({
         <div className="fixed inset-0 z-40" aria-hidden onClick={() => setOpen(false)} />
         <motion.div
           key="menu"
-          initial={{ opacity: 0, y: 4, scale: 0.98 }}
+          initial={reduce ? false : { opacity: 0, y: 4, scale: 0.98 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
-          exit={{ opacity: 0, y: 4, scale: 0.98 }}
-          transition={{ duration: 0.2, ease: MENU_EASE }}
+          exit={reduce ? { opacity: 0 } : { opacity: 0, y: 4, scale: 0.98 }}
+          transition={{ duration: reduce ? 0 : 0.2, ease: MENU_EASE }}
           style={{ position: "fixed", left: box.left, bottom: box.bottom, width: box.width, transformOrigin: "bottom left" }}
           className="z-50 rounded-(--radius-card) border border-edge bg-surface py-1.5 shadow-(--shadow-raised)"
         >

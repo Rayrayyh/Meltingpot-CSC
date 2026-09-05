@@ -126,8 +126,18 @@ export function ContributeFlow({
   const [step, setStep] = useState<Step>(initialOrganized ? "review" : "write");
   const [contributionId, setContributionId] = useState<string | null>(initial?.id ?? null);
   const [rawText, setRawText] = useState(initial?.rawText ?? prefill?.rawText ?? "");
-  // The prefill's links are attached once, after the row exists.
+  // The prefill's links are attached once, after the row exists. Until then
+  // they are shown as pending chips, so the composer looks the same before and
+  // after the first keystroke, and one can be dropped before it is written.
   const prefillAttached = useRef(false);
+  const [pendingLinks, setPendingLinks] = useState(prefill?.links ?? []);
+  // Nothing is written until the person does something: a prefilled composer
+  // closed unread must not leave a draft and its links behind. A resumed
+  // draft is already theirs.
+  const dirty = useRef(Boolean(initial));
+  // One organize at a time; a second press while the first is in flight
+  // would race it for the same row and the same step.
+  const organizing = useRef(false);
   const [saved, setSaved] = useState<"idle" | "saving" | "saved" | "error">(
     initial ? "saved" : "idle",
   );
@@ -216,6 +226,7 @@ export function ContributeFlow({
   // indicator flips in the change handler; this effect only schedules writes.
   useEffect(() => {
     if (rawText.trim().length === 0) return;
+    if (!dirty.current) return;
     if (saveTimer.current) clearTimeout(saveTimer.current);
     saveTimer.current = setTimeout(async () => {
       const id = await ensureContribution();
@@ -239,6 +250,7 @@ export function ContributeFlow({
   }, [rawText, ensureContribution, supabase]);
 
   function handleRawTextChange(next: string) {
+    dirty.current = true;
     const trimmed = next.slice(0, 20000);
     setRawText(trimmed);
     // Autosave only fires for non-empty text; clearing to whitespace must
@@ -318,44 +330,63 @@ export function ContributeFlow({
   }, [initial?.id, supabase]);
 
   // A note started from classwork carries the item's links in as ordinary
-  // attachments, once, as soon as the autosave has created the row. The
-  // guard also covers React running effects twice in development.
+  // attachments, once, as soon as something the person did has created the
+  // row: a keystroke, Continue, or an attachment. The guard also covers
+  // React running effects twice in development.
   useEffect(() => {
-    if (!prefill || prefill.links.length === 0 || !contributionId || prefillAttached.current) return;
+    if (pendingLinks.length === 0 || !contributionId || prefillAttached.current) return;
     prefillAttached.current = true;
     (async () => {
-      for (const link of prefill.links) await attachLink(link.url, link.title);
+      for (const link of pendingLinks) {
+        // The chip comes off the pending list as the row goes in, so the
+        // list never shows the same link twice.
+        setPendingLinks((prev) => prev.filter((p) => p.url !== link.url));
+        await attachLink(link.url, link.title);
+      }
     })();
     // attachLink is recreated each render; the ref makes this run once.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [contributionId, prefill]);
+  }, [contributionId, pendingLinks]);
 
   async function attachLink(url: string, label?: string) {
-    const id = await ensureContribution();
-    if (!id || !url.trim()) return;
-    let name = label?.trim() || url.trim();
+    // Check the link before anything is written, so an empty or malformed
+    // one never creates a draft row on its own.
+    const trimmedUrl = url.trim();
+    if (!trimmedUrl) return;
+    let name = label?.trim() || trimmedUrl;
     if (!label?.trim()) {
       try {
-        name = new URL(url).hostname + new URL(url).pathname;
+        const parsed = new URL(trimmedUrl);
+        name = parsed.hostname + parsed.pathname;
       } catch {
         // Keep the raw text as the display name.
       }
     }
+    const id = await ensureContribution();
+    if (!id) return;
     const userId = await getClientAuth().getUserId();
     if (!userId) return;
-    const { data } = await supabase
+    dirty.current = true;
+    const { data, error } = await supabase
       .from("attachments")
       .insert({
         pot_id: potId,
         contribution_id: id,
         name: name.slice(0, 300),
         kind: "link",
-        url: url.trim(),
+        url: trimmedUrl,
         created_by: userId,
       })
       .select("id, name, kind")
       .single();
     if (data) setAttachments((prev) => [...prev, data]);
+    else if (error) {
+      setErrorNote(
+        /url|check|invalid/i.test(error.message)
+          ? "That link couldn't be attached. It needs to start with http:// or https://."
+          : "That link couldn't be attached. Check your connection and try again.",
+      );
+    }
   }
 
   async function attachFile(file: File) {
@@ -364,6 +395,7 @@ export function ContributeFlow({
     const userId = await getClientAuth().getUserId();
     if (!userId) return;
     setErrorNote(null);
+    dirty.current = true;
     // Storage keys must stay ASCII-safe (unicode file names are rejected by
     // the storage API); the original name lives on the attachments row and
     // comes back as the download filename.
@@ -415,6 +447,10 @@ export function ContributeFlow({
   }
 
   async function runOrganize(chosen: string | null) {
+    if (organizing.current) return;
+    organizing.current = true;
+    dirty.current = true;
+    try {
     const id = await ensureContribution();
     if (!id) return;
     await flushOrganized();
@@ -524,6 +560,9 @@ export function ContributeFlow({
       setErrorNote(error instanceof Error ? error.message : "The AI organizer couldn't finish this note.");
       setStep("failed");
     }
+    } finally {
+      organizing.current = false;
+    }
   }
 
   function currentBlocks(): NoteBlock[] {
@@ -574,7 +613,7 @@ export function ContributeFlow({
         setStep("shared");
         setBusy(false);
         releaseDraftUrl();
-        router.refresh();
+        if (!initial) router.refresh();
         return;
       }
       setErrorNote("This note is already in the class feed.");
@@ -598,13 +637,16 @@ export function ContributeFlow({
     setSharedNoteId(data);
     // Asked after the share has landed and before the screen paints, so the
     // sentence arrives with the screen rather than reflowing it.
-    const check = await checkRecord().catch(() => null);
+    const check = await checkRecord({ contributionId }).catch(() => null);
     setRecord(check);
     setCelebrating(Boolean(check?.countedNow));
     setStep("shared");
     setBusy(false);
     releaseDraftUrl();
-    router.refresh();
+    // A resumed draft is still at its own URL, and that URL now sends anyone
+    // who loads it to the note. Refreshing here would carry the student off
+    // this screen; the feed picks the note up on the next navigation.
+    if (!initial) router.refresh();
   }
 
   const sectionTitle = (id: string | null | undefined) =>
@@ -698,10 +740,24 @@ export function ContributeFlow({
                 </Button>
               </form>
             ) : null}
-            {attachments.length > 0 ? (
+            {attachments.length > 0 || pendingLinks.length > 0 ? (
               <AttachmentChips
-                attachments={attachments}
-                onRemove={(id) => void removeAttachment(id)}
+                attachments={[
+                  ...attachments,
+                  ...pendingLinks.map((link, index) => ({
+                    id: `pending:${index}`,
+                    name: link.title || link.url,
+                    kind: "link",
+                  })),
+                ]}
+                onRemove={(id) => {
+                  if (id.startsWith("pending:")) {
+                    const index = Number(id.slice("pending:".length));
+                    setPendingLinks((prev) => prev.filter((_, i) => i !== index));
+                    return;
+                  }
+                  void removeAttachment(id);
+                }}
               />
             ) : null}
             {errorNote ? <p className="text-[13px] text-danger">{errorNote}</p> : null}

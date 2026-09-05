@@ -6,7 +6,8 @@ test("creating a Pot generates a code and opens the empty Pot", async ({ page })
   await page.goto("/signup");
   await page.getByLabel("Display name").fill("E2E Creator");
   await page.getByLabel("Email").fill(email);
-  await page.getByLabel("Password", { exact: true }).fill("E2ePassword1");
+  // Meets every rule in lib/auth/password-rules.ts, symbol included (0042).
+  await page.getByLabel("Password", { exact: true }).fill("E2ePassword1!");
   await page.getByRole("button", { name: "Create account" }).click();
 
   await expect(page).toHaveURL(/\/home/, { timeout: 15_000 });

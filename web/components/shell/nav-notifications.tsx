@@ -1,7 +1,7 @@
 "use client";
 
 import { useSyncExternalStore } from "react";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import Link from "next/link";
 import { ArrowRight, CheckCircle, Notebook, PencilSimpleLine, X } from "@phosphor-icons/react";
 import type { Notification } from "@/lib/data/notifications";
@@ -56,6 +56,7 @@ export function NavNotifications({ items }: { items: Notification[] }) {
   // Keyed on the newest item, so dismissing clears what you have seen without
   // muting the next thing that happens.
   const dismissed = useSyncExternalStore(subscribe, readDismissed, () => null);
+  const reduce = useReducedMotion();
 
   if (items.length === 0) {
     return (
@@ -96,10 +97,10 @@ export function NavNotifications({ items }: { items: Notification[] }) {
       {dismissed === top ? null : (
     <motion.div
       key={top}
-      initial={{ opacity: 0, y: 10, scale: 0.97 }}
+      initial={reduce ? false : { opacity: 0, y: 10, scale: 0.97 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
-      exit={{ opacity: 0, y: 10, scale: 0.97 }}
-      transition={{ duration: 0.35, ease: [0.075, 0.82, 0.165, 1] }}
+      exit={reduce ? { opacity: 0 } : { opacity: 0, y: 10, scale: 0.97 }}
+      transition={{ duration: reduce ? 0 : 0.35, ease: [0.075, 0.82, 0.165, 1] }}
       className="mb-4 px-2"
     >
       <section

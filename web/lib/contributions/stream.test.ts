@@ -134,13 +134,13 @@ describe("standingLines", () => {
     expect(four.detail).toBe("One more counted day moves you ahead of them.");
   });
 
-  it("tells last place how far the next step up is", () => {
-    expect(standingLines({ ...base, rank: 21, behind: 0, level: 0, gap: 1 }).lead).toBe(
-      "One more counted day moves you up in Human Biology.",
-    );
+  it("tells last place the step that puts them ahead, never who is in front", () => {
+    const one = standingLines({ ...base, rank: 21, behind: 0, level: 0, gap: 1 });
+    expect(one.lead).toBe("One more counted day moves you ahead of a classmate in Human Biology.");
     const far = standingLines({ ...base, rank: 21, behind: 0, level: 0, gap: 3 });
-    expect(far.lead).toBe("3 more counted days move you up in Human Biology.");
-    expect(far.detail).toMatch(/3 days away/);
+    expect(far.lead).toBe("3 more counted days move you ahead of a classmate in Human Biology.");
+    expect(far.detail).toMatch(/last 30 days/);
+    expect(`${one.lead} ${one.detail} ${far.lead} ${far.detail}`).not.toMatch(/behind|Everyone else|this month/);
   });
 
   it("has nothing to compare in a class of one", () => {

@@ -48,7 +48,7 @@ async function loginAs(page: Page, email: string) {
 }
 
 async function potId(page: Page): Promise<string> {
-  await page.getByRole("link", { name: "Biology 101" }).first().click();
+  await page.getByRole("main").getByRole("link", { name: "Biology 101", exact: true }).click();
   await expect(page).toHaveURL(/\/p\//, { timeout: 15_000 });
   return new URL(page.url()).pathname.split("/")[2];
 }

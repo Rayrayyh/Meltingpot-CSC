@@ -113,6 +113,9 @@ export async function getAdminRecord(potId: string): Promise<AdminRecord> {
          )`,
       )
       .eq("pot_id", potId)
+      // Drafts are private to their authors by policy, so a maintainer would
+      // see only their own here and nobody else's: the list is shared notes.
+      .eq("status", "shared")
       .order("updated_at", { ascending: false })
       .limit(300),
     supabase

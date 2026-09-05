@@ -960,6 +960,10 @@ export type Database = {
         Args: { p_display_name: string; p_email: string; p_password: string };
         Returns: string;
       };
+      sign_up_student: {
+        Args: { p_display_name: string; p_email: string; p_password: string };
+        Returns: Json;
+      };
       remove_member: {
         Args: { p_pot_id: string; p_user_id: string };
         Returns: undefined;

@@ -54,10 +54,12 @@ export default async function CalendarPage({ searchParams }: PageProps<"/calenda
   const today = localDate(now, zone);
   const todayYear = Number(today.slice(0, 4));
   const todayMonth = Number(today.slice(5, 7)) - 1;
-  const year = Number(params.y) || todayYear;
-  const month = Number.isFinite(Number(params.m)) && params.m !== undefined
-    ? Number(params.m)
-    : todayMonth;
+  // Anything outside a real month falls back to today: ?m=99 or ?y=-3 used to
+  // reach Date.UTC, which rolls over rather than refusing.
+  const askedYear = Number(params.y);
+  const askedMonth = Number(params.m);
+  const year = Number.isInteger(askedYear) && askedYear >= 1970 && askedYear <= 9999 ? askedYear : todayYear;
+  const month = Number.isInteger(askedMonth) && askedMonth >= 0 && askedMonth <= 11 ? askedMonth : todayMonth;
 
   const offered = classworkOffered();
   const [entries, dues, links] = await Promise.all([

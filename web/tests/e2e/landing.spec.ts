@@ -122,15 +122,20 @@ test.describe("brand landing", () => {
     await expect(page.getByLabel("Enter class code")).toBeInViewport();
   });
 
-  // Lenis overwrites the browser's own scroll for about 0.9s after a wheel
-  // notch unless it is reconciled. That window swallowing a keypress is a
-  // keyboard accessibility failure, and it is the thing most likely to
-  // silently come back.
+  // A scroll takeover (Lenis, since removed) once overwrote the browser's own
+  // scroll for about 0.9s after a wheel notch and swallowed a keypress inside
+  // that window, a keyboard accessibility failure and the thing most likely to
+  // silently come back. The page scrolls smoothly, so the key's scroll is
+  // given time to begin before the position is read as settled.
   test("a keypress mid-scroll is not swallowed", async ({ page }) => {
     await page.goto("/");
     await page.mouse.wheel(0, 200);
     await page.waitForTimeout(80);
+    const before = await page.evaluate(() => window.scrollY);
     await page.keyboard.press("PageDown");
+    await page
+      .waitForFunction((y) => window.scrollY > y + 1, before, { timeout: 3_000 })
+      .catch(() => null);
     await settleScroll(page);
     expect(await page.evaluate(() => window.scrollY)).toBeGreaterThan(400);
   });

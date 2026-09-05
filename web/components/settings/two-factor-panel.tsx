@@ -71,7 +71,9 @@ export function TwoFactorPanel({ enrolledFactorId }: { enrolledFactorId: string 
   }
 
   async function turnOff() {
-    if (!factorId) return;
+    // A second click while the first is in flight would unenrol twice and
+    // show the failure message for a factor that is already gone.
+    if (!factorId || busy) return;
     setBusy(true);
     setError(null);
     try {

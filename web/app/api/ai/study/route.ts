@@ -243,6 +243,11 @@ export async function POST(request: Request) {
       p_keys: keys,
     });
     const stored = Boolean(saved.data);
+    // A maintainer took this material down (0053). The person still gets
+    // what they waited for, but nothing is stored and the browser is not
+    // asked to try storing it again, which would meet the same refusal.
+    const removed = saved.error?.message.includes("study_set_removed") ?? false;
+    if (saved.error && !removed) console.error("[study] save failed:", saved.error.message);
     return NextResponse.json(
       {
         result: kind === "practice" && stored ? memberPayload : result,
@@ -251,18 +256,27 @@ export async function POST(request: Request) {
         generatedAt: new Date().toISOString(),
         studySetId: saved.data ?? null,
         secured: kind === "practice" && stored,
+        removed,
         // Returned so the browser can save this set itself when the server
         // save failed. For a practice test that fallback stores the full
         // payload unsecured, which is exactly what the degraded set is.
-        fingerprint: stored ? null : fingerprint,
+        fingerprint: stored || removed ? null : fingerprint,
       },
       { headers: NO_STORE },
     );
   } catch (error) {
     const status = error instanceof MixError ? error.status ?? 502 : 502;
-    const detail = error instanceof MixError && (status === 401 || status === 403)
-      ? "The mixing key was rejected."
-      : error instanceof Error ? error.message.slice(0, 240) : "Study material could not be generated.";
+    // The provider's own text is for the server log. The class reads a
+    // sentence in the app's vocabulary, whatever the model said.
+    if (error instanceof Error) console.error("[study]", error.message);
+    const detail =
+      error instanceof MixError && (status === 401 || status === 403)
+        ? "The mixing key was rejected."
+        : error instanceof MixError && status === 429
+          ? "Mixing is temporarily rate limited."
+          : error instanceof MixError && status === 504
+            ? "Building this took too long. Try again in a moment."
+            : "Study material could not be generated.";
     return NextResponse.json({ error: "generation_failed", detail }, { status, headers: NO_STORE });
   }
 }

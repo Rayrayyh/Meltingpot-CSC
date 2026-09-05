@@ -17,7 +17,7 @@ test("version history shows the full attribution trail and readable versions", a
   await page.getByRole("link", { name: "Mitosis vs meiosis" }).first().click();
   await page.getByRole("link", { name: "History" }).click();
 
-  await expect(page.getByRole("heading", { name: "Version history" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Version history" })).toBeVisible({ timeout: 15_000 });
 
   // The corrected version is current, with dual credit and the reviewer.
   await expect(page.getByRole("button", { name: /Version 2/ })).toBeVisible();

@@ -450,10 +450,11 @@ export function StudyWorkspace({
       if (!opened?.secured || !opened.studySetId) {
         return markLocally(questions, order, answers);
       }
+      const attemptId = crypto.randomUUID();
       const { data, error: rpcError } = await supabaseBrowser().rpc(
         "submit_practice_test",
         {
-          p_attempt_id: crypto.randomUUID(),
+          p_attempt_id: attemptId,
           p_set_id: opened.studySetId,
           p_answers: { order, choices: answers } as unknown as Json,
         },
@@ -482,7 +483,7 @@ export function StudyWorkspace({
       }
       // Asked after the attempt has landed, so the sentence it earns is true.
       // The hand-in is already recorded; a failed check must not undo that.
-      const check = await checkRecord().catch(() => null);
+      const check = await checkRecord({ attemptId }).catch(() => null);
       const countedNow = Boolean(check?.countedNow);
       if (countedNow) {
         setRecord(check);
@@ -512,15 +513,16 @@ export function StudyWorkspace({
       setCelebrating(false);
       void (async () => {
         try {
+          const attemptId = crypto.randomUUID();
           const { error } = await supabaseBrowser().rpc("record_flashcard_run", {
-            p_attempt_id: crypto.randomUUID(),
+            p_attempt_id: attemptId,
             p_set_id: setId,
             p_known: known,
             p_learning: learning,
           });
           if (error) return;
           // Asked after the run has landed, so the sentence it earns is true.
-          const check = await checkRecord();
+          const check = await checkRecord({ attemptId });
           if (check.countedNow) {
             setRecord(check);
             setCelebrating(true);
