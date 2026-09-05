@@ -5,6 +5,8 @@ context window, not as marketing. Everything here was read off the Devpost page 
 than remembered.
 
 **Devpost:** https://csc-back-to-school.devpost.com/
+**Authoritative text:** `CSC_Hackathon-Rules.txt` at the repository root. Where this file
+and the Devpost page disagree, the rules file wins; it is fuller.
 
 ## The brief
 
@@ -37,11 +39,22 @@ Five criteria, and Devpost publishes **no point values or weights** for them. Th
 difference from the Prometheus challenge, which was four categories of 25. Do not assume a
 100 point scale.
 
-1. **Learning** - understanding of what was built, and what the team learned.
-2. **Design** - clarity, interface, usability.
-3. **Creativity** - originality and a thoughtful approach.
-4. **Functionality** - how well it works and demonstrates the concept.
-5. **Impact** - addresses a real school problem with clear usefulness.
+1. **Learning** - "Can the team clearly identify what they built, why they built it, how it
+   works, and what they learned? AI tools are allowed and will not lower anyone's score, but
+   disclosure must reveal the use of AI and show understanding of the final product."
+2. **Design** - "Is the project easy to understand and use? A strong project will have a
+   clear interface, thoughtful design, simple user flow, and practical use cases."
+3. **Creativity** - "Is the idea thoughtful, original, or interesting? A strong project does
+   not need to be complicated, but it should show a clear, non-generic approach."
+4. **Functionality** - "How well does the project work?" A working app, demo or clear proof
+   of concept.
+5. **Impact** - "Does the project address a real school-life problem?" Naming who it affects
+   and why the solution helps.
+
+Read those descriptions rather than the one word titles. Learning is scored on the team's
+own account of the build, and it explicitly ties the AI disclosure to showing understanding,
+not to owning up to something. This repository is unusually well placed there: `memory/`
+holds one note per decision, written when the decision was made.
 
 Two of those five, Design and Functionality, are where the sidebar work in this round pays.
 Learning is scored on the team's own account of what they built, which means the write up
@@ -72,9 +85,35 @@ That disclosure is a submission field, so it needs writing. This repository is u
 placed for it: `memory/decisions/` and `docs/BUILDLOG.md` already record what was chosen and
 why, one note per decision, at the moment it was made.
 
-## Prizes
+## Prizes, and the opt in they require
 
-Gold $250 plus sponsor credits, Silver $100, Bronze $50, and five honourable mentions.
+Gold $250, Silver $100, Bronze $50, plus sponsor credits, and five honourable mentions.
+
+Every award requires the team to **opt in** and agree to six terms. Two of them are worth
+knowing before submission day:
+
+1. "The project must be open source or publicly viewable after submission." This one is
+   already satisfied: MIT licence, public repository.
+2. CSC may feature and promote the project on its own channels, and may contact the team
+   afterwards about sharing it more widely. Ownership stays with the creators.
+
+The rest are the AI disclosure and being able to explain what was built.
+
+One sponsor condition has a build implication: the **Render** credits require that "the
+winning project must use Render Workflows", and Render prohibits use by anyone under 16.
+This project deploys on Netlify, so that prize is not reachable without changing hosting.
+The Momen, n8n, Boot.dev and KnowledgeOwl prizes carry no such requirement.
+
+## The sponsor perk that matters here
+
+Participants get a month of **Featherless.ai**, hosted AI models with no inference cost.
+That is worth a hard look, because of a problem this project already has: the Gemini
+Developer API terms say a user "must be 18 years of age or older" and forbid use in a
+service "likely to be accessed by individuals under the age of 18". This hackathon is for
+students aged 13 to 18 building tools for school, so the clause bites harder here than it
+did before. Featherless, or Vertex AI with the Cloud Data Processing Addendum, are the two
+routes out. Do not ship a school-facing AI feature on the Developer API without settling
+this.
 
 ## Hosting
 
