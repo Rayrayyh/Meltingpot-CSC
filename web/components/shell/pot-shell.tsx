@@ -10,6 +10,8 @@ import { getSidebarPreferences } from "@/lib/data/sidebar";
 import { avatarSrc } from "@/lib/avatar-url";
 import { navPots } from "@/components/shell/nav-pots";
 import { RecordPotVisit } from "@/components/shell/record-pot-visit";
+import { ClassworkAutoSync } from "@/components/classwork/auto-sync";
+import { classworkOffered, getVisibleLinks, staleLinkIds } from "@/lib/data/classwork";
 
 /**
  * Signed-in shell inside a Pot. Resolves membership and passes the Pot
@@ -27,10 +29,12 @@ export async function PotShell({
   if (!pot) notFound();
   // The sidebar is account level everywhere, so a Pot page still lists every
   // class rather than swapping the nav out underneath you.
-  const [pots, notifications, preferences] = await Promise.all([
+  const offered = classworkOffered();
+  const [pots, notifications, preferences, links] = await Promise.all([
     getUserPots(),
     getNotifications(user.id),
     getSidebarPreferences(),
+    offered ? getVisibleLinks({ potId: pot.id }) : Promise.resolve([]),
   ]);
 
   return (
@@ -44,6 +48,8 @@ export async function PotShell({
       {/* Records that this class was opened, which is what the collapsed rail
           falls back to when nobody has arranged an order or marked a class. */}
       <RecordPotVisit userId={user.id} potId={pot.id} />
+      {/* Opening a class is when its linked courses catch up (decision 038). */}
+      {offered ? <ClassworkAutoSync linkIds={staleLinkIds(links)} /> : null}
       <PotTabs potId={pot.id} role={pot.role} openReviewCount={pot.openProposalCount} />
       {children(pot)}
     </AppShell>

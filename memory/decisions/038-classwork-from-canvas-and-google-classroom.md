@@ -41,6 +41,7 @@ Two lenses read 0049 and 0050 before they were applied. Their blocking findings 
 - A deleted account takes its Vault secrets with it by trigger. Revoking the token at the provider on account deletion is not done and belongs to whatever account deletion flow arrives.
 - A pass resumes only while fresh: a forced sync, or a cursor older than an hour, starts again, so a dead provider page token has an exit. Reconnecting also clears the cursor.
 - The review found that 0045's membership ledger trigger had made every Pot undeletable since it went live. 0048 fixes the shared writer; memory/lessons/013 records it.
+- Building phase 1 showed a gap the plan had: refreshing a person's course list needs an access token, and the only token-returning functions were per link or terminal, so a person who had connected but linked nothing could not refresh. 0051 adds lms_connection_token, owner-only and keyed like the rest, used by one route for that one purpose. A fourth token-returning function, recorded here so the count stays deliberate.
 
 ## What this rules out
 

@@ -36,7 +36,7 @@ test.describe("joining a Pot", () => {
     const email = `e2e.join.${Date.now()}@meltingpot.dev`;
     await page.getByLabel("Display name").fill("E2E Joiner");
     await page.getByLabel("Email").fill(email);
-    await page.getByLabel("Password").fill("E2ePassword1");
+    await page.getByLabel("Password", { exact: true }).fill("E2ePassword1");
     await page.getByRole("button", { name: "Create account and enter" }).click();
 
     // Membership finalized; straight into the Pot, no login wall, no detours.
@@ -51,7 +51,7 @@ test.describe("joining a Pot", () => {
   }) => {
     await page.goto("/login");
     await page.getByLabel("Email").fill("ava@meltingpot.dev");
-    await page.getByLabel("Password").fill("MeltingPot-dev1");
+    await page.getByLabel("Password", { exact: true }).fill("MeltingPot-dev1");
     await page.getByRole("button", { name: "Sign in", exact: true }).click();
     await expect(page).toHaveURL(/\/home/, { timeout: 15_000 });
 

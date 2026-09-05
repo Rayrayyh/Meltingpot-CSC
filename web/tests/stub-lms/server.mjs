@@ -28,11 +28,26 @@ function readBody(req) {
   });
 }
 
+// Due dates land in the month the suite runs in, so the calendar's current
+// month always shows them. The day comes from the fixture unless the dueDay
+// mood moves it, and a moved item gets a new updateTime the way it would
+// upstream, derived from the day so the same mood hashes the same twice.
 function withDue(page) {
-  if (mood.dueDay === null) return page;
+  const now = new Date();
+  const year = now.getUTCFullYear();
+  const month = now.getUTCMonth() + 1;
   return {
     ...page,
-    courseWork: page.courseWork.map((w) => (w.dueDate ? { ...w, dueDate: { ...w.dueDate, day: mood.dueDay }, updateTime: new Date().toISOString() } : w)),
+    courseWork: page.courseWork.map((w) => {
+      if (!w.dueDate) return w;
+      const moved = mood.dueDay !== null;
+      const day = moved ? Number(mood.dueDay) : w.dueDate.day;
+      return {
+        ...w,
+        dueDate: { year, month, day },
+        updateTime: moved ? new Date(Date.UTC(year, month - 1, day, 9)).toISOString() : w.updateTime,
+      };
+    }),
   };
 }
 

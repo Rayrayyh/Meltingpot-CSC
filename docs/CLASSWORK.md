@@ -57,21 +57,29 @@ Until the key lands, Canvas is exercised against the stub server only.
 
 Generate two random values, 32 bytes each, base64: for example `openssl rand -base64 32`,
 twice. One is `CLASSWORK_STATE_SECRET` (signs the OAuth state). The other is
-`CLASSWORK_SERVER_KEY`, and the same value must be stored in Supabase Vault, once, from the
-SQL editor:
+`CLASSWORK_SERVER_KEY`, and the same value must sit in Supabase Vault under the name
+`classwork_server_key`.
+
+A key is already there: one was created on 2026-09-05 so the end to end suite could run against
+the stub, and its value lives only in that container's `.env.local`. Rotate it to your own value
+from the SQL editor, and put the same value in Netlify:
 
 ```sql
-select vault.create_secret('<the server key>', 'classwork_server_key', 'Classwork server key');
+select vault.update_secret(
+  (select id from vault.secrets where name = 'classwork_server_key'),
+  '<the server key>'
+);
 ```
+
+(If `select name from vault.secrets` ever shows no such row, create it instead:
+`select vault.create_secret('<the server key>', 'classwork_server_key', 'Classwork server key');`.)
 
 The database refuses every token read and every import write without it. A wrong key is
 refused outright; the defence is the key's randomness, not a counter, and the compare is hashed
-on both sides. If it ever leaks, rotate both copies together: `select vault.update_secret((select
-id from vault.secrets where name = 'classwork_server_key'), '<new value>');` and the Netlify
-variable.
+on both sides. If it ever leaks, the same rotation is the response.
 
 A third value, `CLASSWORK_SYNC_TRIGGER_SECRET`, is the bearer the hourly cron sends. It is
-stored in Vault as `classwork_sync_trigger` by migration 0051 when that phase lands.
+stored in Vault as `classwork_sync_trigger` by the cron migration when that phase lands.
 
 ### Netlify
 
@@ -99,9 +107,23 @@ every connect button says so; nothing breaks.
 - A sync pass is three calls: `lms_sync_begin` claims the link, `lms_sync_apply` lands one page
   and stores the cursor or closes the pass, `lms_sync_finish` records an outcome the pass could
   not record itself. Removal is decided only when a pass completes, against the moment it
-  started, so a run cut short by the 26 second ceiling never marks anything gone.
-- Sync runs when someone opens a Pot, the Calendar or Home, at most every fifteen minutes per
-  course, and hourly from Supabase cron through pg_net (phase 4).
+  started, so a run cut short by the 26 second ceiling never marks anything gone. The logic sits
+  in three internal functions (`classwork_open_pass`, `classwork_apply_page`,
+  `classwork_finish_pass`) that nobody can call directly, so the hourly job can reuse them.
+- Refreshing a person's course list needs an access token too. `lms_connection_token` (0051)
+  returns the caller's own refresh token behind the same three questions (a person, the key,
+  their own row), and `lms_connection_needs_reconnect` lets the route mark a refused refresh
+  so the reconnect notice shows at once.
+- The routes, all under `/api/classwork/`: `connect/[provider]` (signed state, nonce cookie,
+  redirect to consent), `callback/[provider]` (verify, exchange, list courses, `lms_connect`),
+  `sync` (one pass under a 22 second budget), `courses` (refresh the cached list),
+  `disconnect` (`lms_disconnect`, then a best effort revoke at the provider). Every one checks
+  the session itself; `proxy.ts` never gates `/api`.
+- Sync runs when someone opens a Pot, the Calendar or Home: the page lists the links the server
+  considers stale (never synced, finished over fifteen minutes ago, or stuck running), and a
+  small client component posts for up to three of them after paint, remembering in the tab what
+  it just synced for four minutes. The database has the last word on too soon and in progress.
+  Hourly from Supabase cron through pg_net comes in phase 4.
 
 ## Local development and the stub
 

@@ -24,7 +24,7 @@ function totp(secret: string, at = Date.now()) {
 async function signIn(page: Page) {
   await page.goto("/login");
   await page.getByLabel("Email").fill("maya@meltingpot.dev");
-  await page.getByLabel("Password").fill("MeltingPot-dev1");
+  await page.getByLabel("Password", { exact: true }).fill("MeltingPot-dev1");
   await page.getByRole("button", { name: "Sign in", exact: true }).click();
 }
 

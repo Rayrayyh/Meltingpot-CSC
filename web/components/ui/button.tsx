@@ -32,6 +32,12 @@ type ButtonProps = {
   variant?: Variant;
   size?: Size;
   href?: string;
+  /**
+   * A full page navigation rather than a client transition: for a route that
+   * answers with a redirect off the site, such as a provider's consent page,
+   * which the router cannot follow.
+   */
+  native?: boolean;
   /** Roll the label on hover. Text-only labels; reserved for calls to action. */
   roll?: boolean;
   children: ReactNode;
@@ -42,6 +48,7 @@ export function Button({
   variant = "primary",
   size = "md",
   href,
+  native = false,
   roll = false,
   className,
   children,
@@ -53,6 +60,13 @@ export function Button({
   const rolling = roll && typeof children === "string";
   const classes = cn(base, variants[variant], sizes[size], rolling && "group/roll", className);
   const label = rolling ? <RollText>{children as string}</RollText> : children;
+  if (href && native) {
+    return (
+      <a href={href} target={target} rel={rel} className={classes}>
+        {label}
+      </a>
+    );
+  }
   if (href) {
     return (
       <Link href={href} target={target} rel={rel} className={classes}>

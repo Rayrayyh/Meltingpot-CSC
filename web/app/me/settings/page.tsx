@@ -1,23 +1,36 @@
 import { getVerifiedSecondFactorId } from "@/lib/auth/server";
 import { UserShell } from "@/components/shell/user-shell";
+import { ConnectedClassesPanel, type ClassworkNotice } from "@/components/settings/connected-classes-panel";
 import { PasswordPanel } from "@/components/settings/password-panel";
 import { ProfilePanel } from "@/components/settings/profile-panel";
 import { SidebarPanel } from "@/components/settings/sidebar-panel";
 import { ThemeChoice } from "@/components/settings/theme-choice";
 import { TwoFactorPanel } from "@/components/settings/two-factor-panel";
 import { Card, CardSection, Eyebrow } from "@/components/ui/card";
+import { classworkAvailability } from "@/lib/classwork/config";
+import { isClassworkProvider } from "@/lib/classwork";
+import { getConnections, getOwnLinks } from "@/lib/data/classwork";
 import { getUserPots, requireUser, runsAnyPot } from "@/lib/data/user";
 import { getSidebarPreferences } from "@/lib/data/sidebar";
 
 export const metadata = { title: "Settings" };
 
-export default async function AccountSettingsPage() {
-  const [user, runsAPot, pots, sidebar] = await Promise.all([
+export default async function AccountSettingsPage({ searchParams }: PageProps<"/me/settings">) {
+  const [user, runsAPot, pots, sidebar, params, connections, links] = await Promise.all([
     requireUser(),
     runsAnyPot(),
     getUserPots(),
     getSidebarPreferences(),
+    searchParams,
+    getConnections(),
+    getOwnLinks(),
   ]);
+  // The connect routes come back here with a one word outcome in the query.
+  const classworkNotice: ClassworkNotice = {
+    connected:
+      typeof params.connected === "string" && isClassworkProvider(params.connected) ? params.connected : undefined,
+    error: typeof params.classwork === "string" ? params.classwork : undefined,
+  };
 
   // Read the enrolled factor here so the security panel opens in the right
   // state instead of resolving it after paint.
@@ -50,6 +63,13 @@ export default async function AccountSettingsPage() {
             title: p.title,
             favorite: Boolean(p.favoritedAt),
           }))}
+        />
+
+        <ConnectedClassesPanel
+          availability={classworkAvailability()}
+          connections={connections}
+          links={links}
+          notice={classworkNotice}
         />
 
         <Card>

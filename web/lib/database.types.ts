@@ -1111,6 +1111,14 @@ export type Database = {
         };
         Returns: undefined;
       };
+      lms_connection_token: {
+        Args: { p_connection_id: string; p_server_key: string };
+        Returns: string | null;
+      };
+      lms_connection_needs_reconnect: {
+        Args: { p_connection_id: string; p_error: string | null; p_server_key: string };
+        Returns: undefined;
+      };
     };
     Enums: {
       attachment_kind: AttachmentKind;

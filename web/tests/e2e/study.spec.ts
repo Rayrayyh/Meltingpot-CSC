@@ -42,7 +42,7 @@ const TEST = {
 async function loginAs(page: Page, email: string) {
   await page.goto("/login");
   await page.getByLabel("Email").fill(email);
-  await page.getByLabel("Password").fill("MeltingPot-dev1");
+  await page.getByLabel("Password", { exact: true }).fill("MeltingPot-dev1");
   await page.getByRole("button", { name: "Sign in", exact: true }).click();
   await expect(page).toHaveURL(/\/home/, { timeout: 15_000 });
 }
