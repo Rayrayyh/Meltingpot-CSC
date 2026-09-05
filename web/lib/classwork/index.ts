@@ -1,5 +1,6 @@
+import { canvasAdapter } from "@/lib/classwork/canvas";
 import { googleClassroomAdapter } from "@/lib/classwork/google";
-import { ClassworkError, type ClassworkAdapter, type ClassworkProvider } from "@/lib/classwork/types";
+import type { ClassworkAdapter, ClassworkProvider } from "@/lib/classwork/types";
 
 export type {
   ClassworkAdapter,
@@ -15,12 +16,13 @@ export { ClassworkError } from "@/lib/classwork/types";
 
 /**
  * One adapter per provider behind one interface, the way lib/organizer and
- * lib/auth select theirs. Canvas arrives in phase 3; until then asking for it
- * fails the same way an unconfigured provider does, loudly and by name.
+ * lib/auth select theirs. Whether a provider is actually usable on this site
+ * is a separate question (classworkAvailability in config.ts); an adapter
+ * asked to act without its credentials says not_configured, loudly and by
+ * name.
  */
 export function getClassworkAdapter(provider: ClassworkProvider): ClassworkAdapter {
-  if (provider === "google_classroom") return googleClassroomAdapter;
-  throw new ClassworkError("Canvas is not set up on this site", "not_configured");
+  return provider === "canvas" ? canvasAdapter : googleClassroomAdapter;
 }
 
 export function isClassworkProvider(value: string): value is ClassworkProvider {

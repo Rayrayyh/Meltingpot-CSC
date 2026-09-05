@@ -51,7 +51,15 @@ use OAuth, and OAuth needs a developer key that only the school's Canvas admin c
    `CANVAS_OAUTH_CLIENT_SECRET`; the school's Canvas host as `CANVAS_INSTANCE_URL`
    (for example `https://school.instructure.com`).
 
-Until the key lands, Canvas is exercised against the stub server only.
+Until the key lands, Canvas is exercised against the stub server only. What the adapter reads:
+active courses (`/api/v1/courses?enrollment_state=active`), then per course assignments (quizzes
+and discussions included, unpublished skipped), announcements from the past year, modules (each
+module is one material whose files, pages and external links are its links), and calendar
+events. Descriptions arrive as HTML and are flattened; the links inside them become materials.
+Pagination follows the `Link` header, requests go one at a time, and the adapter pauses when
+`X-Rate-Limit-Remaining` drops under a hundred. A refresh refused with `invalid_grant` means
+reconnect. One instance for now, named by `CANVAS_INSTANCE_URL`; the host is a column on the
+connection so a table of instances can replace the variable later.
 
 ### Secrets
 
@@ -144,6 +152,11 @@ revoke endpoint and enough of both APIs to page through fixtures. The e2e suite 
 hand it is `node tests/stub-lms/server.mjs` from `web/` (`STUB_PORT` to move it). The browser in
 this container cannot reach real providers over TLS (memory/lessons/004), so the stub is also
 the only way to walk the full flow here.
+
+For Canvas in stub mode, `.env.local` also carries `CANVAS_OAUTH_CLIENT_ID`,
+`CANVAS_OAUTH_CLIENT_SECRET` and a placeholder `CANVAS_INSTANCE_URL` such as
+`https://canvas.stub.local`: the value has to look like a school host to pass the database's
+check on `instance_url`, and in stub mode every call goes to the stub regardless.
 
 The stub has moods, set with `POST /__control` and a JSON body, read back with `GET /__control`:
 `invalidGrant: true` makes every refresh fail the way a lapsed consent does; `throttle: N`

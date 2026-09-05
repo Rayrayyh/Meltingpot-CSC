@@ -71,7 +71,26 @@ Sign in as a maintainer of a Pot whose class matches one of the test account's c
 
 ## Phase 3, Canvas
 
-To be written the day the school's developer key lands.
+Runs the day the school's developer key lands. Until then the Canvas half is exercised against
+the stub only (the third e2e test), and settings reads "Not available on this site".
+
+- [ ] Netlify: `CANVAS_OAUTH_CLIENT_ID`, `CANVAS_OAUTH_CLIENT_SECRET`, `CANVAS_INSTANCE_URL`
+      (the school's host, https, no path). The key is On and its redirect URI matches.
+- [ ] Settings shows "Connect Canvas". The school's sign in page appears, names the app, and
+      lists only read scopes if the key enforces scopes.
+- [ ] After consent, settings says "Canvas connected." with the Canvas display name, and lists
+      the active courses with their course codes. Completed courses are not offered.
+- [ ] "Show in my calendar": assignments, quizzes and discussions carry due dates; calendar
+      events appear on their day; announcements and modules show on the Classwork tab once a
+      Pot is linked, with a module's files and pages as links.
+- [ ] Assignment descriptions read as plain text, and the links inside them are materials.
+- [ ] Open an assignment link: it lands in the school's Canvas, signed in as the person.
+- [ ] Revoke the key (or the person's token) in Canvas: the next sync marks the connection as
+      needing reconnecting, Home and settings say so, and Reconnect works once access is back.
+- [ ] A course with more than fifty assignments pages through cleanly; a long course syncs
+      across two opens rather than failing.
+- [ ] Disconnect: Canvas shows the app's token revoked under the person's approved
+      integrations.
 
 ## Record
 

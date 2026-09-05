@@ -240,4 +240,51 @@ test.describe("classwork from Google Classroom", () => {
     await maya.context().close();
     await ava.context().close();
   });
+
+  test("the same walk against Canvas: connect, a course in the calendar, due dates, disconnect", async ({
+    page,
+    request,
+  }) => {
+    test.setTimeout(180_000);
+    const days = pickDays(new Date());
+    await mood(request, { dueDay: days.first });
+
+    await loginAs(page, "ava@meltingpot.dev");
+    await page.goto("/me/settings");
+    const panel = page.getByTestId("classwork-canvas");
+    await expect(panel).toBeVisible();
+    if ((await panel.getByRole("button", { name: "Disconnect" }).count()) > 0) {
+      await panel.getByRole("button", { name: "Disconnect" }).click();
+      await page.getByRole("dialog").getByRole("button", { name: "Disconnect" }).click();
+      await expect(panel.getByText("Not connected")).toBeVisible({ timeout: 15_000 });
+    }
+    const connect = panel.getByRole("link", { name: "Connect Canvas" });
+    test.skip((await connect.count()) === 0, "Canvas is not set up on this site");
+
+    await connect.click();
+    await expect(page).toHaveURL(/connected=canvas/, { timeout: 20_000 });
+    await expect(page.getByText("Canvas connected.")).toBeVisible();
+    await expect(panel.getByText(/Connected as Ava Morgan/)).toBeVisible();
+    await expect(panel.getByText(/^Biology 101/)).toBeVisible();
+    // A completed course is not offered.
+    await expect(panel.getByText(/^Old course/)).toHaveCount(0);
+
+    await panel.getByRole("button", { name: "Show in my calendar", exact: true }).first().click();
+    await expect(panel.getByRole("button", { name: "In my calendar", exact: true })).toHaveCount(1, {
+      timeout: 40_000,
+    });
+
+    await page.goto("/calendar");
+    const lab = page.getByTestId("calendar-due").filter({ hasText: "Cell division lab report" });
+    await expect(lab).toBeVisible({ timeout: 15_000 });
+    await expect(lab.getByText("Canvas", { exact: true })).toBeVisible();
+    await expect(lab.getByText(labelFor(days.first, days.future))).toBeVisible();
+    // The calendar event came along as well as the assignments.
+    await expect(page.getByTestId("calendar-due").filter({ hasText: "Lab practical" })).toBeVisible();
+
+    await page.goto("/me/settings");
+    await panel.getByRole("button", { name: "Disconnect" }).click();
+    await page.getByRole("dialog").getByRole("button", { name: "Disconnect" }).click();
+    await expect(panel.getByText("Not connected")).toBeVisible({ timeout: 15_000 });
+  });
 });

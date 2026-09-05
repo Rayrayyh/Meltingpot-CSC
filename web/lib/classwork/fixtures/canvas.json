@@ -1,0 +1,137 @@
+{
+  "token": {
+    "exchange": {
+      "access_token": "cat-1",
+      "refresh_token": "crt-1",
+      "expires_in": 3600,
+      "token_type": "Bearer",
+      "user": { "id": 42, "name": "Ava Morgan", "global_id": "10000000000042" }
+    },
+    "refresh": {
+      "access_token": "cat-2",
+      "expires_in": 3600,
+      "token_type": "Bearer",
+      "user": { "id": 42, "name": "Ava Morgan", "global_id": "10000000000042" }
+    },
+    "invalidGrant": { "error": "invalid_grant", "error_description": "refresh_token not found" }
+  },
+  "courses": [
+    {
+      "id": 101,
+      "name": "Biology 101",
+      "course_code": "BIO-101",
+      "workflow_state": "available",
+      "enrollments": [{ "type": "student", "enrollment_state": "active" }]
+    },
+    {
+      "id": 202,
+      "name": "World History",
+      "course_code": "HIST-7",
+      "workflow_state": "available",
+      "enrollments": [{ "type": "teacher", "enrollment_state": "active" }]
+    },
+    {
+      "id": 303,
+      "name": "Old course",
+      "course_code": "OLD-1",
+      "workflow_state": "completed",
+      "enrollments": [{ "type": "student", "enrollment_state": "completed" }]
+    }
+  ],
+  "assignments": {
+    "page1": [
+      {
+        "id": 1,
+        "name": "Cell division lab report",
+        "description": "<p>Write up the mitosis lab. See <a href=\"https://school.instructure.com/courses/101/files/555\">Lab handout.pdf</a> and the <a href=\"https://example.org/mitosis\">Mitosis explainer</a>.</p>",
+        "due_at": "2026-09-12T06:59:00Z",
+        "unlock_at": null,
+        "html_url": "https://school.instructure.com/courses/101/assignments/1",
+        "published": true,
+        "workflow_state": "published",
+        "submission_types": ["online_upload"],
+        "created_at": "2026-09-01T15:00:00Z",
+        "updated_at": "2026-09-02T09:30:00Z"
+      },
+      {
+        "id": 2,
+        "name": "Quick check: phases of mitosis",
+        "description": "",
+        "due_at": "2026-09-08T23:59:00Z",
+        "html_url": "https://school.instructure.com/courses/101/assignments/2",
+        "published": true,
+        "workflow_state": "published",
+        "submission_types": ["online_quiz"],
+        "is_quiz_assignment": true,
+        "quiz_id": 9,
+        "created_at": "2026-09-03T15:00:00Z",
+        "updated_at": "2026-09-03T15:00:00Z"
+      }
+    ],
+    "page2": [
+      {
+        "id": 3,
+        "name": "Reading: chapter 10",
+        "description": null,
+        "due_at": null,
+        "html_url": "https://school.instructure.com/courses/101/assignments/3",
+        "published": true,
+        "workflow_state": "published",
+        "submission_types": ["none"],
+        "created_at": "2026-08-28T15:00:00Z",
+        "updated_at": "2026-08-28T15:00:00Z"
+      },
+      {
+        "id": 4,
+        "name": "Unpublished draft",
+        "description": "<p>Not yet.</p>",
+        "due_at": null,
+        "html_url": "https://school.instructure.com/courses/101/assignments/4",
+        "published": false,
+        "workflow_state": "unpublished",
+        "submission_types": ["online_text_entry"],
+        "created_at": "2026-09-04T15:00:00Z",
+        "updated_at": "2026-09-04T15:00:00Z"
+      }
+    ]
+  },
+  "announcements": [
+    {
+      "id": 7,
+      "title": "Lab moved to Thursday",
+      "message": "<p>Bring goggles.</p>",
+      "html_url": "https://school.instructure.com/courses/101/discussion_topics/7",
+      "posted_at": "2026-09-04T15:00:00Z",
+      "created_at": "2026-09-04T15:00:00Z",
+      "delayed_post_at": null
+    }
+  ],
+  "modules": [
+    {
+      "id": 11,
+      "name": "Unit 1: Cells",
+      "published": true,
+      "items": [
+        { "id": 111, "title": "Syllabus and lab safety", "type": "File", "html_url": "https://school.instructure.com/courses/101/modules/items/111", "published": true },
+        { "id": 112, "title": "Cell theory", "type": "Page", "html_url": "https://school.instructure.com/courses/101/pages/cell-theory", "published": true },
+        { "id": 113, "title": "Cell division lab report", "type": "Assignment", "html_url": "https://school.instructure.com/courses/101/assignments/1", "published": true },
+        { "id": 114, "title": "Khan Academy: mitosis", "type": "ExternalUrl", "external_url": "https://www.khanacademy.org/mitosis", "html_url": "https://school.instructure.com/courses/101/modules/items/114", "published": true },
+        { "id": 115, "title": "Week 1", "type": "SubHeader", "published": true }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "id": 21,
+      "title": "Lab practical",
+      "description": "<p>Room 204.</p>",
+      "start_at": "2026-09-18T14:00:00Z",
+      "end_at": "2026-09-18T15:00:00Z",
+      "all_day": false,
+      "html_url": "https://school.instructure.com/calendar?event_id=21",
+      "created_at": "2026-09-01T00:00:00Z",
+      "updated_at": "2026-09-01T00:00:00Z",
+      "workflow_state": "active"
+    }
+  ]
+}
