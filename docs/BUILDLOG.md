@@ -347,3 +347,14 @@ Known follow-ups, documented not built (feature gaps or minor polish, no securit
 - The owner chose the still stirring celebration from four mockups, so the moment is back in both themes: the pot mid stir, the day count, the week as dots, one button. It fires only where a day is earned, on the three completion screens, never on a page load. Decision 032.
 - The celebration draws its wording from a pool: eight everyday pairs, its own first day line, and named milestones at a week, a fortnight, a month, fifty and a hundred, picked by the date so a day always says the same thing and consecutive days do not.
 
+
+## Classwork from Canvas and Google Classroom (2026-09-05)
+
+- The owner lifted two SPEC exclusions at once and answered eleven scoping questions; decision 038 holds them. Five phases landed on one day against a stub provider: foundations, Google Classroom for one person, a course linked to a Pot with notes started from its assignments, Canvas, and an hourly catch-up from the database.
+- Two review lenses read the first two migrations before they were applied and found, among other things, that the 0045 ledger trigger had made every Pot undeletable since it went live. 0048 fixes the shared writer; lesson 013 records the probe that proved it without persisting anything.
+- Refresh tokens live in Supabase Vault and only keyed definer functions can hand one back; the key's entropy is the defence, not a counter, after the review showed a probe limit would have throttled honest syncs and counted nothing. Every keyed door also asks who is calling and what they are to the link.
+- The Calendar is a planner and a record in one and now cuts days where the reader is, for notes and due dates alike. A past deadline says "Was due", never "Overdue", because no provider says whether anyone handed anything in.
+- Nothing imported is a note. "Start a note from this" opens the ordinary composer with the assignment's words and its links; the share is what the record and the class count.
+- Four end to end walks run against web/tests/stub-lms: connect, calendar, a moved due date, the weekly lapse and reconnect; Maya links and Ava writes; the same walk on Canvas; the hourly door's refusals. The stub serves due dates in whichever month the suite runs.
+- Found along the way and left as debt: twenty eight older specs fail against the current product (the landing's inline join now says "See the Pot", the Pots list starts closed outside a Pot since decision 029, the stir overlay covers "View in class notes" after a share). None of it touches classwork; every Password label match in the suite was made exact, which had been hiding the rest.
+- Not done here, by the owner's instruction: no deploy. Live Google and Canvas walks wait on the Cloud project, the school's developer key, the Netlify variables, and rotating the two Vault secrets created for the stub run.

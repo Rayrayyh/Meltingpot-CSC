@@ -75,6 +75,14 @@ matters as much as the code.
 A **1 to 2 minute demo video is optional but encouraged**. Shorter than the last entry's two
 minute cap, and no longer mandatory.
 
+For the tools field, as of 5 September 2026: Next.js 16, React 19, TypeScript, Tailwind,
+Framer Motion, Supabase (Postgres, Auth, Storage, Vault, pg_cron, pg_net), Netlify, Google's
+Gemini API for the organizer and study material, Google Classroom API with Google OAuth 2.0,
+and the Canvas LMS REST API with Canvas OAuth2 (against a stub until the school's developer
+key lands). Classwork is read-only import (`docs/CLASSWORK.md`); it changes nothing about the
+Gemini clause below, since no imported text reaches the model until a person makes a note of it
+and shares it, and that share goes through the same organizer path as any other note.
+
 ## AI rules
 
 "AI tools are allowed and encouraged", ChatGPT and Claude named explicitly. The condition:

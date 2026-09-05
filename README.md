@@ -60,6 +60,8 @@ Inside a Pot: a shared feed with section filters, full text search across titles
 
 Account settings hold the theme (dark by default, light, or follow your device) with a one tap switch in the public header, and, for the people who run a Pot, two-step sign in with an authenticator app such as Google Authenticator. That one is enforced rather than advertised: turning it on adds a code step to every later sign in, and the test suite proves it by playing the authenticator itself.
 
+Connected classes bring a person's Google Classroom or Canvas courses in, read-only: assignments, quizzes, discussions, announcements, materials and calendar events, with due dates, kept in sync when someone opens a Pot, the Calendar or Home, and once an hour from the database when nobody does. A student can put a course in their own calendar; a maintainer can link one to a Pot so the whole class sees its Classwork tab. Nothing imported is ever a note: "Start a note from this" opens the ordinary composer with the assignment's words and its links, and sharing is the same act as for any note. Nothing is written back to the school, materials are links rather than downloads, and refresh tokens live encrypted in Supabase Vault behind a server key that never reaches a browser. `docs/CLASSWORK.md` has the setup and the design; `docs/CLASSWORK_VERIFICATION.md` the checklist.
+
 Sign in is an email and a password, behind a provider seam in `web/lib/auth`: everything the app needs from an identity provider is described in the product's own words, so moving to a hosted provider such as Clerk is an implementation behind that interface rather than a rewrite of every page. `docs/AUTH.md` explains the contract and what a swap actually costs.
 
 ## Screenshots
@@ -98,7 +100,9 @@ Entered in the [Prometheus August AI Challenge](https://august-ai-challenge-3105
 
 Next.js 16 (App Router, TypeScript, Tailwind) in `web/`, on Supabase for Postgres, auth, and file storage, hosted on Netlify. Security is enforced in the database, not the client: row level security on every table, privileged transitions through security definer functions that re-validate the caller at time of use, database enforced rate limiting on every sensitive operation (sized so an entire class behind one school network can sign up together), and an API surface closed down to exactly what the app uses. Anonymous visitors can reach two functions: look up a class code and register. Shared notes and their versions can only be written through the reviewed publish paths.
 
-The build is covered by 186 unit tests and 53 Playwright end to end tests over every core flow, plus two adversarial review passes whose confirmed findings, from access control holes to a diff that could hang a browser tab, were all fixed and are documented in the build log. Both study sessions are written as reducers, so how a deck is walked and how a test is marked are unit tests rather than browser tests. A Checks workflow runs lint, types, unit tests, and a production build on every push and pull request.
+Classwork tokens never touch a table: they sit in Supabase Vault, and only definer functions that also demand a server key can read one back. The hourly catch-up is a pg_cron job posting through pg_net to a route that runs as the anonymous role with that key and nothing else.
+
+The build is covered by 351 unit tests and a Playwright suite over the core flows, including the classwork walks against a stub provider, plus adversarial review passes whose confirmed findings, from access control holes to a diff that could hang a browser tab to a ledger trigger that had made every Pot undeletable, were all fixed and are documented in the build log. Both study sessions are written as reducers, so how a deck is walked and how a test is marked are unit tests rather than browser tests. A Checks workflow runs lint, types, unit tests, and a production build on every push and pull request.
 
 ## Running it locally
 
@@ -165,12 +169,32 @@ you set it only on `production`, deploy previews and branch deploys fall back to
 the deterministic organizer without saying why, which makes for a confusing
 demo. The key is only ever read on the server and never reaches the browser.
 
+## Connecting classes
+
+Google Classroom and Canvas are off until their variables exist, and the
+product says "not set up on this site" rather than showing a broken button.
+The full setup is in `docs/CLASSWORK.md`; the short version:
+
+| Variable | What it is |
+| --- | --- |
+| `APP_ORIGIN` | the site's own origin, which every redirect URI is built from |
+| `CLASSWORK_STATE_SECRET` | signs the OAuth state; 32 random bytes |
+| `CLASSWORK_SERVER_KEY` | the key the database demands before it hands back a token; the same value lives in Vault |
+| `CLASSWORK_SYNC_TRIGGER_SECRET` | the bearer the hourly job sends; the same value lives in Vault |
+| `CLASSROOM_OAUTH_CLIENT_ID`, `CLASSROOM_OAUTH_CLIENT_SECRET` | a Google Cloud web client with the Classroom API on |
+| `CANVAS_OAUTH_CLIENT_ID`, `CANVAS_OAUTH_CLIENT_SECRET`, `CANVAS_INSTANCE_URL` | a developer key from the school's Canvas admin, and the school's host |
+
+Locally, `CLASSWORK_PROVIDER_MODE=stub` with `CLASSWORK_STUB_ORIGIN=http://localhost:3112`
+points both providers at `web/tests/stub-lms/server.mjs`, which the e2e suite starts.
+
 ## Repo map
 
 - `docs/SPEC.md`: the authoritative product spec
 - `docs/PLAN.md`: the execution plan with per step status
 - `docs/BUILDLOG.md`: what was built, found, and fixed, step by step
 - `docs/AUTH.md`: the authentication seam and how to swap the provider
+- `docs/CLASSWORK.md`: Google Classroom and Canvas, from setup to how a sync pass works
+- `docs/CLASSWORK_VERIFICATION.md`: the checklist run on the live site per phase
 - `memory/`: decisions and lessons recorded as they happened
 - `supabase/migrations/`: the full schema, security, and function history
 - `web/`: the app

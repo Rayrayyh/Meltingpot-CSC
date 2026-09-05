@@ -24,7 +24,7 @@ analytics vendor, and no third party script on any page.
 
 ## Trust boundaries
 
-There are four, and each one re-checks rather than trusting the last.
+There are five, and each one re-checks rather than trusting the last.
 
 1. **Public web to the app.** Anyone can reach the landing, the three
    marketing pages, the legal pages, the sign in and sign up pages and the
@@ -46,6 +46,16 @@ There are four, and each one re-checks rather than trusting the last.
    reaches the browser, and no model output is trusted as authority: an
    organized note is a suggestion the writer approves, and every generated
    note and study set records which engine produced it.
+5. **The app to a school's systems.** Google Classroom and Canvas are read
+   through OAuth, server side only, with read-only scopes. The refresh token
+   goes into Supabase Vault and only two definer functions can hand it back,
+   both of which demand a server key held in Netlify and in Vault as well as
+   the caller's own standing to the link. Nothing is written to the school,
+   no grade or roster is read, and disconnecting deletes the token and every
+   imported row. The hourly catch-up is the one machine path: pg_cron posts
+   through pg_net with a bearer, and the route runs as the anonymous role
+   with the server key, capped at five links a call (decision 038,
+   `docs/CLASSWORK.md`).
 
 Second factor sits across boundaries two and three. Anyone who runs a Pot
 can enrol TOTP; once enrolled, `has_required_aal()` is embedded inside
@@ -61,13 +71,16 @@ database as well as by the proxy.
 | Server actions (`app/**/actions.ts`, `app/actions/record.ts`) | Server | Same as above, as the caller | None |
 | `proxy.ts` | Edge | Cookie presence and assurance level | None |
 | Study and organize route handlers | Server | The Pot they were asked about, as the caller | The model API key |
+| Classwork route handlers (`/api/classwork/*`) | Server | The caller's links and connections; a refresh token for one pass, in memory | The server key, the OAuth client secrets, the state secret |
+| The hourly door (`/api/classwork/sync-due`) | Server, called by pg_net | Up to five overdue links a call, as anon plus the key | The trigger bearer and the server key |
 | Supabase Auth | Supabase | Its own tables | Password hashes, TOTP secrets |
+| Supabase Vault | Supabase | Refresh tokens, the server key, the trigger bearer | Read only inside definer functions |
 | Postgres functions (definer) | Supabase | Everything, by design | None; they check the caller first |
 
 The publishable key in the browser bundle is the anonymous role key. It is
 public on purpose and grants nothing on its own: `lib/security/rls.test.ts`
-proves that by using it to attempt a read of all sixteen tables and getting
-nothing back from any of them.
+proves that by using it to attempt a read of every table in its list and
+getting nothing back from any of them.
 
 ## Sensitive data paths
 
@@ -96,6 +109,16 @@ nothing back from any of them.
   caller's own rows. `own_standing` aggregates a class inside the database
   and returns only the caller's rank and counts, so no classmate's figures
   reach a browser.
+- **Classwork.** A connection is one row per person per provider in
+  `lms_connections`, readable by its owner minus the Vault id and the scope
+  list, which sit outside the column grant. A link (`lms_course_links`) is
+  readable by its owner or, for a Pot link, by every member; its pass cursor
+  is outside the grant too. Items (`lms_items`) follow their link. Every
+  write goes through the keyed definer functions of 0050 to 0052; the
+  browser can write nothing. A note started from an item stamps
+  `contributions.source_lms_item_id`, whose policy checks the author can see
+  that item, and nothing imported ever becomes a note, an attachment or a
+  counted day until a person shares.
 
 ## Preventing cross-tenant access
 
