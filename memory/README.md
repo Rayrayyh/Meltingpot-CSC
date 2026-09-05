@@ -47,6 +47,7 @@ This directory is the project's knowledge base. It makes the repo, not chat hist
 - 034 The caret is drawn on one line only: textareas keep the native caret, coloured, because a mirror is wrong a line at a time
 - 035 The notification card collapses the way kolejain.com does: opacity in 0.1s, the rail does the rest
 - 036 One pill slides between Original and Organized: two springs, leading edge first
+- 038 Classwork from Canvas and Google Classroom: read-only import, who links decides who reads, tokens in Vault behind a server key, never a note until a person makes one
 ### Lessons
 - 001 Reading the spec PDFs in this container requires poppler, not pypdf
 - 002 Next 16 conventions (proxy.ts, async params) and Playwright executablePath in this container
@@ -55,3 +56,4 @@ This directory is the project's knowledge base. It makes the repo, not chat hist
 - 005 RLS is authorization, not a query filter; queries still filter user_id themselves
 - 006 E2e suites reseed via guarded dev_reseed in global setup; lazily-created resources need in-flight guards
 - 007 Re-check authorization at time of use: RPC membership guards, WITH CHECK on mutable columns, matching policy pairs, server-side staleness checks
+- 013 A ledger trigger on delete fails its own foreign key inside the parent's cascade: 0045 made every Pot undeletable until 0048 taught the writer to skip a vanishing Pot

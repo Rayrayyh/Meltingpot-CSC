@@ -55,6 +55,7 @@ Database changes go through Supabase MCP migrations (`apply_migration`), one mig
 - Every single-line field draws the gliding caret; textareas keep the native caret in the brand colour, on purpose (`memory/decisions/034`).
 - The notification card collapses on opacity alone and lets the rail reflow it, measured off kolejain.com (`docs/KOLEJAIN_NOTIFICATION_MOTION.md`). The nav scroller draws no bar but still scrolls.
 - The note view toggle reads Original then Organized, opens on Organized, and uses `components/ui/pill-tabs.tsx` for the sliding pill.
+- Classwork from Canvas and Google Classroom is being built (decision 038, `docs/CLASSWORK.md`). It is read-only import: an imported item is never a note and never counts for anyone until a person starts a note from it and shares it; refresh tokens live in Vault behind a server key and never reach a browser; the three `lms_*` tables are read-only from the client and written only by the definer functions in migration 0050.
 
 ## Design tokens (digest)
 

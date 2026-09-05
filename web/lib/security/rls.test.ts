@@ -71,6 +71,9 @@ const CLOSED = [
   "study_responses",
   "note_flashcards",
   "admin_events",
+  "lms_connections",
+  "lms_course_links",
+  "lms_items",
 ] as const;
 
 online("an anonymous client", () => {
