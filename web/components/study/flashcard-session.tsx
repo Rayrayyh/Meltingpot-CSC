@@ -68,7 +68,7 @@ function CardFace({
       // attribute is a plain statement about which side is turned away.
       aria-hidden={hidden || undefined}
       className={cn(
-        "absolute inset-0 flex flex-col items-center justify-center gap-3 overflow-y-auto rounded-(--radius-card) border border-edge bg-surface px-8 py-10 text-center [backface-visibility:hidden]",
+        "mp-flashcard-face absolute inset-0 flex flex-col items-center justify-center gap-3 overflow-y-auto rounded-(--radius-card) border border-edge px-8 py-10 text-center [backface-visibility:hidden]",
         back && "[transform:rotateX(180deg)]",
       )}
     >
