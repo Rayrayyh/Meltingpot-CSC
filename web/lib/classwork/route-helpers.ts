@@ -18,15 +18,23 @@ export const NONCE_COOKIE = "mp-classwork-nonce";
 export const NONCE_COOKIE_PATH = "/api/classwork/callback";
 
 /**
- * The address a redirect should carry. On Netlify's Next runtime request.url
- * is the deploy's internal permalink host, so a Location built from it sends
- * a person to a host where their session cookie does not exist. APP_ORIGIN
- * is the site's own address and wins; failing that, nextUrl, which Next
- * builds from the forwarded host, the way proxy.ts already redirects.
+ * A redirect within the site. On Netlify's Next runtime both request.url and
+ * nextUrl carry the deploy's internal permalink host, so a Location built
+ * from either sends a person to a host where their session cookie does not
+ * exist (lesson 014). With APP_ORIGIN set the Location is absolute on the
+ * site's own address; without it the Location is relative, which every
+ * browser resolves against the host the person is actually on.
  */
-export function siteOrigin(request: NextRequest): string {
+export function redirectTo(path: string): NextResponse {
   const configured = getClassworkConfig().APP_ORIGIN;
-  return configured ? configured.replace(/\/$/, "") : request.nextUrl.origin;
+  const location = configured ? new URL(path, `${configured.replace(/\/$/, "")}/`).toString() : path;
+  return new NextResponse(null, { status: 307, headers: { location } });
+}
+
+/** Whether the person reached us over https, for the cookies a redirect sets. */
+export function overHttps(request: NextRequest): boolean {
+  const forwarded = request.headers.get("x-forwarded-proto") ?? "";
+  return request.nextUrl.protocol === "https:" || forwarded.split(",")[0].trim() === "https";
 }
 
 export function serverKey(): string {

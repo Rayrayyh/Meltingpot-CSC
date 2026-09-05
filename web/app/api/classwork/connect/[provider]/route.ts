@@ -3,7 +3,7 @@ import { getAuthUser, secondFactorOutstanding } from "@/lib/auth/server";
 import { safeNextPath } from "@/lib/auth/next-path";
 import { classworkAvailability, getClassworkConfig, redirectUriFor } from "@/lib/classwork/config";
 import { getClassworkAdapter, isClassworkProvider } from "@/lib/classwork";
-import { NONCE_COOKIE, NONCE_COOKIE_PATH, siteOrigin } from "@/lib/classwork/route-helpers";
+import { NONCE_COOKIE, NONCE_COOKIE_PATH, overHttps, redirectTo } from "@/lib/classwork/route-helpers";
 import { newNonce, signState } from "@/lib/classwork/state";
 
 const STATE_TTL_SECONDS = 600;
@@ -16,16 +16,15 @@ const STATE_TTL_SECONDS = 600;
  */
 export async function GET(request: NextRequest, { params }: { params: Promise<{ provider: string }> }) {
   const { provider } = await params;
-  const origin = siteOrigin(request);
   const next = safeNextPath(request.nextUrl.searchParams.get("next")) ?? "/me/settings";
-  const settings = (query: string) => NextResponse.redirect(new URL(`/me/settings?classwork=${query}`, origin));
+  const settings = (query: string) => redirectTo(`/me/settings?classwork=${query}`);
 
   const user = await getAuthUser();
   if (!user) {
-    return NextResponse.redirect(new URL(`/login?next=${encodeURIComponent(next)}`, origin));
+    return redirectTo(`/login?next=${encodeURIComponent(next)}`);
   }
   if (await secondFactorOutstanding()) {
-    return NextResponse.redirect(new URL(`/login/verify?next=${encodeURIComponent(next)}`, origin));
+    return redirectTo(`/login/verify?next=${encodeURIComponent(next)}`);
   }
   if (!isClassworkProvider(provider) || !classworkAvailability()[provider]) return settings("unavailable");
 
@@ -48,7 +47,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     value: nonce,
     httpOnly: true,
     sameSite: "lax",
-    secure: origin.startsWith("https:"),
+    secure: overHttps(request),
     path: NONCE_COOKIE_PATH,
     maxAge: STATE_TTL_SECONDS,
   });

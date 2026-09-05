@@ -6,7 +6,7 @@ import { getClassworkConfig, redirectUriFor } from "@/lib/classwork/config";
 import { getClassworkAdapter, isClassworkProvider } from "@/lib/classwork";
 import { verifyState } from "@/lib/classwork/state";
 import { ClassworkError } from "@/lib/classwork/types";
-import { NONCE_COOKIE, NONCE_COOKIE_PATH, serverKey, siteOrigin } from "@/lib/classwork/route-helpers";
+import { NONCE_COOKIE, NONCE_COOKIE_PATH, redirectTo, serverKey } from "@/lib/classwork/route-helpers";
 import { supabaseServer } from "@/lib/supabase/server";
 
 export const maxDuration = 26;
@@ -24,12 +24,11 @@ const EXCHANGE_BUDGET_MS = 12_000;
 export async function GET(request: NextRequest, { params }: { params: Promise<{ provider: string }> }) {
   const { provider } = await params;
   const url = request.nextUrl;
-  const origin = siteOrigin(request);
   const back = (query: string, next = "/me/settings") =>
-    NextResponse.redirect(new URL(`${next}${next.includes("?") ? "&" : "?"}${query}#connected-classes`, origin));
+    redirectTo(`${next}${next.includes("?") ? "&" : "?"}${query}#connected-classes`);
 
   const user = await getAuthUser();
-  if (!user) return NextResponse.redirect(new URL("/login?next=/me/settings", origin));
+  if (!user) return redirectTo("/login?next=/me/settings");
   if (!isClassworkProvider(provider)) return back("classwork=unavailable");
 
   const secret = getClassworkConfig().CLASSWORK_STATE_SECRET;

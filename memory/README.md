@@ -58,3 +58,4 @@ This directory is the project's knowledge base. It makes the repo, not chat hist
 - 006 E2e suites reseed via guarded dev_reseed in global setup; lazily-created resources need in-flight guards
 - 007 Re-check authorization at time of use: RPC membership guards, WITH CHECK on mutable columns, matching policy pairs, server-side staleness checks
 - 013 A ledger trigger on delete fails its own foreign key inside the parent's cascade: 0045 made every Pot undeletable until 0048 taught the writer to skip a vanishing Pot
+- 014 On Netlify's Next runtime a route handler does not know its own host: request.url and nextUrl carry the deploy permalink, so redirect relatively or from APP_ORIGIN
