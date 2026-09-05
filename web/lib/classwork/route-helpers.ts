@@ -1,5 +1,5 @@
 import "server-only";
-import { NextResponse } from "next/server";
+import { NextResponse, type NextRequest } from "next/server";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/lib/database.types";
 import { getClassworkConfig } from "@/lib/classwork/config";
@@ -16,6 +16,18 @@ import type { SyncRpc } from "@/lib/classwork/sync";
 /** The nonce the connect route sets and the callback route checks. */
 export const NONCE_COOKIE = "mp-classwork-nonce";
 export const NONCE_COOKIE_PATH = "/api/classwork/callback";
+
+/**
+ * The address a redirect should carry. On Netlify's Next runtime request.url
+ * is the deploy's internal permalink host, so a Location built from it sends
+ * a person to a host where their session cookie does not exist. APP_ORIGIN
+ * is the site's own address and wins; failing that, nextUrl, which Next
+ * builds from the forwarded host, the way proxy.ts already redirects.
+ */
+export function siteOrigin(request: NextRequest): string {
+  const configured = getClassworkConfig().APP_ORIGIN;
+  return configured ? configured.replace(/\/$/, "") : request.nextUrl.origin;
+}
 
 export function serverKey(): string {
   const key = getClassworkConfig().CLASSWORK_SERVER_KEY;

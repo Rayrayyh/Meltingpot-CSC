@@ -126,10 +126,13 @@ this.
 ## Hosting
 
 The Prometheus deploy at `meltingpot-prometheus.netlify.app` is **not** the target any more.
-This entry deploys to its own Netlify subdomain, `meltingpot-csc`. A new Netlify site has to
-be created; the deploy shape is unchanged from the old one, described in `web/netlify.toml`:
-`web/` is the package root, and `@netlify/plugin-nextjs` must be declared explicitly or every
-route 404s.
+This entry lives at https://meltingpot-csc.netlify.app (Netlify site id
+`f8138e4f-b2cf-4351-b930-ec14bbb74668`, same team, same Supabase project as before). The deploy
+shape is unchanged from the old one, described in `web/netlify.toml`: `web/` is the package root,
+and `@netlify/plugin-nextjs` must be declared explicitly or every route 404s. As of 5 September
+2026 the site carries the Supabase URL and anon key and the two model names, but not the model
+API key or any classwork variable; the organizer runs deterministic and Connected classes reads
+"not set up on this site" until the owner sets them.
 
 ## What this repository is, and what it is missing
 

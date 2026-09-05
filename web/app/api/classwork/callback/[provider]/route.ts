@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextResponse, type NextRequest } from "next/server";
 import { cookies } from "next/headers";
 import { getAuthUser } from "@/lib/auth/server";
 import { safeNextPath } from "@/lib/auth/next-path";
@@ -6,7 +6,7 @@ import { getClassworkConfig, redirectUriFor } from "@/lib/classwork/config";
 import { getClassworkAdapter, isClassworkProvider } from "@/lib/classwork";
 import { verifyState } from "@/lib/classwork/state";
 import { ClassworkError } from "@/lib/classwork/types";
-import { NONCE_COOKIE, NONCE_COOKIE_PATH, serverKey } from "@/lib/classwork/route-helpers";
+import { NONCE_COOKIE, NONCE_COOKIE_PATH, serverKey, siteOrigin } from "@/lib/classwork/route-helpers";
 import { supabaseServer } from "@/lib/supabase/server";
 
 export const maxDuration = 26;
@@ -21,14 +21,15 @@ const EXCHANGE_BUDGET_MS = 12_000;
  * token in Vault behind the server key. Nothing token shaped is ever in a URL
  * the browser sees, and the reply is a redirect with a one word outcome.
  */
-export async function GET(request: Request, { params }: { params: Promise<{ provider: string }> }) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ provider: string }> }) {
   const { provider } = await params;
-  const url = new URL(request.url);
+  const url = request.nextUrl;
+  const origin = siteOrigin(request);
   const back = (query: string, next = "/me/settings") =>
-    NextResponse.redirect(new URL(`${next}${next.includes("?") ? "&" : "?"}${query}#connected-classes`, url.origin));
+    NextResponse.redirect(new URL(`${next}${next.includes("?") ? "&" : "?"}${query}#connected-classes`, origin));
 
   const user = await getAuthUser();
-  if (!user) return NextResponse.redirect(new URL("/login?next=/me/settings", url.origin));
+  if (!user) return NextResponse.redirect(new URL("/login?next=/me/settings", origin));
   if (!isClassworkProvider(provider)) return back("classwork=unavailable");
 
   const secret = getClassworkConfig().CLASSWORK_STATE_SECRET;

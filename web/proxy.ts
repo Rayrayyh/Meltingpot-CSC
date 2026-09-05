@@ -15,7 +15,12 @@ const PROTECTED_PREFIXES = [
   "/calendar",
 ];
 
+// Signed-in pages whose path is also the start of a public one: /join is the
+// signed-in join page, /join/<code> is the preview anyone may see.
+const PROTECTED_EXACT = ["/join"];
+
 function isProtected(pathname: string) {
+  if (PROTECTED_EXACT.includes(pathname)) return true;
   return PROTECTED_PREFIXES.some(
     (prefix) => pathname === prefix.replace(/\/$/, "") || pathname.startsWith(prefix),
   );
