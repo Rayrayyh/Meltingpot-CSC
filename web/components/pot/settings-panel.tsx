@@ -19,10 +19,12 @@ export function SettingsPanel({
   pot,
   isOwner,
   sectionsSlot,
+  classworkSlot,
 }: {
   pot: PotContext;
   isOwner: boolean;
   sectionsSlot?: React.ReactNode;
+  classworkSlot?: React.ReactNode;
 }) {
   const router = useRouter();
   const [title, setTitle] = useState(pot.title);
@@ -344,6 +346,8 @@ export function SettingsPanel({
       </Card>
 
       {sectionsSlot}
+
+      {classworkSlot}
 
       <Card className={isOwner ? "border-danger/25" : undefined}>
         <CardSection className={cn("space-y-3", isOwner && "text-danger")}>

@@ -62,6 +62,18 @@ export type InitialContribution = {
   organized?: StoredOrganized | null;
 };
 
+/**
+ * A note started from classwork (decision 038). The item's own words become
+ * the raw text, its links become attachments through the ordinary insert,
+ * and the contribution remembers where it came from. Nothing else about the
+ * flow changes: organize, review and share run exactly as for any note.
+ */
+export type ContributePrefill = {
+  itemId: string;
+  rawText: string;
+  links: Array<{ title: string; url: string }>;
+};
+
 type EditableOrganized = {
   title: string;
   summary: string;
@@ -88,12 +100,14 @@ export function ContributeFlow({
   sections,
   viewerName,
   initial,
+  prefill,
 }: {
   potId: string;
   potTitle: string;
   sections: SectionOption[];
   viewerName?: string;
   initial?: InitialContribution;
+  prefill?: ContributePrefill;
 }) {
   const router = useRouter();
   // A draft resumed after it reached review rehydrates its organized result
@@ -111,7 +125,9 @@ export function ContributeFlow({
     : null;
   const [step, setStep] = useState<Step>(initialOrganized ? "review" : "write");
   const [contributionId, setContributionId] = useState<string | null>(initial?.id ?? null);
-  const [rawText, setRawText] = useState(initial?.rawText ?? "");
+  const [rawText, setRawText] = useState(initial?.rawText ?? prefill?.rawText ?? "");
+  // The prefill's links are attached once, after the row exists.
+  const prefillAttached = useRef(false);
   const [saved, setSaved] = useState<"idle" | "saving" | "saved" | "error">(
     initial ? "saved" : "idle",
   );
@@ -167,7 +183,14 @@ export function ContributeFlow({
       if (!userId) return null;
       const { data } = await supabase
         .from("contributions")
-        .insert({ pot_id: potId, author_id: userId, raw_text: rawText })
+        .insert({
+          pot_id: potId,
+          author_id: userId,
+          raw_text: rawText,
+          // Provenance only; the policy checks the item is one the author can
+          // see in this Pot or in their own private list (0049).
+          source_lms_item_id: prefill?.itemId ?? null,
+        })
         .select("id")
         .single();
       if (data) {
@@ -187,7 +210,7 @@ export function ContributeFlow({
       setErrorNote("Your note couldn't be saved. Check your connection and try again.");
     }
     return id;
-  }, [contributionId, potId, rawText, supabase]);
+  }, [contributionId, potId, rawText, supabase, prefill?.itemId]);
 
   // Autosave the raw text from the first meaningful keystroke. The "saving"
   // indicator flips in the change handler; this effect only schedules writes.
@@ -294,14 +317,29 @@ export function ContributeFlow({
       });
   }, [initial?.id, supabase]);
 
-  async function attachLink(url: string) {
+  // A note started from classwork carries the item's links in as ordinary
+  // attachments, once, as soon as the autosave has created the row. The
+  // guard also covers React running effects twice in development.
+  useEffect(() => {
+    if (!prefill || prefill.links.length === 0 || !contributionId || prefillAttached.current) return;
+    prefillAttached.current = true;
+    (async () => {
+      for (const link of prefill.links) await attachLink(link.url, link.title);
+    })();
+    // attachLink is recreated each render; the ref makes this run once.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [contributionId, prefill]);
+
+  async function attachLink(url: string, label?: string) {
     const id = await ensureContribution();
     if (!id || !url.trim()) return;
-    let name = url.trim();
-    try {
-      name = new URL(url).hostname + new URL(url).pathname;
-    } catch {
-      // Keep the raw text as the display name.
+    let name = label?.trim() || url.trim();
+    if (!label?.trim()) {
+      try {
+        name = new URL(url).hostname + new URL(url).pathname;
+      } catch {
+        // Keep the raw text as the display name.
+      }
     }
     const userId = await getClientAuth().getUserId();
     if (!userId) return;

@@ -8,7 +8,9 @@ import { CopyButton } from "@/components/ui/copy-button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { MetricCard } from "@/components/ui/metric-card";
 import { SectionPill } from "@/components/ui/pills";
+import { ClassworkStrip } from "@/components/pot/classwork-strip";
 import { contributorActivity } from "@/lib/contributors";
+import type { DueEntry } from "@/lib/data/classwork";
 import type { FeedNote, PotContext } from "@/lib/data/pot";
 import { relativeTime } from "@/lib/time";
 
@@ -16,10 +18,13 @@ export function PotFeed({
   pot,
   notes,
   activeSectionId,
+  classwork,
 }: {
   pot: PotContext;
   notes: FeedNote[];
   activeSectionId?: string;
+  /** Present only when the Pot has a linked course. */
+  classwork?: { items: DueEntry[]; now: number; zone: string };
 }) {
   const activeSection = activeSectionId
     ? pot.sections.find((s) => s.id === activeSectionId)
@@ -56,6 +61,9 @@ export function PotFeed({
               accessory={<CopyButton value={pot.classCode} label="Copy" />}
             />
           </div>
+          {classwork ? (
+            <ClassworkStrip potId={pot.id} items={classwork.items} now={classwork.now} zone={classwork.zone} />
+          ) : null}
           <section aria-labelledby="study-pot-heading" className="space-y-3">
             <div>
               <h2 id="study-pot-heading" className="text-[13px] font-medium text-ink-muted">Study this Pot</h2>

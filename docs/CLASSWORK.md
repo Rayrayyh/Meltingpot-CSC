@@ -124,6 +124,17 @@ every connect button says so; nothing breaks.
   small client component posts for up to three of them after paint, remembering in the tab what
   it just synced for four minutes. The database has the last word on too soon and in progress.
   Hourly from Supabase cron through pg_net comes in phase 4.
+- A Pot link is made from Pot settings by a maintainer, from the courses their own connected
+  account can see (`link_lms_course` with a Pot id, which the ledger records). Above zero links
+  the Pot grows a Classwork tab after Feed and a three row strip under its vitals; at zero it
+  looks exactly as it did before. The tab groups items by when they are due and offers one
+  action, "Start a note from this", which opens the ordinary composer with `?from=<item>`.
+- The composer reads the item under row level security, uses its words as the raw text,
+  attaches its materials and its own link through the ordinary attachments insert once the
+  draft row exists, and stamps `contributions.source_lms_item_id`, whose policy checks the item
+  is one the author can see. Organize, review and `share_contribution` run unchanged. "N notes
+  started from this" counts shared contributions carrying that stamp, so an import never counts
+  and a share always does.
 
 ## Local development and the stub
 

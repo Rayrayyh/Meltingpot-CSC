@@ -50,7 +50,12 @@ export async function PotShell({
       <RecordPotVisit userId={user.id} potId={pot.id} />
       {/* Opening a class is when its linked courses catch up (decision 038). */}
       {offered ? <ClassworkAutoSync linkIds={staleLinkIds(links)} /> : null}
-      <PotTabs potId={pot.id} role={pot.role} openReviewCount={pot.openProposalCount} />
+      <PotTabs
+        potId={pot.id}
+        role={pot.role}
+        openReviewCount={pot.openProposalCount}
+        classworkLinkCount={pot.classworkLinkCount}
+      />
       {children(pot)}
     </AppShell>
   );

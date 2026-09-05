@@ -44,7 +44,30 @@ Sign in as the test account.
 
 ## Phase 2, a course linked to a Pot
 
-To be written with the phase.
+Sign in as a maintainer of a Pot whose class matches one of the test account's courses.
+
+- [ ] Pot settings shows a Classwork card. With no account connected it points at account
+      settings; with one connected it offers the courses not yet linked.
+- [ ] Link a course: the card lists it as "Linked by you", the first sync runs, and the
+      Classwork tab appears after Feed. The Pot's ledger (admin page) records
+      classwork_linked.
+- [ ] The Pot feed shows a Classwork strip under the vitals with the next fortnight's due
+      dates and "See all classwork".
+- [ ] Classwork tab: groups Due soon, Later, No date, Past; each row carries a kind pill, a
+      due label, the materials as links, "Open in Google Classroom" and "Start a note from
+      this". The top line says who linked it and when it last synced, with Sync now for
+      maintainers.
+- [ ] Sign in as a plain member: the tab and strip are there, Sync now is not, and Pot
+      settings shows the linked course with nothing to press.
+- [ ] Start a note from an assignment: the composer opens with the assignment's words as the
+      raw text and its materials attached as links. Organize, review and share as usual. The
+      shared note shows the links, and the assignment's row now says "1 note started from
+      this". The private record counts the share, not the import.
+- [ ] Unlink from Pot settings: the confirm names what goes; the tab and strip leave; the note
+      stays; the ledger records classwork_unlinked.
+- [ ] Remove the linker from the Pot (or have them leave): their link goes with them.
+- [ ] Archive the Pot: Sync now is refused with "pot_archived" and linking is impossible until
+      it is unarchived.
 
 ## Phase 3, Canvas
 

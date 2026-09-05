@@ -31,6 +31,8 @@ export type LinkSummary = {
   id: string;
   connectionId: string;
   userId: string;
+  /** Who linked it, as the class knows them. */
+  linkerName: string | null;
   provider: ClassworkProvider;
   potId: string | null;
   potTitle: string | null;
@@ -62,7 +64,7 @@ export type DueEntry = {
 };
 
 const LINK_COLUMNS =
-  "id, connection_id, user_id, provider, pot_id, external_course_id, course_name, course_url, enrollment, sync_status, sync_started_at, sync_finished_at, sync_error, item_count, pot:pots(title)";
+  "id, connection_id, user_id, provider, pot_id, external_course_id, course_name, course_url, enrollment, sync_status, sync_started_at, sync_finished_at, sync_error, item_count, pot:pots(title), linker:profiles!lms_course_links_user_id_fkey(display_name)";
 
 const ITEM_COLUMNS =
   "id, provider, external_id, kind, title, due_at, due_all_day, url, pot_id, link:lms_course_links!lms_items_link_id_fkey(course_name, pot:pots(title))";
@@ -114,6 +116,7 @@ type LinkRow = {
   sync_error: string | null;
   item_count: number;
   pot: { title: string } | null;
+  linker: { display_name: string } | null;
 };
 
 function toLink(row: LinkRow): LinkSummary {
@@ -121,6 +124,7 @@ function toLink(row: LinkRow): LinkSummary {
     id: row.id,
     connectionId: row.connection_id,
     userId: row.user_id,
+    linkerName: row.linker?.display_name ?? null,
     provider: row.provider,
     potId: row.pot_id,
     potTitle: row.pot?.title ?? null,
@@ -239,8 +243,17 @@ function toDue(row: ItemRow, zone: string): DueEntry | null {
   };
 }
 
-/** What is due in the next `days` days, across everything the caller can see. */
-export async function getDueSoon(zone: string, days = 7, limit = 5, now = Date.now()): Promise<DueEntry[]> {
+/**
+ * What is due in the next `days` days, across everything the caller can see,
+ * or within one Pot when asked.
+ */
+export async function getDueSoon(
+  zone: string,
+  days = 7,
+  limit = 5,
+  now = Date.now(),
+  scope: { potId?: string } = {},
+): Promise<DueEntry[]> {
   const user = await getAuthUser();
   if (!user) return [];
   const supabase = await supabaseServer();
@@ -248,7 +261,7 @@ export async function getDueSoon(zone: string, days = 7, limit = 5, now = Date.n
   // has passed by a few hours still shows as today's rather than vanishing.
   const from = new Date(now - 24 * 3_600_000).toISOString();
   const to = new Date(now + days * 24 * 3_600_000).toISOString();
-  const { data, error } = await supabase
+  let query = supabase
     .from("lms_items")
     .select(ITEM_COLUMNS)
     .is("removed_at", null)
@@ -256,6 +269,8 @@ export async function getDueSoon(zone: string, days = 7, limit = 5, now = Date.n
     .lt("due_at", to)
     .order("due_at", { ascending: true })
     .limit(60);
+  if (scope.potId) query = query.eq("pot_id", scope.potId);
+  const { data, error } = await query;
   if (error) {
     console.error("classwork due read failed", error.message);
     return [];
@@ -294,6 +309,138 @@ export async function getMonthDue(year: number, month: number, zone: string): Pr
   return collapse((data ?? []) as unknown as ItemRow[])
     .map((row) => toDue(row, zone))
     .filter((entry): entry is DueEntry => entry !== null && entry.day.startsWith(prefix));
+}
+
+export type ClassworkMaterial = { kind: string; title: string; url: string };
+
+/** One imported thing as the Classwork tab shows it. */
+export type PotClassworkItem = {
+  id: string;
+  linkId: string;
+  courseName: string;
+  provider: ClassworkProvider;
+  kind: ClassworkKind;
+  title: string;
+  description: string;
+  dueAt: string | null;
+  dueAllDay: boolean;
+  postedAt: string | null;
+  url: string | null;
+  materials: ClassworkMaterial[];
+  changedAt: string;
+  /** Shared notes in this Pot that were started from it. */
+  notesStarted: number;
+};
+
+function isMaterial(value: unknown): value is ClassworkMaterial {
+  if (!value || typeof value !== "object") return false;
+  const m = value as Record<string, unknown>;
+  return typeof m.url === "string" && typeof m.title === "string" && typeof m.kind === "string";
+}
+
+type PotItemRow = {
+  id: string;
+  link_id: string;
+  provider: ClassworkProvider;
+  kind: ClassworkKind;
+  title: string;
+  description: string;
+  due_at: string | null;
+  due_all_day: boolean;
+  posted_at: string | null;
+  url: string | null;
+  materials: unknown;
+  changed_at: string;
+  pot_id: string | null;
+  user_id: string;
+  link: { course_name: string } | null;
+};
+
+const POT_ITEM_COLUMNS =
+  "id, link_id, provider, kind, title, description, due_at, due_all_day, posted_at, url, materials, changed_at, pot_id, user_id, link:lms_course_links!lms_items_link_id_fkey(course_name)";
+
+function toPotItem(row: PotItemRow, notesStarted: number): PotClassworkItem {
+  return {
+    id: row.id,
+    linkId: row.link_id,
+    courseName: row.link?.course_name ?? "",
+    provider: row.provider,
+    kind: row.kind,
+    title: row.title,
+    description: row.description,
+    dueAt: row.due_at,
+    dueAllDay: row.due_all_day,
+    postedAt: row.posted_at,
+    url: row.url,
+    materials: Array.isArray(row.materials) ? row.materials.filter(isMaterial) : [],
+    changedAt: row.changed_at,
+    notesStarted,
+  };
+}
+
+/**
+ * How many shared notes in the Pot began from each item. Read off
+ * contributions, whose select policy shows members every shared one; the
+ * count is what "3 notes started from this" says, and it only ever counts a
+ * share, never an import.
+ */
+async function notesStartedFrom(itemIds: string[]): Promise<Map<string, number>> {
+  const counts = new Map<string, number>();
+  if (itemIds.length === 0) return counts;
+  const supabase = await supabaseServer();
+  const { data } = await supabase
+    .from("contributions")
+    .select("source_lms_item_id")
+    .in("source_lms_item_id", itemIds)
+    .eq("status", "shared");
+  for (const row of data ?? []) {
+    if (!row.source_lms_item_id) continue;
+    counts.set(row.source_lms_item_id, (counts.get(row.source_lms_item_id) ?? 0) + 1);
+  }
+  return counts;
+}
+
+/** Everything a Pot's linked courses published, newest change first within a due date order. */
+export async function getPotClasswork(potId: string): Promise<PotClassworkItem[]> {
+  const user = await getAuthUser();
+  if (!user) return [];
+  const supabase = await supabaseServer();
+  const { data, error } = await supabase
+    .from("lms_items")
+    .select(POT_ITEM_COLUMNS)
+    .eq("pot_id", potId)
+    .is("removed_at", null)
+    .order("due_at", { ascending: true, nullsFirst: false })
+    .order("posted_at", { ascending: false })
+    .limit(400);
+  if (error) {
+    console.error("classwork pot read failed", error.message);
+    return [];
+  }
+  const rows = (data ?? []) as unknown as PotItemRow[];
+  const counts = await notesStartedFrom(rows.map((r) => r.id));
+  return rows.map((row) => toPotItem(row, counts.get(row.id) ?? 0));
+}
+
+/**
+ * One item, for the composer to start from: an item of this Pot, or one of
+ * the caller's own private links. Anything else is nobody's business and
+ * reads as absent.
+ */
+export async function getClassworkItem(potId: string, itemId: string): Promise<PotClassworkItem | null> {
+  const user = await getAuthUser();
+  if (!user) return null;
+  const supabase = await supabaseServer();
+  const { data } = await supabase
+    .from("lms_items")
+    .select(POT_ITEM_COLUMNS)
+    .eq("id", itemId)
+    .is("removed_at", null)
+    .maybeSingle();
+  const row = data as unknown as PotItemRow | null;
+  if (!row) return null;
+  if (row.pot_id !== potId && !(row.pot_id === null && row.user_id === user.id)) return null;
+  return toPotItem(row, 0);
 }
 
 /** True when this deployment can connect at least one provider. */

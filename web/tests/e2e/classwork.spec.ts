@@ -156,4 +156,88 @@ test.describe("classwork from Google Classroom", () => {
     await page.goto("/calendar");
     await expect(page.getByTestId("calendar-due")).toHaveCount(0);
   });
+
+  test("a maintainer links a course to the Pot, a member reads it and writes a note from it", async ({
+    browser,
+    request,
+  }) => {
+    test.setTimeout(240_000);
+    const days = pickDays(new Date());
+    await mood(request, { dueDay: days.first });
+
+    // Maya runs Biology 101; she connects and links the course from Pot settings.
+    const maya = await (await browser.newContext()).newPage();
+    await loginAs(maya, "maya@meltingpot.dev");
+    await disconnectIfConnected(maya);
+    const panel = maya.getByTestId("classwork-google_classroom");
+    const connect = panel.getByRole("link", { name: "Connect Google Classroom" });
+    test.skip((await connect.count()) === 0, "classwork is not set up on this site");
+    await connect.click();
+    await expect(maya).toHaveURL(/connected=google_classroom/, { timeout: 20_000 });
+
+    await maya.goto("/home");
+    await maya.getByRole("main").getByRole("link", { name: "Biology 101", exact: true }).click();
+    await expect(maya).toHaveURL(/\/p\/[0-9a-f-]+$/, { timeout: 15_000 });
+    const potId = new URL(maya.url()).pathname.split("/")[2];
+    await expect(maya.getByRole("link", { name: "Classwork", exact: true })).toHaveCount(0);
+
+    await maya.goto(`/p/${potId}/settings`);
+    const card = maya.locator("#classwork");
+    await expect(card).toBeVisible();
+    await card.getByRole("button", { name: /Choose a course/ }).click();
+    await maya.getByRole("option", { name: /Biology 101/ }).click();
+    await card.getByRole("button", { name: "Link to this Pot" }).click();
+    await expect(card.getByTestId("pot-course-link")).toHaveCount(1, { timeout: 40_000 });
+    await expect(card.getByText(/Linked by you/)).toBeVisible();
+    await expect(maya.getByRole("link", { name: "Classwork", exact: true })).toBeVisible();
+
+    // Ava is a member: she reads what the course publishes and writes about it.
+    const ava = await (await browser.newContext()).newPage();
+    await loginAs(ava, "ava@meltingpot.dev");
+    await ava.goto(`/p/${potId}`);
+    await expect(ava.getByTestId("classwork-strip")).toBeVisible({ timeout: 15_000 });
+    await ava.getByRole("link", { name: "Classwork", exact: true }).click();
+    await expect(ava).toHaveURL(/\/classwork$/);
+    const lab = ava.getByTestId("classwork-item").filter({ hasText: "Cell division lab report" });
+    await expect(lab).toBeVisible();
+    await expect(lab.getByText("Lab handout.pdf")).toBeVisible();
+    await expect(lab.getByText(labelFor(days.first, days.future))).toBeVisible();
+
+    await lab.getByRole("link", { name: "Start a note from this" }).click();
+    await expect(ava).toHaveURL(/\/contribute\?from=/);
+    await expect(ava.getByRole("heading", { name: "Write anything" })).toBeVisible();
+    await expect(ava.getByLabel("Your contribution")).toHaveValue(/Cell division lab report/);
+    // The item's links arrive as ordinary attachments once the draft exists.
+    await expect(ava.getByText("Lab handout.pdf")).toBeVisible({ timeout: 20_000 });
+    await expect(ava.getByText("Mitosis explainer")).toBeVisible();
+
+    await ava.getByRole("button", { name: "Continue", exact: true }).click();
+    await ava.getByRole("button", { name: /Not sure where it belongs/ }).click();
+    await ava.getByRole("button", { name: "Continue", exact: true }).click();
+    await expect(ava.getByText("Review required")).toBeVisible({ timeout: 30_000 });
+    await ava.getByRole("button", { name: "Share with class" }).click();
+    await expect(ava.getByRole("heading", { name: "Shared with the class" })).toBeVisible({ timeout: 15_000 });
+    const noteHref = await ava.getByRole("link", { name: "View in class notes" }).getAttribute("href");
+    expect(noteHref).toBeTruthy();
+    await ava.goto(noteHref as string);
+    await expect(ava.getByText("Mitosis explainer")).toBeVisible();
+
+    // The share, and only the share, is what the item counts.
+    await ava.goto(`/p/${potId}/classwork`);
+    await expect(lab.getByText(/1 note started from this/)).toBeVisible();
+
+    // Unlinking takes the tab away; the note stays.
+    await maya.goto(`/p/${potId}/settings`);
+    await card.getByRole("button", { name: "Unlink" }).click();
+    await maya.getByRole("dialog").getByRole("button", { name: "Unlink" }).click();
+    await expect(card.getByTestId("pot-course-link")).toHaveCount(0, { timeout: 15_000 });
+    await maya.goto(`/p/${potId}`);
+    await expect(maya.getByRole("link", { name: "Classwork", exact: true })).toHaveCount(0);
+    await ava.goto(noteHref as string);
+    await expect(ava.getByText("Mitosis explainer")).toBeVisible();
+
+    await disconnectIfConnected(maya);
+    await maya.context().close();
+    await ava.context().close();
+  });
 });
