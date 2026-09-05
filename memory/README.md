@@ -43,6 +43,10 @@ This directory is the project's knowledge base. It makes the repo, not chat hist
 - 030 The record of days is quiet: the on-load modal is gone, the card carries the feature, days are cut where the reader is
 - 031 The comparison rule is lifted: each person sees their own standing in a class, always said as what they are ahead of; no names, no list
 - 032 The celebration returns as the stir, fired by the completion screens and never by a page load
+- 033 Your sidebar lives in two private tables: favourites, last opened and order are owner-only rows, never columns on the roster
+- 034 The caret is drawn on one line only: textareas keep the native caret, coloured, because a mirror is wrong a line at a time
+- 035 The notification card collapses the way kolejain.com does: opacity in 0.1s, the rail does the rest
+- 036 One pill slides between Original and Organized: two springs, leading edge first
 ### Lessons
 - 001 Reading the spec PDFs in this container requires poppler, not pypdf
 - 002 Next 16 conventions (proxy.ts, async params) and Playwright executablePath in this container

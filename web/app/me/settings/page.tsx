@@ -2,15 +2,22 @@ import { getVerifiedSecondFactorId } from "@/lib/auth/server";
 import { UserShell } from "@/components/shell/user-shell";
 import { PasswordPanel } from "@/components/settings/password-panel";
 import { ProfilePanel } from "@/components/settings/profile-panel";
+import { SidebarPanel } from "@/components/settings/sidebar-panel";
 import { ThemeChoice } from "@/components/settings/theme-choice";
 import { TwoFactorPanel } from "@/components/settings/two-factor-panel";
 import { Card, CardSection, Eyebrow } from "@/components/ui/card";
-import { requireUser, runsAnyPot } from "@/lib/data/user";
+import { getUserPots, requireUser, runsAnyPot } from "@/lib/data/user";
+import { getSidebarPreferences } from "@/lib/data/sidebar";
 
 export const metadata = { title: "Settings" };
 
 export default async function AccountSettingsPage() {
-  const [user, runsAPot] = await Promise.all([requireUser(), runsAnyPot()]);
+  const [user, runsAPot, pots, sidebar] = await Promise.all([
+    requireUser(),
+    runsAnyPot(),
+    getUserPots(),
+    getSidebarPreferences(),
+  ]);
 
   // Read the enrolled factor here so the security panel opens in the right
   // state instead of resolving it after paint.
@@ -34,6 +41,16 @@ export default async function AccountSettingsPage() {
         />
 
         <PasswordPanel />
+
+        <SidebarPanel
+          userId={user.id}
+          initialPreferences={sidebar}
+          initialPots={pots.map((p) => ({
+            id: p.id,
+            title: p.title,
+            favorite: Boolean(p.favoritedAt),
+          }))}
+        />
 
         <Card>
           <CardSection className="space-y-4">

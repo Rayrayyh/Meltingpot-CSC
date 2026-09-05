@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { ArrowRight } from "@phosphor-icons/react";
 import { CLASS_CODE_LENGTH, normalizeClassCode } from "@/components/ui/class-code-input";
+import { SmoothCaretInput } from "@/components/ui/smooth-caret";
 import { supabaseBrowser } from "@/lib/supabase/client";
 import { INVALID_CODE_MESSAGE } from "@/components/landing/join-card";
 
@@ -53,19 +54,24 @@ export function HomeJoinCard({
   return (
     <form onSubmit={submit} className="space-y-1.5">
       <div className="flex gap-2">
-        <input
-          value={code}
-          onChange={(e) => {
-            setCode(normalizeClassCode(e.target.value));
-            if (error) setError(null);
-          }}
-          placeholder="Class code"
-          aria-label="Class code"
-          autoComplete="off"
-          spellCheck={false}
-          maxLength={CLASS_CODE_LENGTH}
-          className="flex-1 h-10 px-3 bg-surface border border-edge-strong rounded-(--radius-control) font-mono font-semibold tracking-[0.2em] text-sm text-ink placeholder:font-sans placeholder:font-normal placeholder:tracking-normal placeholder:text-ink-faint focus:border-primary focus:outline-none transition-colors uppercase"
-        />
+        {/* The caret is drawn, so the field is wrapped and flex-1 sits on the
+            wrapper: the class goes to the input itself, which is a grid child
+            of that wrapper rather than a child of this row. */}
+        <div className="flex-1">
+          <SmoothCaretInput
+            value={code}
+            onChange={(e) => {
+              setCode(normalizeClassCode(e.target.value));
+              if (error) setError(null);
+            }}
+            placeholder="Class code"
+            aria-label="Class code"
+            autoComplete="off"
+            spellCheck={false}
+            maxLength={CLASS_CODE_LENGTH}
+            className="w-full h-10 px-3 bg-surface border border-edge-strong rounded-(--radius-control) font-mono font-semibold tracking-[0.2em] text-sm text-ink placeholder:font-sans placeholder:font-normal placeholder:tracking-normal placeholder:text-ink-faint focus:border-primary focus:outline-none transition-colors uppercase"
+          />
+        </div>
         <button
           type="submit"
           disabled={code.length !== CLASS_CODE_LENGTH || busy}

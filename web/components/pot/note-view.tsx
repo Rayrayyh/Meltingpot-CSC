@@ -2,7 +2,12 @@
 
 import { useState } from "react";
 import type { ReactNode } from "react";
-import { cn } from "@/lib/cn";
+import { PillTabs } from "@/components/ui/pill-tabs";
+
+const TABS = [
+  { key: "original", label: "Original" },
+  { key: "organized", label: "Organized" },
+] as const;
 
 /**
  * The organized version is the default reading surface; the verbatim
@@ -18,27 +23,16 @@ export function NoteView({
   const [tab, setTab] = useState<"organized" | "original">("organized");
   return (
     <div className="space-y-5">
-      <div role="tablist" aria-label="Note view" className="inline-flex rounded-(--radius-control) border border-edge bg-sunken p-0.5">
-        {(
-          [
-            { key: "organized", label: "Organized" },
-            { key: "original", label: "Original" },
-          ] as const
-        ).map(({ key, label }) => (
-          <button
-            key={key}
-            role="tab"
-            aria-selected={tab === key}
-            onClick={() => setTab(key)}
-            className={cn(
-              "h-8 px-4 rounded-[calc(var(--radius-control)-2px)] text-[13px] font-medium transition-colors",
-              tab === key ? "bg-surface text-ink shadow-(--shadow-card)" : "text-ink-muted hover:text-ink",
-            )}
-          >
-            {label}
-          </button>
-        ))}
-      </div>
+      {/* Original sits first because it is the source and Organized is what
+          was made from it, so left to right reads in the order things
+          happened. Organized still opens by default: it is the reading
+          surface, and the original is one tab away. */}
+      <PillTabs
+        label="Note view"
+        tabs={TABS}
+        value={tab}
+        onChange={setTab}
+      />
       {tab === "organized" ? (
         organized
       ) : (

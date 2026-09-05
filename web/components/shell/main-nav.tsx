@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useSyncExternalStore } from "react";
+import { Fragment, useCallback, useEffect, useState, useSyncExternalStore } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
@@ -12,11 +12,21 @@ import {
   House,
   MagnifyingGlass,
   Notebook,
+  Star,
 } from "@phosphor-icons/react";
 import { cn } from "@/lib/cn";
 import { applyNavCollapsed, readNavCollapsed, subscribeToNav } from "@/lib/nav-collapse";
+import { collapsedPotDestination } from "@/lib/pot-destination";
+import { resolveNavLinks, type NavKey, type SidebarPreferences } from "@/lib/sidebar-links";
+import { supabaseBrowser } from "@/lib/supabase/client";
 
-export type NavPot = { id: string; title: string };
+export type NavPot = {
+  id: string;
+  title: string;
+  position: number | null;
+  favoritedAt: string | null;
+  lastViewedAt: string | null;
+};
 
 /**
  * The My Pots list, remembered across sidebars.
@@ -167,11 +177,56 @@ function CollapseToggle() {
   );
 }
 
-export function MainNav({ pots }: { pots: NavPot[] }) {
+export function MainNav({
+  userId,
+  pots,
+  preferences,
+}: {
+  /** The signed-in person, for the rows only they can write. */
+  userId: string;
+  pots: NavPot[];
+  preferences: SidebarPreferences;
+}) {
   const pathname = usePathname();
   const router = useRouter();
   const { mac, symbol } = useShortcutModifier();
   const inAPot = pathname.startsWith("/p/");
+  // Optimistic, so the star fills under the pointer instead of after a round
+  // trip. The server render is the source of truth on the next navigation.
+  const [marked, setMarked] = useState<Record<string, boolean>>({});
+  const isMarked = useCallback(
+    (pot: NavPot) => marked[pot.id] ?? Boolean(pot.favoritedAt),
+    [marked],
+  );
+
+  const links = resolveNavLinks(preferences).filter((link) => !link.hidden);
+  const destination = collapsedPotDestination(pots);
+  const potsHref = destination ? `/p/${destination}` : "/home";
+  const destinationPot = destination ? (pots.find((p) => p.id === destination) ?? null) : null;
+  // Collapsed, the icon is the only thing on the row, so the name of the class
+  // it opens has to live in the label. Naming it also answers the question the
+  // control otherwise raises, which is why this one and not another.
+  const potsLabel = destinationPot ? `My Pots, opens ${destinationPot.title}` : "My Pots";
+
+  const toggleFavorite = useCallback(
+    async (pot: NavPot) => {
+      const next = !(marked[pot.id] ?? Boolean(pot.favoritedAt));
+      setMarked((m) => ({ ...m, [pot.id]: next }));
+      const { error } = await supabaseBrowser().from("pot_preferences").upsert(
+        {
+          user_id: userId,
+          pot_id: pot.id,
+          favorited_at: next ? new Date().toISOString() : null,
+        },
+        { onConflict: "user_id,pot_id" },
+      );
+      // Put the star back if the write did not land, rather than showing a
+      // preference that was never saved.
+      if (error) setMarked((m) => ({ ...m, [pot.id]: !next }));
+      else router.refresh();
+    },
+    [marked, router, userId],
+  );
   // Open by default when you are already inside a Pot, so the sidebar shows
   // where you are rather than hiding it behind a closed group.
   const [open, setOpen] = useState(() => lastPotsOpen ?? inAPot);
@@ -246,6 +301,217 @@ export function MainNav({ pots }: { pots: NavPot[] }) {
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [mac, pots, router]);
 
+  const potsControlClasses =
+    "mp-fx mp-nav-row flex items-center gap-2.5 h-9 px-3 rounded-(--radius-control) text-sm text-ink-muted transition-colors min-w-0 hover:text-ink hover:bg-sunken";
+  const potsIcon = (
+    <span aria-hidden className="mp-fx-stir [&>svg]:size-[18px] shrink-0">
+      <CookingPot />
+    </span>
+  );
+
+  /**
+   * One control, two jobs, because collapsed it cannot do the first one.
+   *
+   * Open, My Pots is a disclosure: it expands the class list in place, which is
+   * why it has never been a destination. Collapsed, the list it discloses is
+   * display:none, so the control was a button that visibly did nothing. The
+   * owner's report was exactly that: "I can't click the pot."
+   *
+   * Both controls are always rendered and the stylesheet shows one, using the
+   * same html[data-nav] switch that hides the list. That is deliberate, and it
+   * replaced a version that chose the element in React from the stored
+   * collapse flag. Choosing in React was wrong three ways: the server HTML
+   * always shipped the button, so the first click on a collapsed rail before
+   * hydration did nothing; the mobile drawer renders this nav outside .mp-side,
+   * so a phone whose owner had collapsed the desktop rail got a link beside a
+   * fully visible list it could no longer close; and a storage event from a
+   * second tab swapped the control while this tab's rail was still open. With
+   * the stylesheet deciding, the control and the list can never disagree,
+   * nothing is remounted, and the link can be opened in a new tab like every
+   * other class in the rail.
+   */
+  const potsControl = (
+    <>
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        aria-expanded={open}
+        aria-controls="nav-my-pots"
+        // Never highlighted. It is a disclosure, not a destination: the only
+        // thing that should look selected is the page you are actually on, and
+        // when you are inside a class it is that class in the list below.
+        title="My Pots"
+        className={cn(potsControlClasses, "mp-nav-open-only")}
+      >
+        {potsIcon}
+        <span className="mp-nav-label truncate">My Pots</span>
+        <CaretRight
+          aria-hidden
+          className={cn(
+            "ml-auto size-3.5 shrink-0 transition-transform duration-200",
+            open && "rotate-90",
+          )}
+        />
+      </button>
+      <Link
+        href={potsHref}
+        title={potsLabel}
+        aria-label={potsLabel}
+        className={cn(potsControlClasses, "mp-nav-collapsed-only")}
+      >
+        {potsIcon}
+        <span className="mp-nav-label truncate">My Pots</span>
+      </Link>
+    </>
+  );
+
+  const potsSection = (
+    <Fragment key="pots">
+      {potsControl}
+      {/* Grid rows animate to content height without a measured pixel value,
+          which keeps the expand smooth whatever the class list holds. The
+          global reduced-motion rule removes the transition. */}
+      <div
+        id="nav-my-pots"
+        className={cn(
+          "mp-nav-open-only grid transition-[grid-template-rows,opacity] duration-200 ease-out",
+          open ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0",
+        )}
+      >
+        <div className="overflow-hidden">
+          <div className="flex flex-col gap-0.5 pl-4 pt-1">
+            {pots.length === 0 ? (
+              <Link
+                href="/home"
+                className="block px-3 py-1.5 text-[12px] text-ink-faint transition-colors hover:text-ink"
+              >
+                No classes yet. Join one from Home.
+              </Link>
+            ) : (
+              pots.map((pot, i) => {
+                const here = pathname.startsWith(`/p/${pot.id}`);
+                const favorite = isMarked(pot);
+                return (
+                  // The star is a sibling of the link rather than inside it: a
+                  // button nested in an anchor is invalid, and a class you can
+                  // only reach by missing the star is worse than either.
+                  <div key={pot.id} className="group/pot flex items-center gap-1 min-w-0">
+                    <Link
+                      href={`/p/${pot.id}`}
+                      aria-current={here ? "page" : undefined}
+                      className={cn(
+                        "flex h-9 flex-1 items-center gap-2 rounded-(--radius-control) px-3 text-[13px] transition-colors min-w-0",
+                        here
+                          ? "bg-primary-soft text-primary font-medium"
+                          : "text-ink-muted hover:text-ink hover:bg-sunken",
+                      )}
+                    >
+                      <span className="truncate">{pot.title}</span>
+                      {i < 9 ? (
+                        <>
+                          {/* Outlined as glass: see .mp-kbd. Smaller than the
+                              class name on purpose, because the outline already
+                              gives it enough presence and matching the name would
+                              make an annotation look like a second label.
+
+                              Quiet until you are on the row. A column of chords
+                              beside every class is noise for the reader who never
+                              uses them, and the person who does only needs
+                              reminding once. Focus reveals it too, so it is not
+                              hidden from a keyboard. */}
+                          <kbd
+                            aria-hidden
+                            className="mp-kbd ml-auto shrink-0 whitespace-nowrap rounded-md px-1.5 py-0.5 font-sans text-[11px] tabular-nums text-ink-muted opacity-0 transition-opacity duration-150 group-hover/pot:opacity-100 group-focus-within/pot:opacity-100"
+                          >
+                            {symbol} + {i + 1}
+                          </kbd>
+                          <span className="sr-only">
+                            , shortcut {mac ? "Command" : "Control"} {i + 1}
+                          </span>
+                        </>
+                      ) : null}
+                    </Link>
+                    <button
+                      type="button"
+                      onClick={() => void toggleFavorite(pot)}
+                      aria-pressed={favorite}
+                      title={favorite ? "Remove from favorites" : "Add to favorites"}
+                      aria-label={
+                        favorite
+                          ? `Remove ${pot.title} from favorites`
+                          : `Add ${pot.title} to favorites`
+                      }
+                      className={cn(
+                        "mp-nav-open-only inline-flex size-6 shrink-0 items-center justify-center rounded-(--radius-control) transition-all duration-150",
+                        // A marked class shows its star always, because the mark
+                        // is the point. An unmarked one waits until you are on
+                        // the row, so the list is a list of classes rather than
+                        // a column of empty stars.
+                        favorite
+                          ? "text-primary opacity-100"
+                          : "text-ink-faint opacity-0 hover:text-ink group-hover/pot:opacity-100 focus-visible:opacity-100",
+                      )}
+                    >
+                      <Star aria-hidden weight={favorite ? "fill" : "regular"} className="size-3.5" />
+                    </button>
+                  </div>
+                );
+              })
+            )}
+          </div>
+        </div>
+      </div>
+    </Fragment>
+  );
+
+  const rendered: Record<NavKey, React.ReactNode> = {
+    home: (
+      <Row
+        key="home"
+        href="/home"
+        label="Home"
+        icon={<House />}
+        active={pathname === "/home"}
+        chord="H"
+        fx="mp-fx-hop"
+      />
+    ),
+    pots: potsSection,
+    study: (
+      <Row
+        key="study"
+        href="/study"
+        label="Study"
+        icon={<GraduationCap />}
+        active={pathname.startsWith("/study")}
+        chord="S"
+        fx="mp-fx-doff"
+      />
+    ),
+    calendar: (
+      <Row
+        key="calendar"
+        href="/calendar"
+        label="Calendar"
+        icon={<CalendarBlank />}
+        active={pathname.startsWith("/calendar")}
+        chord="C"
+        fx="mp-fx-flick"
+      />
+    ),
+    contributions: (
+      <Row
+        key="contributions"
+        href="/me/contributions"
+        label="Contributions"
+        icon={<Notebook />}
+        active={pathname.startsWith("/me/contributions")}
+        chord="N"
+        fx="mp-fx-jot"
+      />
+    ),
+  };
+
   return (
     <nav aria-label="Main" className="flex flex-col gap-0.5 p-3">
       <CollapseToggle />
@@ -267,128 +533,7 @@ export function MainNav({ pots }: { pots: NavPot[] }) {
         <span className="sr-only">, shortcut slash</span>
       </Link>
 
-      <Row
-        href="/home"
-        label="Home"
-        icon={<House />}
-        active={pathname === "/home"}
-        chord="H"
-        fx="mp-fx-hop"
-      />
-
-      <button
-        type="button"
-        onClick={() => setOpen((v) => !v)}
-        aria-expanded={open}
-        aria-controls="nav-my-pots"
-        // Never highlighted. It is a disclosure, not a destination: the only
-        // thing that should look selected is the page you are actually on, and
-        // when you are inside a class it is that class in the list below.
-        title="My Pots"
-        className="mp-fx mp-nav-row flex items-center gap-2.5 h-9 px-3 rounded-(--radius-control) text-sm text-ink-muted transition-colors min-w-0 hover:text-ink hover:bg-sunken"
-      >
-        <span aria-hidden className="mp-fx-stir [&>svg]:size-[18px] shrink-0">
-          <CookingPot />
-        </span>
-        <span className="mp-nav-label truncate">My Pots</span>
-        <CaretRight
-          aria-hidden
-          className={cn(
-            "mp-nav-open-only ml-auto size-3.5 shrink-0 transition-transform duration-200",
-            open && "rotate-90",
-          )}
-        />
-      </button>
-
-      {/* Grid rows animate to content height without a measured pixel value,
-          which keeps the expand smooth whatever the class list holds. The
-          global reduced-motion rule removes the transition. */}
-      <div
-        id="nav-my-pots"
-        className={cn(
-          "mp-nav-open-only grid transition-[grid-template-rows,opacity] duration-200 ease-out",
-          open ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0",
-        )}
-      >
-        <div className="overflow-hidden">
-          <div className="flex flex-col gap-0.5 pl-4 pt-1">
-            {pots.length === 0 ? (
-              <Link
-                href="/home"
-                className="block px-3 py-1.5 text-[12px] text-ink-faint transition-colors hover:text-ink"
-              >
-                No classes yet. Join one from Home.
-              </Link>
-            ) : (
-              pots.map((pot, i) => (
-                <Link
-                  key={pot.id}
-                  href={`/p/${pot.id}`}
-                  aria-current={
-                    pathname.startsWith(`/p/${pot.id}`) ? "page" : undefined
-                  }
-                  className={cn(
-                    "group/pot flex h-9 items-center gap-2 rounded-(--radius-control) px-3 text-[13px] transition-colors min-w-0",
-                    pathname.startsWith(`/p/${pot.id}`)
-                      ? "bg-primary-soft text-primary font-medium"
-                      : "text-ink-muted hover:text-ink hover:bg-sunken",
-                  )}
-                >
-                  <span className="truncate">{pot.title}</span>
-                  {i < 9 ? (
-                    <>
-                      {/* Outlined as glass: see .mp-kbd. Smaller than the
-                          class name on purpose, because the outline already
-                          gives it enough presence and matching the name would
-                          make an annotation look like a second label.
-
-                          Quiet until you are on the row. A column of chords
-                          beside every class is noise for the reader who never
-                          uses them, and the person who does only needs
-                          reminding once. Focus reveals it too, so it is not
-                          hidden from a keyboard. */}
-                      <kbd
-                        aria-hidden
-                        className="mp-kbd ml-auto shrink-0 whitespace-nowrap rounded-md px-1.5 py-0.5 font-sans text-[11px] tabular-nums text-ink-muted opacity-0 transition-opacity duration-150 group-hover/pot:opacity-100 group-focus-visible/pot:opacity-100"
-                      >
-                        {symbol} + {i + 1}
-                      </kbd>
-                      <span className="sr-only">
-                        , shortcut {mac ? "Command" : "Control"} {i + 1}
-                      </span>
-                    </>
-                  ) : null}
-                </Link>
-              ))
-            )}
-          </div>
-        </div>
-      </div>
-
-      <Row
-        href="/study"
-        label="Study"
-        icon={<GraduationCap />}
-        active={pathname.startsWith("/study")}
-        chord="S"
-        fx="mp-fx-doff"
-      />
-      <Row
-        href="/calendar"
-        label="Calendar"
-        icon={<CalendarBlank />}
-        active={pathname.startsWith("/calendar")}
-        chord="C"
-        fx="mp-fx-flick"
-      />
-      <Row
-        href="/me/contributions"
-        label="Contributions"
-        icon={<Notebook />}
-        active={pathname.startsWith("/me/contributions")}
-        chord="N"
-        fx="mp-fx-jot"
-      />
+      {links.map((link) => rendered[link.key])}
     </nav>
   );
 }

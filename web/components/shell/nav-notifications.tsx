@@ -60,10 +60,17 @@ export function NavNotifications({ items }: { items: Notification[] }) {
   if (items.length === 0) {
     return (
       <div className="mb-4 px-2">
-        <div className="mp-nav-alerts rounded-(--radius-card) border border-edge bg-sunken px-3 py-2.5">
-          <p className="text-[12px] text-ink-muted">You are all caught up</p>
-          <p className="mt-0.5 text-[11px] text-ink-faint">
-            Corrections and new class notes land here.
+        <div className="mp-nav-alerts shrink-0 overflow-hidden rounded-(--radius-card) border border-edge bg-sunken px-2.5 py-2">
+          <p className="truncate text-[12px] leading-[16px] text-ink-muted">
+            You are all caught up
+          </p>
+          {/* One line, because the card clips at its edge now rather than
+              wrapping (the nowrap inside truncate is what lets it collapse
+              with the rail). The sentence measures 200px in a 201px box, so
+              truncate rather than bare nowrap: if a fallback font ever runs it
+              a pixel long it ends in an ellipsis instead of a sheared glyph. */}
+          <p className="truncate text-[11px] leading-[14px] text-ink-faint">
+            Corrections and class notes land here.
           </p>
         </div>
       </div>
@@ -73,10 +80,14 @@ export function NavNotifications({ items }: { items: Notification[] }) {
   const top = items[0].id;
   const unread = items.filter((n) => n.isNew).length;
 
-  // The card pops out when dismissed (and when the sidebar collapses, via
-  // .mp-nav-alerts in globals.css) and pops back in when there is something
-  // new: a short drop and shrink on the way out, a rise on the way in, on the
-  // same long ease out the sidebar uses.
+  // Two different disappearances, deliberately not the same motion.
+  //
+  // Dismissing is a decision, so it gets a short drop and shrink and a rise on
+  // the way back, on the sidebar's long ease out. Collapsing the rail is not a
+  // decision about this card at all, so it borrows nothing from here: the
+  // .mp-nav-alerts rule in globals.css fades it in a tenth of a second and lets
+  // the rail's own width animation do the rest, which is how kolejain.com does
+  // it. See docs/KOLEJAIN_NOTIFICATION_MOTION.md.
   return (
     <AnimatePresence initial={false}>
       {dismissed === top ? null : (
@@ -90,45 +101,52 @@ export function NavNotifications({ items }: { items: Notification[] }) {
     >
       <section
         aria-label="Notifications"
-        className="mp-nav-alerts rounded-(--radius-card) border border-edge bg-sunken p-2.5"
+        className="mp-nav-alerts shrink-0 overflow-hidden rounded-(--radius-card) border border-edge bg-sunken p-2"
       >
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 whitespace-nowrap">
           {unread > 0 ? (
-            <span className="rounded-full bg-primary-soft px-2 py-0.5 text-[11px] font-medium text-primary">
+            <span className="shrink-0 rounded-full bg-primary-soft px-2 py-0.5 text-[11px] font-medium leading-[14px] text-primary">
               New
             </span>
           ) : (
-            <span className="text-[11px] font-medium text-ink-muted">Notifications</span>
+            <span className="shrink-0 text-[11px] font-medium leading-[14px] text-ink-muted">
+              Notifications
+            </span>
           )}
           <button
             type="button"
             onClick={() => dismiss(top)}
             aria-label="Dismiss notifications"
-            className="ml-auto -me-1 inline-flex size-6 items-center justify-center rounded-(--radius-control) text-ink-faint transition-colors hover:bg-surface hover:text-ink"
+            className="ml-auto -me-1 inline-flex size-5 shrink-0 items-center justify-center rounded-(--radius-control) text-ink-faint transition-colors hover:bg-surface hover:text-ink"
           >
             <X aria-hidden className="size-3.5" />
           </button>
         </div>
 
-        <ul className="mt-1.5 flex flex-col">
+        <ul className="mt-1 flex flex-col">
           {items.map((n) => {
             const Icon = ICONS[n.kind];
             return (
               <li key={n.id}>
                 <Link
                   href={n.href}
-                  className="mp-alert-row relative flex gap-2 rounded-(--radius-control) px-1.5 py-1.5"
+                  // 3px is off the spacing scale on purpose: it is the last of
+                  // the twenty percent, taken from the row rather than from
+                  // the type, which is already at its floor.
+                  className="mp-alert-row relative flex gap-2 rounded-(--radius-control) px-1.5 py-[3px]"
                 >
                   <Icon aria-hidden className="mp-alert-icon mt-px size-3.5 shrink-0 text-ink-faint" />
                   <span className="min-w-0 flex-1">
-                    <span className="mp-alert-title block truncate text-[12px] text-ink">
+                    <span className="mp-alert-title block truncate text-[12px] leading-[16px] text-ink">
                       {n.title}
                     </span>
                     {/* Three lines, three weights of attention: what it is,
                         who did it, where and when. Flattening the last two
                         into one colour turned the row into a paragraph. */}
-                    <span className="block truncate text-[11px] text-ink-muted">{n.detail}</span>
-                    <span className="block truncate text-[11px] text-ink-faint">
+                    <span className="block truncate text-[11px] leading-[14px] text-ink-muted">
+                      {n.detail}
+                    </span>
+                    <span className="block truncate text-[11px] leading-[14px] text-ink-faint">
                       {n.potTitle} · {n.atLabel}
                     </span>
                   </span>

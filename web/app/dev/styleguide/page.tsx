@@ -12,6 +12,7 @@ import { StirPot } from "@/components/brand/stir-pot";
 import { LoadingScreen } from "@/components/ui/loading-screen";
 import { Card, CardSection, Eyebrow } from "@/components/ui/card";
 import { ClassCodeInput } from "@/components/ui/class-code-input";
+import { DEFAULT_SIDEBAR_PREFERENCES } from "@/lib/sidebar-links";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Field, Input, TextArea } from "@/components/ui/input";
@@ -44,10 +45,24 @@ export default function StyleguidePage() {
       email="ada@example.com"
       nav={
         <MainNav
+          userId="demo-user"
           pots={[
-            { id: "demo", title: "Biology 101" },
-            { id: "demo2", title: "World History" },
+            {
+              id: "demo",
+              title: "Biology 101",
+              position: null,
+              favoritedAt: null,
+              lastViewedAt: null,
+            },
+            {
+              id: "demo2",
+              title: "World History",
+              position: null,
+              favoritedAt: null,
+              lastViewedAt: null,
+            },
           ]}
+          preferences={DEFAULT_SIDEBAR_PREFERENCES}
         />
       }
       notifications={[

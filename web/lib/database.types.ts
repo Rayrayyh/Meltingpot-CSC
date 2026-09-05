@@ -266,6 +266,45 @@ export type Database = {
           },
         ];
       };
+      pot_preferences: {
+        Row: {
+          favorited_at: string | null;
+          last_viewed_at: string | null;
+          position: number | null;
+          pot_id: string;
+          user_id: string;
+        };
+        Insert: {
+          favorited_at?: string | null;
+          last_viewed_at?: string | null;
+          position?: number | null;
+          pot_id: string;
+          user_id: string;
+        };
+        Update: {
+          favorited_at?: string | null;
+          last_viewed_at?: string | null;
+          position?: number | null;
+          pot_id?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "pot_preferences_pot_id_fkey";
+            columns: ["pot_id"];
+            isOneToOne: false;
+            referencedRelation: "pots";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "pot_preferences_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       pots: {
         Row: {
           archived_at: string | null;
@@ -514,6 +553,35 @@ export type Database = {
             foreignKeyName: "shared_notes_removed_by_fkey";
             columns: ["removed_by"];
             isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      sidebar_preferences: {
+        Row: {
+          nav_hidden: string[];
+          nav_order: string[];
+          updated_at: string;
+          user_id: string;
+        };
+        Insert: {
+          nav_hidden?: string[];
+          nav_order?: string[];
+          updated_at?: string;
+          user_id: string;
+        };
+        Update: {
+          nav_hidden?: string[];
+          nav_order?: string[];
+          updated_at?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "sidebar_preferences_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: true;
             referencedRelation: "profiles";
             referencedColumns: ["id"];
           },

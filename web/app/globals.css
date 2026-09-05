@@ -805,11 +805,32 @@ html[data-nav="collapsed"] .mp-side {
   width: 4.5rem;
 }
 
+/*
+ * The nav scroller draws no bar of its own.
+ *
+ * The sidebar is a fixed set of destinations plus the class list, and on a
+ * short window it stands a few pixels taller than its box, which raised the
+ * full height of the app's 11px orange bar for an overflow of six. The bar is
+ * hidden and the scrolling is not: the wheel, the trackpad, a touch drag and
+ * tabbing to a row that sits below the fold all still reach it. overscroll
+ * containment stops a flick at the end of the list from scrolling the page
+ * behind it.
+ */
+.mp-nav-scroll {
+  scrollbar-width: none;
+  overscroll-behavior: contain;
+}
+
+.mp-nav-scroll::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+}
+
 /* While the rail is animating its width the nav inside reflows at widths it was
    never laid out for, so its content briefly stands taller than the scroller.
-   Hiding the overflow for the length of the move keeps a scrollbar from
-   flashing down the edge; nothing is unreachable, because the transition ends
-   in under a second and the scroller returns. */
+   The bar is hidden either way now, but leaving the scroller live through the
+   move lets a stray wheel event scroll a nav that is mid-reflow, so it stays
+   quiet until the width has settled. */
 html[data-nav-animating] .mp-nav-scroll {
   overflow-y: hidden;
 }
@@ -821,6 +842,18 @@ html[data-nav-animating] .mp-nav-scroll {
 html[data-nav="collapsed"] .mp-side .mp-nav-label,
 html[data-nav="collapsed"] .mp-side .mp-nav-open-only {
   display: none;
+}
+
+/* The other half of the switch above. Something that only makes sense with
+   the rail collapsed, today the link the My Pots icon becomes, is absent until
+   then. Scoped to .mp-side like its partner, so the mobile drawer, which
+   renders the same nav outside the rail, never shows it. */
+.mp-nav-collapsed-only {
+  display: none;
+}
+
+html[data-nav="collapsed"] .mp-side .mp-nav-collapsed-only {
+  display: flex;
 }
 
 html[data-nav="collapsed"] .mp-side .mp-nav-row,
@@ -835,18 +868,28 @@ html[data-nav="collapsed"] .mp-side .mp-nav-row > span:first-child {
   margin: 0;
 }
 
+/*
+ * The notification card, collapsing the way kolejain.com's sidebar card does.
+ * Measured off that site and off the owner's recording of it; the full working
+ * is in docs/KOLEJAIN_NOTIFICATION_MOTION.md.
+ *
+ * The card animates nothing but its own opacity, and it does that in a tenth of
+ * a second in both directions with no delay. Everything else you see is the
+ * rail: the card is a plain block inside a container whose width is animating
+ * over a second, so it is reflowed narrow rather than scaled, and its rows are
+ * clipped at the moving edge because every line inside is nowrap under an
+ * overflow-hidden card. That is why there is no transform here. A translate and
+ * a scale were an impression of the motion rather than the motion, and they
+ * fought the reflow that actually produces it.
+ */
 .mp-nav-alerts {
-  transition:
-    opacity 0.35s cubic-bezier(0.075, 0.82, 0.165, 1) 0.55s,
-    transform 0.35s cubic-bezier(0.075, 0.82, 0.165, 1) 0.55s;
+  opacity: 1;
+  transition: opacity 0.1s linear;
 }
 
 html[data-nav="collapsed"] .mp-side .mp-nav-alerts {
   opacity: 0;
-  transform: translateY(6px) scale(0.97);
   pointer-events: none;
-  transition-delay: 0s;
-  transition-duration: 0.15s;
 }
 
 /*

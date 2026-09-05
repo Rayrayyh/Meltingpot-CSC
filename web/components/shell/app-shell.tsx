@@ -116,7 +116,9 @@ export function AppShell({
                   <X className="size-5" />
                 </button>
               </div>
-              <div className="min-h-0 flex-1 overflow-y-auto" onClick={closeDrawer}>
+              {/* Same class as the desktop rail's scroller, so the drawer hides
+                  its bar the same way; on a tablet it overflows for real. */}
+              <div className="mp-nav-scroll min-h-0 flex-1 overflow-y-auto" onClick={closeDrawer}>
                 {nav}
               </div>
               {alerts}
