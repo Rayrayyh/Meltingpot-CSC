@@ -118,7 +118,15 @@ export function AppShell({
               </div>
               {/* Same class as the desktop rail's scroller, so the drawer hides
                   its bar the same way; on a tablet it overflows for real. */}
-              <div className="mp-nav-scroll min-h-0 flex-1 overflow-y-auto" onClick={closeDrawer}>
+              <div
+                className="mp-nav-scroll min-h-0 flex-1 overflow-y-auto"
+                // Closes on a link, which is a navigation, and not on the My
+                // Pots disclosure or a star, which used to shut the drawer in
+                // the same press that opened the list behind it.
+                onClick={(event) => {
+                  if ((event.target as HTMLElement).closest("a")) closeDrawer();
+                }}
+              >
                 {nav}
               </div>
               {alerts}

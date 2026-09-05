@@ -901,12 +901,22 @@ html[data-nav="collapsed"] .mp-side .mp-nav-row > span:first-child {
  */
 .mp-nav-alerts {
   opacity: 1;
-  transition: opacity 0.1s linear;
+  visibility: visible;
+  transition:
+    opacity 0.1s linear,
+    visibility 0s linear;
 }
 
+/* visibility as well as opacity, because opacity leaves the dismiss button
+   and three links in the tab order while nobody can see them. It flips after
+   the fade on the way out and before it on the way back. */
 html[data-nav="collapsed"] .mp-side .mp-nav-alerts {
   opacity: 0;
+  visibility: hidden;
   pointer-events: none;
+  transition:
+    opacity 0.1s linear,
+    visibility 0s linear 0.1s;
 }
 
 /*

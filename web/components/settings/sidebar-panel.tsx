@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Reorder, useReducedMotion } from "framer-motion";
 import {
   ArrowDown,
@@ -42,20 +43,9 @@ function moveItem<T>(items: T[], from: number, to: number): T[] {
   return next;
 }
 
-function RowShell({
-  children,
-  dragging,
-}: {
-  children: React.ReactNode;
-  dragging: boolean;
-}) {
+function RowShell({ children }: { children: React.ReactNode }) {
   return (
-    <div
-      className={cn(
-        "flex items-center gap-2 rounded-(--radius-control) border border-edge bg-surface px-2.5 py-2 transition-colors",
-        dragging && "border-edge-strong bg-sunken",
-      )}
-    >
+    <div className="flex items-center gap-2 rounded-(--radius-control) border border-edge bg-surface px-2.5 py-2 transition-colors">
       {children}
     </div>
   );
@@ -118,7 +108,14 @@ export function SidebarPanel({
     () => initialLinks.filter((l) => l.hidden).map((l) => l.key),
   );
   const [pots, setPots] = useState<SidebarPanelPot[]>(initialPots);
+  // Positions are written only when the classes were actually arranged. A
+  // save that only hid a link used to stamp a position on every class, after
+  // which a favourite could never again decide where the collapsed icon goes,
+  // because an arranged order outranks it by design.
+  const [potsArranged, setPotsArranged] = useState(false);
+  const [potsCleared, setPotsCleared] = useState(false);
   const [status, setStatus] = useState("");
+  const router = useRouter();
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const reducedMotion = useReducedMotion();
@@ -141,10 +138,16 @@ export function SidebarPanel({
     announceMove(labels.get(order[index]) ?? "Link", index + delta, next.length);
   }
 
+  function arrangePots(next: SidebarPanelPot[]) {
+    setPots(next);
+    setPotsArranged(true);
+    setPotsCleared(false);
+  }
+
   function movePot(index: number, delta: number) {
     const next = moveItem(pots, index, index + delta);
     if (next === pots) return;
-    setPots(next);
+    arrangePots(next);
     announceMove(pots[index].title, index + delta, next.length);
   }
 
@@ -161,7 +164,12 @@ export function SidebarPanel({
   function reset() {
     setOrder([...DEFAULT_SIDEBAR_PREFERENCES.navOrder]);
     setHidden([]);
+    // The list shown is the arranged one, so putting it back to the order it
+    // arrived in changes nothing on screen; what reset means for classes is
+    // that their positions are cleared on save and join order returns.
     setPots(initialPots);
+    setPotsArranged(true);
+    setPotsCleared(true);
     setStatus("Sidebar reset to the default arrangement. Save to keep it.");
   }
 
@@ -178,25 +186,39 @@ export function SidebarPanel({
       },
       { onConflict: "user_id" },
     );
-    // Positions are written for every class, not only the moved ones, so the
-    // stored order is always the whole list rather than a sparse set that only
-    // makes sense next to the join order it was built from.
-    const { error: potError } = pots.length
-      ? await supabase.from("pot_preferences").upsert(
-          pots.map((pot, index) => ({ user_id: userId, pot_id: pot.id, position: index })),
-          { onConflict: "user_id,pot_id" },
-        )
-      : { error: null };
+    // When the classes were arranged, positions are written for every one of
+    // them, not only the moved ones, so the stored order is the whole list
+    // rather than a sparse set that only makes sense next to the join order it
+    // was built from. Reset writes null for every one, which hands the
+    // collapsed icon back to favourites and last opened.
+    const { error: potError } =
+      potsArranged && pots.length
+        ? await supabase.from("pot_preferences").upsert(
+            pots.map((pot, index) => ({
+              user_id: userId,
+              pot_id: pot.id,
+              position: potsCleared ? null : index,
+            })),
+            { onConflict: "user_id,pot_id" },
+          )
+        : { error: null };
     setSaving(false);
     if (prefError || potError) {
-      setError("That did not save. Try again.");
+      setError(
+        prefError && !potError
+          ? "The links did not save. Try again."
+          : potError && !prefError
+            ? "The class order did not save. Try again."
+            : "That did not save. Try again.",
+      );
       return;
     }
     setStatus("Sidebar saved");
-    // A full reload rather than a router refresh: the nav is rendered by the
-    // server on every route, and this is the one change that has to be visible
-    // in it immediately.
-    window.location.reload();
+    setPotsArranged(false);
+    setPotsCleared(false);
+    // The nav is rendered by the server on every route, and a refresh re-runs
+    // that render in place, the same way marking a class in the rail does.
+    router.refresh();
   }
 
   return (
@@ -226,8 +248,9 @@ export function SidebarPanel({
                   value={key}
                   dragListener={!reducedMotion}
                   transition={reducedMotion ? { duration: 0 } : undefined}
+                  whileDrag={reducedMotion ? undefined : { scale: 1.01 }}
                 >
-                  <RowShell dragging={false}>
+                  <RowShell>
                     <DotsSixVertical
                       aria-hidden
                       className="size-4 shrink-0 cursor-grab text-ink-faint"
@@ -273,15 +296,16 @@ export function SidebarPanel({
         {pots.length > 0 ? (
           <div className="space-y-2">
             <h3 className="text-[13px] font-medium text-ink">Your classes</h3>
-            <Reorder.Group axis="y" values={pots} onReorder={setPots} className="space-y-1.5">
+            <Reorder.Group axis="y" values={pots} onReorder={arrangePots} className="space-y-1.5">
               {pots.map((pot, index) => (
                 <Reorder.Item
                   key={pot.id}
                   value={pot}
                   dragListener={!reducedMotion}
                   transition={reducedMotion ? { duration: 0 } : undefined}
+                  whileDrag={reducedMotion ? undefined : { scale: 1.01 }}
                 >
-                  <RowShell dragging={false}>
+                  <RowShell>
                     <DotsSixVertical
                       aria-hidden
                       className="size-4 shrink-0 cursor-grab text-ink-faint"

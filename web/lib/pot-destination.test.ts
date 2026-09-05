@@ -23,6 +23,18 @@ describe("collapsedPotDestination", () => {
     ).toBe("b");
   });
 
+  it("lets an arranged order outrank a favourite even when every class is arranged", () => {
+    // The state a saved settings panel produces. This is the owner's rule,
+    // and it is why the panel writes positions only when the classes were
+    // actually arranged: otherwise one save would retire favourites for good.
+    expect(
+      collapsedPotDestination([
+        pot("a", { position: 0 }),
+        pot("b", { position: 1, favoritedAt: "2026-09-01T00:00:00Z" }),
+      ]),
+    ).toBe("a");
+  });
+
   it("takes the lowest position, not the first arranged row", () => {
     expect(
       collapsedPotDestination([pot("a", { position: 3 }), pot("b", { position: 1 })]),

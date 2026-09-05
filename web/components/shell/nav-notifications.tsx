@@ -60,7 +60,10 @@ export function NavNotifications({ items }: { items: Notification[] }) {
   if (items.length === 0) {
     return (
       <div className="mb-4 px-2">
-        <div className="mp-nav-alerts shrink-0 overflow-hidden rounded-(--radius-card) border border-edge bg-sunken px-2.5 py-2">
+        <section
+          aria-label="Notifications"
+          className="mp-nav-alerts shrink-0 overflow-hidden rounded-(--radius-card) border border-edge bg-sunken px-2.5 py-2"
+        >
           <p className="truncate text-[12px] leading-[16px] text-ink-muted">
             You are all caught up
           </p>
@@ -72,7 +75,7 @@ export function NavNotifications({ items }: { items: Notification[] }) {
           <p className="truncate text-[11px] leading-[14px] text-ink-faint">
             Corrections and class notes land here.
           </p>
-        </div>
+        </section>
       </div>
     );
   }
@@ -117,13 +120,17 @@ export function NavNotifications({ items }: { items: Notification[] }) {
             type="button"
             onClick={() => dismiss(top)}
             aria-label="Dismiss notifications"
-            className="ml-auto -me-1 inline-flex size-5 shrink-0 items-center justify-center rounded-(--radius-control) text-ink-faint transition-colors hover:bg-surface hover:text-ink"
+            // 24px, the floor for a target, not the 20px the shrink first
+            // took it to; the list's top margin gave the height back. The
+            // focus ring sits inside the button because the card clips at
+            // its edge now and an outside ring lost its top and right.
+            className="ml-auto -me-1 inline-flex size-6 shrink-0 items-center justify-center rounded-(--radius-control) text-ink-faint transition-colors hover:bg-surface hover:text-ink focus-visible:outline-offset-[-2px]"
           >
             <X aria-hidden className="size-3.5" />
           </button>
         </div>
 
-        <ul className="mt-1 flex flex-col">
+        <ul className="mt-0.5 flex flex-col">
           {items.map((n) => {
             const Icon = ICONS[n.kind];
             return (

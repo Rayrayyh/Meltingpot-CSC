@@ -1,6 +1,6 @@
 "use client";
 
-import { Fragment, useCallback, useEffect, useState, useSyncExternalStore } from "react";
+import { Fragment, useCallback, useEffect, useId, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
@@ -192,15 +192,33 @@ export function MainNav({
   const { mac, symbol } = useShortcutModifier();
   const inAPot = pathname.startsWith("/p/");
   // Optimistic, so the star fills under the pointer instead of after a round
-  // trip. The server render is the source of truth on the next navigation.
-  const [marked, setMarked] = useState<Record<string, boolean>>({});
-  const isMarked = useCallback(
-    (pot: NavPot) => marked[pot.id] ?? Boolean(pot.favoritedAt),
-    [marked],
+  // trip. The override is stored with the pots it was made against and is
+  // read only while those are still the pots on screen: the write ends in
+  // router.refresh(), the server sends new pots, and from then on the server
+  // is the source of truth again. Without that check the first toggle on a
+  // class would have overruled the server for the life of the page.
+  const [override, setOverride] = useState<{
+    pots: NavPot[];
+    favoritedAt: Record<string, string | null>;
+  }>({ pots, favoritedAt: {} });
+  const overrides = useMemo(
+    () => (override.pots === pots ? override.favoritedAt : {}),
+    [override, pots],
   );
+  const effectivePots = pots.map((pot) =>
+    pot.id in overrides ? { ...pot, favoritedAt: overrides[pot.id] } : pot,
+  );
+  const isMarked = useCallback(
+    (pot: NavPot) => Boolean(pot.id in overrides ? overrides[pot.id] : pot.favoritedAt),
+    [overrides],
+  );
+  const listId = useId();
+  const navRef = useRef<HTMLElement>(null);
 
   const links = resolveNavLinks(preferences).filter((link) => !link.hidden);
-  const destination = collapsedPotDestination(pots);
+  // From the same view of the world the stars show, so marking a class moves
+  // the collapsed destination at once rather than after the refresh.
+  const destination = collapsedPotDestination(effectivePots);
   const potsHref = destination ? `/p/${destination}` : "/home";
   const destinationPot = destination ? (pots.find((p) => p.id === destination) ?? null) : null;
   // Collapsed, the icon is the only thing on the row, so the name of the class
@@ -210,22 +228,24 @@ export function MainNav({
 
   const toggleFavorite = useCallback(
     async (pot: NavPot) => {
-      const next = !(marked[pot.id] ?? Boolean(pot.favoritedAt));
-      setMarked((m) => ({ ...m, [pot.id]: next }));
+      const was = pot.id in overrides ? overrides[pot.id] : pot.favoritedAt;
+      const next = was ? null : new Date().toISOString();
+      const set = (value: string | null) =>
+        setOverride((o) => ({
+          pots,
+          favoritedAt: { ...(o.pots === pots ? o.favoritedAt : {}), [pot.id]: value },
+        }));
+      set(next);
       const { error } = await supabaseBrowser().from("pot_preferences").upsert(
-        {
-          user_id: userId,
-          pot_id: pot.id,
-          favorited_at: next ? new Date().toISOString() : null,
-        },
+        { user_id: userId, pot_id: pot.id, favorited_at: next },
         { onConflict: "user_id,pot_id" },
       );
       // Put the star back if the write did not land, rather than showing a
       // preference that was never saved.
-      if (error) setMarked((m) => ({ ...m, [pot.id]: !next }));
+      if (error) set(was ?? null);
       else router.refresh();
     },
-    [marked, router, userId],
+    [overrides, pots, router, userId],
   );
   // Open by default when you are already inside a Pot, so the sidebar shows
   // where you are rather than hiding it behind a closed group.
@@ -265,6 +285,11 @@ export function MainNav({
     }
 
     function onKeyDown(event: KeyboardEvent) {
+      // Two of these are mounted at once, one in the desktop rail and one in
+      // the drawer, and both used to answer, so below lg a chord navigated
+      // twice. Only the one that is on screen acts; a nav inside a
+      // display:none ancestor has no offsetParent.
+      if (navRef.current?.offsetParent === null) return;
       const target = event.target as HTMLElement | null;
       if (isClaimed(target)) return;
       if (event.altKey) return;
@@ -336,7 +361,7 @@ export function MainNav({
         type="button"
         onClick={() => setOpen((v) => !v)}
         aria-expanded={open}
-        aria-controls="nav-my-pots"
+        aria-controls={listId}
         // Never highlighted. It is a disclosure, not a destination: the only
         // thing that should look selected is the page you are actually on, and
         // when you are inside a class it is that class in the list below.
@@ -372,7 +397,7 @@ export function MainNav({
           which keeps the expand smooth whatever the class list holds. The
           global reduced-motion rule removes the transition. */}
       <div
-        id="nav-my-pots"
+        id={listId}
         className={cn(
           "mp-nav-open-only grid transition-[grid-template-rows,opacity] duration-200 ease-out",
           open ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0",
@@ -434,22 +459,21 @@ export function MainNav({
                     <button
                       type="button"
                       onClick={() => void toggleFavorite(pot)}
+                      // One name and a state, the way a toggle is meant to be
+                      // read: "Favorite Biology, pressed". An action phrase
+                      // that inverted with the state contradicted it.
                       aria-pressed={favorite}
-                      title={favorite ? "Remove from favorites" : "Add to favorites"}
-                      aria-label={
-                        favorite
-                          ? `Remove ${pot.title} from favorites`
-                          : `Add ${pot.title} to favorites`
-                      }
+                      aria-label={`Favorite ${pot.title}`}
                       className={cn(
                         "mp-nav-open-only inline-flex size-6 shrink-0 items-center justify-center rounded-(--radius-control) transition-all duration-150",
                         // A marked class shows its star always, because the mark
                         // is the point. An unmarked one waits until you are on
                         // the row, so the list is a list of classes rather than
-                        // a column of empty stars.
+                        // a column of empty stars. A finger cannot hover, so on
+                        // a coarse pointer it is always there, quietly.
                         favorite
                           ? "text-primary opacity-100"
-                          : "text-ink-faint opacity-0 hover:text-ink group-hover/pot:opacity-100 focus-visible:opacity-100",
+                          : "text-ink-faint opacity-0 hover:text-ink group-hover/pot:opacity-100 group-focus-within/pot:opacity-100 focus-visible:opacity-100 pointer-coarse:opacity-60",
                       )}
                     >
                       <Star aria-hidden weight={favorite ? "fill" : "regular"} className="size-3.5" />
@@ -513,7 +537,7 @@ export function MainNav({
   };
 
   return (
-    <nav aria-label="Main" className="flex flex-col gap-0.5 p-3">
+    <nav ref={navRef} aria-label="Main" className="flex flex-col gap-0.5 p-3">
       <CollapseToggle />
       <Link
         href="/search"

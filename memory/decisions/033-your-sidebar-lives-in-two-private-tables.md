@@ -16,7 +16,7 @@ It is closer to a window layout than a record, which argues for the browser. Two
 
 ## What the collapsed icon does
 
-`lib/pot-destination.ts`, in order: one class means that class; an arranged order means the first slot; else a favourite, the most recently opened among several; else the most recently opened; else the first. The order wins over a favourite because arranging is the more deliberate act. Once someone saves the panel every class has a position, so a favourite can no longer decide for them; that follows the owner's wording and is worth knowing.
+`lib/pot-destination.ts`, in order: one class means that class; an arranged order means the first slot; else a favourite, the most recently opened among several; else the most recently opened; else the first. The order wins over a favourite because arranging is the more deliberate act. So the panel writes positions only when the classes were actually arranged, and Reset writes them back to null: a save that only hid a link used to stamp a position on every class, after which a favourite could never decide again. That was a defect, found in review, not the owner's intent.
 
 ## What was rejected
 
