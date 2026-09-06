@@ -541,12 +541,14 @@ export type Database = {
           created_at: string;
           display_name: string;
           avatar_url: string | null;
+          clerk_id: string | null;
           id: string;
         };
         Insert: {
           created_at?: string;
           display_name: string;
           avatar_url?: string | null;
+          clerk_id?: string | null;
           id: string;
         };
         Update: Partial<Database["public"]["Tables"]["profiles"]["Insert"]>;
@@ -928,6 +930,11 @@ export type Database = {
       consume_ai_generation: {
         Args: { p_kind: string };
         Returns: undefined;
+      };
+      current_uid: { Args: never; Returns: string | null };
+      ensure_profile: {
+        Args: { p_display_name: string };
+        Returns: string;
       };
       create_pot: {
         Args: { p_description?: string; p_title: string };

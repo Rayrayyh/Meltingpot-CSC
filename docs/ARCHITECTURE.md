@@ -37,7 +37,10 @@ There are five, and each one re-checks rather than trusting the last.
    is allowed to do.
 3. **Inside the database.** Row level security is on for every table in the
    `public` schema. Reads are policy-filtered by membership
-   (`is_pot_member`) or by ownership (`author_id = auth.uid()`). Writes that
+   (`is_pot_member`) or by ownership (`author_id = current_uid()`, where
+   `public.current_uid()` is the caller's profile id whatever signed them in:
+   Supabase Auth's uuid today, a Clerk subject mapped to one once that
+   provider is switched on, migration 0054). Writes that
    matter do not go through table policies at all: they go through security
    definer functions that re-check membership, role, rate limit and payload
    shape, so a client cannot construct a write that skips a guard.

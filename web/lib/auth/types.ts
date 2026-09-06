@@ -104,9 +104,10 @@ export interface ClientAuthProvider {
   /**
    * Set a new password and end every other session. A password change is
    * often the answer to somebody else having the old one, so the sessions
-   * that old password opened must not survive it.
+   * that old password opened must not survive it. Clerk asks for the current
+   * password as well; Supabase does not, and ignores it.
    */
-  changePassword(input: { password: string }): Promise<void>;
+  changePassword(input: { password: string; currentPassword?: string }): Promise<void>;
 
   /** Finish a sign in that stopped for a code. Throws AuthError. */
   verifySecondFactor(input: { factorId: string; code: string }): Promise<void>;

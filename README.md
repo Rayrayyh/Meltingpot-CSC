@@ -62,7 +62,7 @@ Account settings hold the theme (dark by default, light, or follow your device) 
 
 Connected classes bring a person's Google Classroom or Canvas courses in, read-only: assignments, quizzes, discussions, announcements, materials and calendar events, with due dates, kept in sync when someone opens a Pot, the Calendar or Home, and once an hour from the database when nobody does. A student can put a course in their own calendar; a maintainer can link one to a Pot so the whole class sees its Classwork tab. Nothing imported is ever a note: "Start a note from this" opens the ordinary composer with the assignment's words and its links, and sharing is the same act as for any note. Nothing is written back to the school, materials are links rather than downloads, and refresh tokens live encrypted in Supabase Vault behind a server key that never reaches a browser. `docs/CLASSWORK.md` has the setup and the design; `docs/CLASSWORK_VERIFICATION.md` the checklist.
 
-Sign in is an email and a password, behind a provider seam in `web/lib/auth`: everything the app needs from an identity provider is described in the product's own words, so moving to a hosted provider such as Clerk is an implementation behind that interface rather than a rewrite of every page. `docs/AUTH.md` explains the contract and what a swap actually costs.
+Sign in is an email and a password, behind a provider seam in `web/lib/auth`: everything the app needs from an identity provider is described in the product's own words, so moving to a hosted provider such as Clerk is an implementation behind that interface rather than a rewrite of every page. `docs/AUTH.md` explains the contract; `docs/CLERK.md` is the switch to Clerk, whose code and database side are built and waiting on the Clerk application and a domain.
 
 ## Screenshots
 
@@ -102,7 +102,7 @@ Next.js 16 (App Router, TypeScript, Tailwind) in `web/`, on Supabase for Postgre
 
 Classwork tokens never touch a table: they sit in Supabase Vault, and only definer functions that also demand a server key can read one back. The hourly catch-up is a pg_cron job posting through pg_net to a route that runs as the anonymous role with that key and nothing else.
 
-The build is covered by 354 unit tests and a Playwright suite over the core flows, including the classwork walks against a stub provider, plus adversarial review passes whose confirmed findings, from access control holes to a diff that could hang a browser tab to a ledger trigger that had made every Pot undeletable, were all fixed and are documented in the build log. Both study sessions are written as reducers, so how a deck is walked and how a test is marked are unit tests rather than browser tests. A Checks workflow runs lint, types, unit tests, and a production build on every push and pull request.
+The build is covered by 355 unit tests and a Playwright suite over the core flows, including the classwork walks against a stub provider, plus adversarial review passes whose confirmed findings, from access control holes to a diff that could hang a browser tab to a ledger trigger that had made every Pot undeletable, were all fixed and are documented in the build log. Both study sessions are written as reducers, so how a deck is walked and how a test is marked are unit tests rather than browser tests. A Checks workflow runs lint, types, unit tests, and a production build on every push and pull request.
 
 ## Running it locally
 

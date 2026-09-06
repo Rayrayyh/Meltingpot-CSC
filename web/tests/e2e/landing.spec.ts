@@ -125,19 +125,17 @@ test.describe("brand landing", () => {
   // A scroll takeover (Lenis, since removed) once overwrote the browser's own
   // scroll for about 0.9s after a wheel notch and swallowed a keypress inside
   // that window, a keyboard accessibility failure and the thing most likely to
-  // silently come back. The page scrolls smoothly, so the key's scroll is
-  // given time to begin before the position is read as settled.
+  // silently come back. The page scrolls smoothly and the key's own animation
+  // starts after the wheel's, so the position is polled until a page's worth
+  // has been travelled rather than read the moment the wheel scroll settles.
   test("a keypress mid-scroll is not swallowed", async ({ page }) => {
     await page.goto("/");
     await page.mouse.wheel(0, 200);
     await page.waitForTimeout(80);
-    const before = await page.evaluate(() => window.scrollY);
     await page.keyboard.press("PageDown");
-    await page
-      .waitForFunction((y) => window.scrollY > y + 1, before, { timeout: 3_000 })
-      .catch(() => null);
-    await settleScroll(page);
-    expect(await page.evaluate(() => window.scrollY)).toBeGreaterThan(400);
+    await expect
+      .poll(() => page.evaluate(() => window.scrollY), { timeout: 4_000 })
+      .toBeGreaterThan(400);
   });
 
   test("reduced motion gets the finished story with no pin", async ({ browser }) => {

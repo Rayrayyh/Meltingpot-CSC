@@ -7,6 +7,7 @@ import {
   mixingConfigured,
 } from "@/lib/mix/server";
 import { MIN_ANSWERS, MIN_STUDENTS, type TopicEvidence } from "@/lib/teaching/evidence";
+import { getAuthUser } from "@/lib/auth/server";
 import { supabaseServer } from "@/lib/supabase/server";
 
 const NO_STORE = { "Cache-Control": "no-store, no-cache, must-revalidate" };
@@ -30,7 +31,7 @@ export const maxDuration = 26;
  */
 export async function POST(request: Request) {
   const supabase = await supabaseServer();
-  const { data: { user } } = await supabase.auth.getUser();
+  const user = await getAuthUser();
   if (!user) return NextResponse.json({ error: "not_authenticated" }, { status: 401 });
 
   const body = await request.json().catch(() => null) as Record<string, unknown> | null;

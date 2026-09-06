@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { blocksToBodyText } from "@/lib/organizer/edit";
 import { deterministicOrganizer, FORCE_FAILURE_TOKEN } from "@/lib/organizer/deterministic";
+import { getAuthUser } from "@/lib/auth/server";
 import { supabaseServer } from "@/lib/supabase/server";
 import {
   attachmentAnalysisSchema,
@@ -54,7 +55,7 @@ export const maxDuration = 26;
 
 export async function POST(request: Request) {
   const supabase = await supabaseServer();
-  const { data: { user } } = await supabase.auth.getUser();
+  const user = await getAuthUser();
   if (!user) return NextResponse.json({ error: "not_authenticated" }, { status: 401 });
 
   const body = await request.json().catch(() => null) as Record<string, unknown> | null;

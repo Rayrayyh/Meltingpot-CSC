@@ -1,6 +1,6 @@
 import { cache } from "react";
 import { redirect } from "next/navigation";
-import { clerkServerAuth } from "@/lib/auth/clerk";
+import { clerkServerAuth } from "@/lib/auth/clerk-server";
 import { supabaseServerAuth } from "@/lib/auth/supabase-server";
 import type { AssuranceLevel, AuthUser, ServerAuthProvider } from "@/lib/auth/types";
 

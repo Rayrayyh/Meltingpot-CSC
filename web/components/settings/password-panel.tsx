@@ -9,6 +9,7 @@ import { Field } from "@/components/ui/input";
 import { PasswordInput } from "@/components/ui/password-input";
 import { AuthError, getClientAuth } from "@/lib/auth/client";
 import { passwordMeetsRules } from "@/lib/auth/password-rules";
+import { usingClerk } from "@/lib/auth/provider";
 
 /**
  * Changing the password from inside the account, which also ends every other
@@ -16,13 +17,17 @@ import { passwordMeetsRules } from "@/lib/auth/password-rules";
  * session opened with the old password carried on working afterwards.
  */
 export function PasswordPanel() {
+  // Clerk will not change a password without the current one; Supabase never
+  // asks. The field exists only where it is needed.
+  const asksCurrent = usingClerk();
+  const [current, setCurrent] = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState(false);
   const [busy, setBusy] = useState(false);
 
-  const ready = passwordMeetsRules(password) && confirm === password;
+  const ready = passwordMeetsRules(password) && confirm === password && (!asksCurrent || current.length > 0);
 
   async function submit(event: React.FormEvent) {
     event.preventDefault();
@@ -39,7 +44,11 @@ export function PasswordPanel() {
     }
     setBusy(true);
     try {
-      await getClientAuth().changePassword({ password });
+      await getClientAuth().changePassword({
+        password,
+        currentPassword: asksCurrent ? current : undefined,
+      });
+      setCurrent("");
       setPassword("");
       setConfirm("");
       setDone(true);
@@ -47,7 +56,9 @@ export function PasswordPanel() {
       setError(
         caught instanceof AuthError && caught.code === "weak_password"
           ? "That password does not meet all five rules."
-          : "We could not change it just now. Try again in a moment.",
+          : caught instanceof AuthError && caught.code === "invalid_credentials"
+            ? "That is not your current password."
+            : "We could not change it just now. Try again in a moment.",
       );
     }
     setBusy(false);
@@ -65,6 +76,19 @@ export function PasswordPanel() {
         </div>
 
         <form onSubmit={submit} className="space-y-4">
+          {asksCurrent ? (
+            <Field label="Current password">
+              {(props) => (
+                <PasswordInput
+                  {...props}
+                  autoComplete="current-password"
+                  value={current}
+                  onChange={(event) => setCurrent(event.target.value)}
+                />
+              )}
+            </Field>
+          ) : null}
+
           <Field label="New password">
             {(props) => (
               <PasswordInput

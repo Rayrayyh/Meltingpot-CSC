@@ -50,6 +50,7 @@ This directory is the project's knowledge base. It makes the repo, not chat hist
 - 038 Classwork from Canvas and Google Classroom: read-only import, who links decides who reads, tokens in Vault behind a server key, never a note until a person makes one
 - 039 A bug pass fixes what it confirms, and names what it leaves: the 5 September pass, migration 0053, the two items deferred with reasons
 - 040 The flashcard face is a printed card: the brand's card art on both faces, light ink in either theme, a paper veil under the words
+- 041 Clerk groundwork, without switching: current_uid() in front of every policy (0054), the seam's Clerk halves built and inert, the switch and a domain left to the owner
 ### Lessons
 - 001 Reading the spec PDFs in this container requires poppler, not pypdf
 - 002 Next 16 conventions (proxy.ts, async params) and Playwright executablePath in this container

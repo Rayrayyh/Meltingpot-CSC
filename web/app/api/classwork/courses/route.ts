@@ -4,6 +4,7 @@ import { getClassworkAdapter } from "@/lib/classwork";
 import { classworkErrorResponse, reasonResponse, rpcReason, serverKey } from "@/lib/classwork/route-helpers";
 import { ClassworkError } from "@/lib/classwork/types";
 import { parseOrNull, uuidSchema } from "@/lib/validation/inputs";
+import { getAuthUser } from "@/lib/auth/server";
 import { supabaseServer } from "@/lib/supabase/server";
 import type { Json } from "@/lib/database.types";
 
@@ -18,7 +19,7 @@ const COURSES_BUDGET_MS = 12_000;
  */
 export async function POST(request: Request) {
   const supabase = await supabaseServer();
-  const { data: { user } } = await supabase.auth.getUser();
+  const user = await getAuthUser();
   if (!user) return NextResponse.json({ error: "not_authenticated" }, { status: 401 });
 
   const body = parseOrNull(z.object({ connectionId: uuidSchema }), await request.json().catch(() => null));

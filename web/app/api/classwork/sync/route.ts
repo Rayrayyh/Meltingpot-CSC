@@ -5,6 +5,7 @@ import { classworkErrorResponse, rpcFor, rpcReason, reasonResponse, serverKey } 
 import { runSync } from "@/lib/classwork/sync";
 import { ClassworkError } from "@/lib/classwork/types";
 import { parseOrNull, uuidSchema } from "@/lib/validation/inputs";
+import { getAuthUser } from "@/lib/auth/server";
 import { supabaseServer } from "@/lib/supabase/server";
 
 /**
@@ -23,7 +24,7 @@ const bodySchema = z.object({
 
 export async function POST(request: Request) {
   const supabase = await supabaseServer();
-  const { data: { user } } = await supabase.auth.getUser();
+  const user = await getAuthUser();
   if (!user) return NextResponse.json({ error: "not_authenticated" }, { status: 401 });
 
   const body = parseOrNull(bodySchema, await request.json().catch(() => null));

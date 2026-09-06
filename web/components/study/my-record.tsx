@@ -1,5 +1,6 @@
 import { CheckCircle, ClockCounterClockwise } from "@phosphor-icons/react/dist/ssr";
 import { Card, CardSection, Eyebrow } from "@/components/ui/card";
+import { getAuthUser } from "@/lib/auth/server";
 import { supabaseServer } from "@/lib/supabase/server";
 import type { StudyKind } from "@/lib/mix/contracts";
 import { relativeTime } from "@/lib/time";
@@ -24,7 +25,7 @@ export async function MyStudyRecord({
   // The policy lets a maintainer read every attempt in their Pot, which is
   // what the admin page is for; without this filter a maintainer's own study
   // page listed the whole class's attempts under "Your record".
-  const { data: { user } } = await supabase.auth.getUser();
+  const user = await getAuthUser();
   if (!user) return null;
   const { data } = await supabase
     .from("study_attempts")

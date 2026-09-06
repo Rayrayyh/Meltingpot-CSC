@@ -14,6 +14,7 @@ import {
   normalizePracticeOptions,
   practiceOptionsKey,
 } from "@/lib/study/practice-options";
+import { getAuthUser } from "@/lib/auth/server";
 import { supabaseServer } from "@/lib/supabase/server";
 
 const KINDS = new Set<StudyKind>(["summary", "flashcards", "practice"]);
@@ -37,7 +38,7 @@ export const maxDuration = 26;
 
 export async function POST(request: Request) {
   const supabase = await supabaseServer();
-  const { data: { user } } = await supabase.auth.getUser();
+  const user = await getAuthUser();
   if (!user) return NextResponse.json({ error: "not_authenticated" }, { status: 401 });
 
   const body = await request.json().catch(() => null) as Record<string, unknown> | null;

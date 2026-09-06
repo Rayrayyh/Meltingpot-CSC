@@ -8,6 +8,8 @@ import {
   Silkscreen,
   Source_Serif_4,
 } from "next/font/google";
+import { ClerkProvider } from "@clerk/nextjs";
+import { usingClerk } from "@/lib/auth/provider";
 import "./globals.css";
 
 const inter = Inter({
@@ -71,7 +73,7 @@ export const metadata: Metadata = {
 const themeInit = `(function(){var d=document.documentElement;try{var t=localStorage.getItem("mp-theme");if(t==="light"||t==="dark"){d.setAttribute("data-theme",t)}else if(t!=="system"){d.setAttribute("data-theme","dark")}if(localStorage.getItem("mp:nav-collapsed")==="1"){d.setAttribute("data-nav","collapsed")}}catch(e){d.setAttribute("data-theme","dark")}try{document.cookie="mp-tz="+encodeURIComponent(Intl.DateTimeFormat().resolvedOptions().timeZone)+";path=/;max-age=31536000;SameSite=Lax"}catch(e){}})()`;
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
-  return (
+  const page = (
     <html
       lang="en"
       suppressHydrationWarning
@@ -83,4 +85,8 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <body className="min-h-full flex flex-col">{children}</body>
     </html>
   );
+  // Clerk's provider is a context, not markup, so it wraps the document
+  // without changing it; when Supabase is the provider it is not mounted at
+  // all and the page is exactly what it was.
+  return usingClerk() ? <ClerkProvider afterSignOutUrl="/" telemetry={false}>{page}</ClerkProvider> : page;
 }
