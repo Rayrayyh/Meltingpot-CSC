@@ -6,6 +6,23 @@ asked for the groundwork; decision 041 holds the reasoning. Nothing here is
 switched on: the live site runs Supabase Auth until `NEXT_PUBLIC_AUTH_PROVIDER`
 says otherwise.
 
+## Where this stands
+
+The owner asked on 2026-09-06 to go through this first, Google Classroom after.
+This list is the walk-through's memory: update it at every exchange, since a
+session that starts fresh reads it before anything else.
+
+| Step | State | Notes |
+|---|---|---|
+| Code and migrations 0054 to 0056 | Done, commit bdb6b4d | Reviewed adversarially; nothing switched on |
+| 0. Domain | Not started | Development instance on netlify.app until a domain exists |
+| 1. Clerk application and settings | Not started | Owner at dashboard.clerk.com |
+| 1.6 Keys sent back | Waiting | Publishable key may be pasted here; the secret key goes straight into Netlify and .env.local |
+| 2. Supabase third-party auth | Not started | Needs the Clerk domain from step 1.4 |
+| 3. Netlify variables and redeploy | Not started | Three variables, then a deploy |
+| 4. Existing accounts | Not started | Only the seed and test accounts exist on meltingpot-csc; decide whether to import or recreate |
+| 5. Checks on the live site | Not started | The list under step 5 |
+
 ## What is already in place
 
 - `web/lib/auth/clerk-client.ts` and `clerk-server.ts` implement the seam
