@@ -16,7 +16,7 @@ session that starts fresh reads it before anything else.
 |---|---|---|
 | Code and migrations 0054 to 0056 | Done, commit bdb6b4d | Reviewed adversarially; nothing switched on |
 | 0. Domain | Not started | Development instance on netlify.app until a domain exists |
-| 1. Clerk application and settings | Not started | Owner at dashboard.clerk.com |
+| 1. Clerk application and settings | In progress, 2026-09-06 | Owner is at Create application (Consumer, name MeltingPot, Email and Password on, Google off). Settings after creation still to do. Owner is on Clerk's student plan; the plan changes limits, not steps |
 | 1.6 Keys sent back | Waiting | Publishable key may be pasted here; the secret key goes straight into Netlify and .env.local |
 | 2. Supabase third-party auth | Not started | Needs the Clerk domain from step 1.4 |
 | 3. Netlify variables and redeploy | Not started | Three variables, then a deploy |
