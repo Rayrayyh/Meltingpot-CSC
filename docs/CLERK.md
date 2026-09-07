@@ -15,7 +15,7 @@ session that starts fresh reads it before anything else.
 | Step | State | Notes |
 |---|---|---|
 | Code and migrations 0054 to 0056 | Done, commit bdb6b4d | Reviewed adversarially; nothing switched on |
-| 0. Domain | Not started | Development instance on netlify.app until a domain exists |
+| 0. Domain | In progress, 2026-09-06 | Owner registered meltingpots.xyz at the .xyz registry (auto renew on, expires 2027-09-07). Registrar contact verification pending (14 day window). Plan: Netlify DNS for the main site first, Clerk production records later; see "The domain" below |
 | 1. Clerk application and settings | In progress, 2026-09-06 | Owner is at Create application (Consumer, name MeltingPot, Email and Password on, Google off). Settings after creation still to do. Owner is on Clerk's student plan; the plan changes limits, not steps |
 | 1.6 Keys sent back | Waiting | Publishable key may be pasted here; the secret key goes straight into Netlify and .env.local |
 | 2. Supabase third-party auth | Not started | Needs the Clerk domain from step 1.4 |
@@ -64,6 +64,32 @@ and account portal) on a domain you control. `meltingpot-csc.netlify.app` cannot
 carry them. Until a domain such as meltingpot.io points at Netlify, Clerk runs
 as a development instance: it works on the netlify.app URL, shows a development
 mark, and is not meant for real users. Everything below works on either.
+
+### 0a. The domain, step by step
+
+meltingpots.xyz, registered 2026-09-06. Two jobs, in this order.
+
+1. At the registry (gen.xyz, Manage Domains): verify the contact email from
+   the yellow banner first; an unverified .xyz domain is suspended after the
+   window. Then Manage, Manage Nameservers.
+2. On Netlify (app.netlify.com, site meltingpot-csc, Domain management, Add a
+   domain): enter meltingpots.xyz and choose Netlify DNS. Netlify shows four
+   nameservers of the form dns1.p0N.nsone.net; paste those four at the
+   registry. Netlify then issues the certificate itself once the nameservers
+   have propagated (minutes to a day) and serves www.meltingpots.xyz as a
+   redirect to the apex. Nothing on the site changes.
+3. After it resolves, in the repo: Canonical in
+   web/public/.well-known/security.txt, the README links, APP_ORIGIN when the
+   classwork variables are set, and Supabase Authentication, URL Configuration
+   (Site URL and the redirect list) so the password reset email lands on the
+   new domain. A deploy after the security.txt change.
+4. Clerk production, only when the main site moves to Clerk: in the Clerk
+   dashboard switch the instance selector to Production, give it
+   meltingpots.xyz, and it lists the DNS records it needs (CNAMEs for
+   clerk.meltingpots.xyz to Clerk's Frontend API, accounts. for the account
+   portal, clkmail. and two _domainkey records for email). Each goes into
+   Netlify DNS as a CNAME. Production keys start pk_live_ and sk_live_ and
+   replace the test ones on the main site only.
 
 ### 1. Clerk dashboard
 
