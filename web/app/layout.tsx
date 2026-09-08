@@ -10,6 +10,7 @@ import {
 } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
 import { usingClerk } from "@/lib/auth/provider";
+import { CARD_FACE_IDS, DEFAULT_CARD_FACE } from "@/lib/card-face";
 import "./globals.css";
 
 const inter = Inter({
@@ -70,7 +71,7 @@ export const metadata: Metadata = {
 // machine is light would see light before the choice they never made is even
 // readable. Only "system" leaves the attribute off and lets the media query
 // decide.
-const themeInit = `(function(){var d=document.documentElement;try{var t=localStorage.getItem("mp-theme");if(t==="light"||t==="dark"){d.setAttribute("data-theme",t)}else if(t!=="system"){d.setAttribute("data-theme","dark")}if(localStorage.getItem("mp:nav-collapsed")==="1"){d.setAttribute("data-nav","collapsed")}}catch(e){d.setAttribute("data-theme","dark")}try{document.cookie="mp-tz="+encodeURIComponent(Intl.DateTimeFormat().resolvedOptions().timeZone)+";path=/;max-age=31536000;SameSite=Lax"}catch(e){}})()`;
+const themeInit = `(function(){var d=document.documentElement;try{var t=localStorage.getItem("mp-theme");if(t==="light"||t==="dark"){d.setAttribute("data-theme",t)}else if(t!=="system"){d.setAttribute("data-theme","dark")}if(localStorage.getItem("mp:nav-collapsed")==="1"){d.setAttribute("data-nav","collapsed")}var f=localStorage.getItem("mp-card-face");if(f&&/^(${CARD_FACE_IDS.filter((id) => id !== DEFAULT_CARD_FACE).join("|")})$/.test(f)){d.setAttribute("data-card-face",f)}}catch(e){d.setAttribute("data-theme","dark")}try{document.cookie="mp-tz="+encodeURIComponent(Intl.DateTimeFormat().resolvedOptions().timeZone)+";path=/;max-age=31536000;SameSite=Lax"}catch(e){}})()`;
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   const page = (

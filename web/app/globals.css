@@ -1019,22 +1019,34 @@ html[data-nav="collapsed"] .mp-side .mp-nav-alerts {
   transform: none;
 }
 
-/* A flashcard is a printed card. Its face carries the cream card art from
-   the brand set, and the light theme's ink on it in either theme: a cream
-   card on a dark desk is what a card looks like, and turning the paper dark
-   would hide the art the card is for. The centre of the art is plain, so the
-   question sits on paper rather than on the pot. */
+/* A flashcard is a printed card. Its paper is a colour chosen in settings
+   (lib/card-face.ts; the default is a light orange and the attribute is
+   stamped before first paint by app/layout.tsx), and it keeps the light
+   theme's ink in either theme: a pale card on a dark desk is what a card
+   looks like. The faint and primary inks sit a shade deeper than the page's,
+   so every colour on the list clears body text contrast. */
+:root {
+  --card-face: #f7dfc6;
+}
+html[data-card-face="white"] {
+  --card-face: #ffffff;
+}
+html[data-card-face="cream"] {
+  --card-face: #faf4e6;
+}
+html[data-card-face="butter"] {
+  --card-face: #f8edc4;
+}
+html[data-card-face="sage"] {
+  --card-face: #dfe9d6;
+}
+html[data-card-face="sky"] {
+  --card-face: #dbe7f2;
+}
 .mp-flashcard-face {
   --ink: #24222c;
   --ink-muted: #5c5952;
-  --ink-faint: #756f5e;
-  --primary: #ab5a14;
-  background-color: #f9efdc;
-  /* A soft paper veil under the words, so a long answer stays readable where
-     it reaches the blobs; the art shows through everywhere else. */
-  background-image:
-    radial-gradient(ellipse 58% 68% at 50% 50%, rgba(250, 242, 228, 0.92) 0%, rgba(250, 242, 228, 0.6) 55%, rgba(250, 242, 228, 0) 100%),
-    url("/brand/flashcard-face.jpg");
-  background-size: cover, cover;
-  background-position: center, center;
+  --ink-faint: #665f50;
+  --primary: #964d10;
+  background-color: var(--card-face);
 }

@@ -126,8 +126,8 @@ this.
 ## Hosting
 
 The Prometheus deploy at `meltingpot-prometheus.netlify.app` is **not** the target any more.
-This entry lives at https://meltingpots.xyz, the owner's domain since 2026-09-06, served by the
-Netlify site meltingpot-csc (its netlify.app address redirects there; Netlify site id
+This entry lives at https://meltingpots.xyz, the owner's domain since 2026-09-08, served by the
+Netlify site meltingpot-csc (its netlify.app address still answers as well; Netlify site id
 `f8138e4f-b2cf-4351-b930-ec14bbb74668`, same team, same Supabase project as before). The deploy
 shape is unchanged from the old one, described in `web/netlify.toml`: `web/` is the package root,
 and `@netlify/plugin-nextjs` must be declared explicitly or every route 404s. As of 5 September

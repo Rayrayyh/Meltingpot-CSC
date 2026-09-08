@@ -4,6 +4,7 @@ import { ConnectedClassesPanel, type ClassworkNotice } from "@/components/settin
 import { PasswordPanel } from "@/components/settings/password-panel";
 import { ProfilePanel } from "@/components/settings/profile-panel";
 import { SidebarPanel } from "@/components/settings/sidebar-panel";
+import { CardFaceChoice } from "@/components/settings/card-face-choice";
 import { ThemeChoice } from "@/components/settings/theme-choice";
 import { TwoFactorPanel } from "@/components/settings/two-factor-panel";
 import { Card, CardSection, Eyebrow } from "@/components/ui/card";
@@ -81,6 +82,14 @@ export default async function AccountSettingsPage({ searchParams }: PageProps<"/
               </p>
             </div>
             <ThemeChoice />
+            <div className="space-y-2 border-t border-edge pt-4">
+              <p className="text-sm font-medium text-ink">Flashcard colour</p>
+              <p className="text-sm text-ink-muted leading-relaxed">
+                The paper your flashcards are printed on. Every choice keeps the
+                writing easy to read.
+              </p>
+              <CardFaceChoice />
+            </div>
           </CardSection>
         </Card>
 
