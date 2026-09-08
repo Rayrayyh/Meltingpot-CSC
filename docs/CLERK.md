@@ -366,3 +366,27 @@ The end to end suite's login helper still speaks Supabase; moving it to
   code uses the resource API (`signUp.create`, `signIn.create`), which the
   installed SDK still types without deprecation; compare against the legacy
   email and password page when in doubt.
+
+- Nothing in this app carries Clerk's name, and nothing has to be turned off
+  to keep it that way. The "Secured by Clerk" badge, the Clerk logo and the
+  Account Portal pages are all part of Clerk's prebuilt components, and the
+  only Clerk component mounted here is `<ClerkProvider>` in
+  `web/app/layout.tsx`, which renders no UI at all. There is no `<SignIn />`,
+  `<SignUp />` or `<UserButton />` anywhere; `/login`, `/signup` and the
+  settings panels are MeltingPot's own markup calling `signIn.create` and
+  friends. A screenshot of a Clerk sign in box is therefore not this site.
+  Should a prebuilt component ever be mounted, the badge toggle is under
+  Settings, Branding in the dashboard, and switching it off needs a paid plan
+  in production; it is free on a development instance.
+
+- What the prebuilt components would change, if the question comes up again:
+  Clerk's sign in is identifier-first, so it asks for the email, then the
+  password on a second screen, where this app asks for both at once. It
+  brings a working forgot-password flow, which this app does not have. It
+  cannot carry the class-code path or its copy ("Sign in to keep your spot",
+  "Sign in and open Pot"), and it replaces the two-step settings panel. Its
+  look can be moved onto the site palette with the `appearance` prop
+  (`variables.colorPrimary` and the rest); its wording and its flow cannot.
+  All four of those renders, and what they mean, are kept in
+  `docs/reference/clerk-signin/`; `web/scripts/clerk-signin-mockups.mjs`
+  regenerates them.
