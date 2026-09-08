@@ -14,11 +14,11 @@ the deploy that reads it.
 | Task | Who | State |
 |---|---|---|
 | Verify the registry contact email (yellow banner, 14 days) | Owner | Open |
-| Netlify: site meltingpot-csc, Domain management, Add a domain, choose Netlify DNS | Owner | Open |
-| Registry: Manage, Manage Nameservers, paste Netlify's four nameservers | Owner | Open |
-| Wait for the certificate, then say so | Owner | Open |
+| Netlify: site meltingpot-csc, Domain management, Add a domain, choose Netlify DNS | Owner | Done 2026-09-06; Netlify lists meltingpots.xyz as the primary address |
+| Registry: Manage, Manage Nameservers, paste Netlify's four nameservers | Owner | Done 2026-09-06 (dns1 to dns4.p04.nsone.net) |
+| Wait for the certificate, then say so | Owner | Waiting; the .xyz registry had not published the delegation at 2026-09-06 (NXDOMAIN) |
 | Supabase: Authentication, URL Configuration, Site URL and redirect list on the new domain | Owner | Open |
-| security.txt canonical, README links, redeploy | Claude | After the domain answers |
+| security.txt canonical, README links, redeploy; then a migration moving the hourly cron's URL to the domain, since the netlify.app address will redirect and the cron does not follow redirects | Claude | Files changed in commit; deploy and cron migration once the domain answers over https |
 
 ## 2. Clerk (docs/CLERK.md)
 

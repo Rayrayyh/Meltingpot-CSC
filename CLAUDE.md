@@ -34,7 +34,7 @@ Next is v16: `proxy.ts` instead of `middleware.ts`, `params`/`searchParams` are 
 
 Screen recordings and demo videos shared with the owner are always mp4 (H.264, yuv420p), never webm (owner's standing instruction). Convert with ffmpeg before sending.
 
-Deploys go to https://meltingpot-csc.netlify.app only (Netlify site id f8138e4f-b2cf-4351-b930-ec14bbb74668; owner's instruction for this entry, 2026-09-05, superseding the 2026-08-29 rule). Never deploy to meltingpot-prometheus, meltingpotworks or meltingpot-io; those are earlier entries' sites. Deploy the committed tree from a detached worktree via the Netlify MCP zip deploy with web/ as the package root, so uncommitted work never ships. Deploy only when the owner asks.
+Deploys go to the Netlify site meltingpot-csc only (site id f8138e4f-b2cf-4351-b930-ec14bbb74668; owner's instruction for this entry, 2026-09-05, superseding the 2026-08-29 rule). Since 2026-09-06 that site is served at https://meltingpots.xyz, the owner's domain on Netlify DNS; meltingpot-csc.netlify.app redirects there. The hourly cron in the database and the classwork redirect URIs name the domain, not the netlify.app address. Never deploy to meltingpot-prometheus, meltingpotworks or meltingpot-io; those are earlier entries' sites. Deploy the committed tree from a detached worktree via the Netlify MCP zip deploy with web/ as the package root, so uncommitted work never ships. Deploy only when the owner asks.
 
 Database changes go through Supabase MCP migrations (`apply_migration`), one migration per schema change, mirrored into `supabase/migrations/` in the repo.
 
