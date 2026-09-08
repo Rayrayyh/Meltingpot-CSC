@@ -12,9 +12,10 @@ behind its own proxy, keyed on `/og.png`, and had no reason to look again.
 
 ## What to do
 
-- Keep the card at `web/app/opengraph-image.png`, its alt text beside it in
-  `web/app/opengraph-image.alt.txt`. Next emits og:image, its type, width,
-  height and alt, and appends a content hash to the URL.
+- Keep the card at `web/app/opengraph-image.png`. Next emits og:image, its
+  type, width and height, and appends a content hash to the URL. An
+  `opengraph-image.alt.txt` beside it would add og:image:alt; this project
+  carries none, at the owner's instruction on 2026-09-08.
 - Do not also list `openGraph.images` in the metadata: a manual entry wins
   over the file convention and takes the hash away.
 - Leave `twitter.images` unset. X falls back to og:image, which carries the

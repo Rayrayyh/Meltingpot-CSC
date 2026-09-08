@@ -77,21 +77,27 @@ export const metadata: Metadata = {
     title: "The notes have names on them.",
     description:
       "Everyone takes notes. MeltingPot brings them together: one shared vault a class builds and studies from.",
-    // The card itself is app/opengraph-image.png, with its alt beside it in
-    // app/opengraph-image.alt.txt. Naming it there rather than listing a URL
-    // here is what makes a new card actually show up: Next serves it at
+    // The card itself is app/opengraph-image.png. Naming it there rather
+    // than listing a URL here is what makes a new card actually show up:
+    // Next serves it at
     // /opengraph-image.png?<hash of the file>, and every platform caches an
     // embed against the image URL. A card swapped in place under an unchanged
     // URL stays stale on Discord and the rest for as long as they feel like
     // holding it; a changed hash misses every one of those caches at once.
+    //
+    // No og:image:alt: an opengraph-image.alt.txt beside the picture would
+    // emit one, and the owner asked on 2026-09-08 for the card to carry no
+    // alt text. Facebook and LinkedIn are where that text would have been
+    // read aloud.
   },
   twitter: {
     card: "summary_large_image",
     title: "The notes have names on them.",
     description:
       "Everyone takes notes. MeltingPot brings them together: one shared vault a class builds and studies from.",
-    // No twitter:image on purpose. X falls back to og:image, which carries
-    // the hash; a second copy of the file here would only go stale.
+    // No images listed here on purpose. The opengraph-image file emits
+    // twitter:image as well as og:image, both on the hashed URL, so a copy
+    // named here would only be a second one to keep in step.
   },
   robots: { index: true, follow: true },
 };
