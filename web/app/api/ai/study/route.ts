@@ -100,7 +100,7 @@ export async function POST(request: Request) {
   if (!force) {
     const { data: stored } = await supabase
       .from("study_sets")
-      .select("id, payload, model, created_at, secured, generation")
+      .select("id, payload, model, created_at, secured, generation, options")
       .eq("pot_id", potId)
       .eq("kind", kind)
       .eq("source_fingerprint", fingerprint)
@@ -117,6 +117,9 @@ export async function POST(request: Request) {
           studySetId: stored.id,
           secured: stored.secured === true,
           generation: stored.generation,
+          // The settings this set was actually built for, which are not
+          // always the ones on the form now.
+          options: stored.options,
         },
         { headers: NO_STORE },
       );
@@ -305,6 +308,7 @@ export async function POST(request: Request) {
         studySetId: saved.data ?? null,
         secured: kind === "practice" && stored,
         generation,
+        options: options as unknown as Json,
         removed,
         // Returned so the browser can save this set itself when the server
         // save failed. For a practice test that fallback stores the full

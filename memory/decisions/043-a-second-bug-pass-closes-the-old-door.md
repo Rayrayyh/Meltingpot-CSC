@@ -16,12 +16,12 @@ App: the proxy matcher covers every API route, so image and text attachments loa
 
 ## Left on purpose
 
-1. `study-workspace` rescues a failed rebuild by opening the older set even for an explicit refusal (rate limit, closed generation). Fixing it means separating a lost reply from a refusal in `generate`; the refusal messages exist and the rescue should be narrowed to lost replies. A morning's work, not a patch.
+1. ~~`study-workspace` rescues a failed rebuild by opening the older set even for an explicit refusal.~~ Fixed 2026-09-08: `generate` rescues only a lost reply (no failure code, or `generation_failed`) and speaks every refusal the server actually made.
 2. The feed query has no page size and counts attachments in the browser. Paging the feed is a design change to the Pot page.
 3. The private record counts an attachment added to a draft as a day with a share. The right date is the contribution's shared_at; mirror it in `own_standing` when done.
 4. A summary in search says "newest notes" now; the fifty note cap itself stays and a Pot past it gets a summary of its newest fifty.
 5. The footer still credits the Prometheus entry while the project is entered in CSC. Which credit the footer, terms page, README and the spec carry is the owner's call (decision 021's pattern).
 6. Global setup misnames two dirty seed states (a regenerated class code, a leftover factor). The two-factor spec now cleans up after itself, and the feed spec's locators are scoped to the main region so the sidebar's new notes card cannot make them ambiguous on a fresh seed; the setup's wording is next.
 7. The Study and Pots pages run the dashboard's per Pot counts to list titles; `getUserPots` would do.
-8. Opening a saved set without stored options describes the form's settings as the set's.
-9. A refused save after `study_set_removed` leaves a Save button that does nothing; with the route now refusing before it builds, only a race reaches it.
+8. ~~Opening a saved set without stored options describes the form's settings as the set's.~~ Fixed 2026-09-08: the route returns the set's own options, `Loaded` carries them, and the line says nothing rather than something wrong when a set predates them.
+9. ~~A refused save after `study_set_removed` leaves a Save button that does nothing.~~ Fixed 2026-09-08: `Loaded` carries `removed`, and the header says the set was taken out of the Pot instead of offering a button that cannot work.

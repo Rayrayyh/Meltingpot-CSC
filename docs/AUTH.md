@@ -5,8 +5,12 @@ step with an authenticator app to anyone who runs a Pot. On meltingpots.xyz
 Clerk does the work, since 2026-09-08; Supabase Auth does it for local runs and
 the Playwright suite. Both sit behind the same seam, which is why the switch
 was a variable and a migration rather than an excavation. Browser sign up
-through Supabase Auth admits only addresses on the test domain the dev seed
-trusts (0057), so a local run signs up as someone@meltingpot.dev.
+through Supabase Auth is closed entirely as of 0060: `sign_up_student` is
+service_role only, because an account minted from the anon key was a foothold
+for guessing class codes, and Clerk owns sign up on the live site. A local run
+signs in as one of the seeded people instead; two of them, `newcomer@` and
+`joiner@meltingpot.dev`, belong to no Pot on purpose, which is the state the
+create-a-Pot and join-with-a-code specs need.
 
 ## The seam
 

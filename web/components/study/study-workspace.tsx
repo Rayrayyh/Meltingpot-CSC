@@ -73,6 +73,20 @@ type Loaded = {
    */
   generation: number | null;
   /**
+   * The settings this set was built for, which are not always the settings
+   * on the form: opening something the Pot built last week describes that
+   * test, not the one being configured now. Null when the set predates
+   * settings being stored, and then the line says nothing rather than
+   * something wrong.
+   */
+  setOptions: PracticeOptions | null;
+  /**
+   * True when a maintainer has taken the set for this material down, so this
+   * one was handed over but not stored and never will be. Without it the
+   * header offered a Save button that could not work.
+   */
+  removed: boolean;
+  /**
    * True when this set's answers live on the server, so handing it in records
    * a marked attempt. Sets from before the boundary carry their answers in the
    * payload and stay client-marked practice.
@@ -260,6 +274,8 @@ export function StudyWorkspace({
         model?: string | null;
         secured?: boolean;
         generation?: number | null;
+        options?: unknown;
+        removed?: boolean;
         error?: string;
         detail?: string;
       } | null;
@@ -276,6 +292,8 @@ export function StudyWorkspace({
           model: payload.model ?? null,
           secured: payload.secured === true,
           generation: typeof payload.generation === "number" ? payload.generation : null,
+          setOptions: payload.options ? normalizePracticeOptions(payload.options) : null,
+          removed: payload.removed === true,
         } satisfies Loaded,
       };
     },
@@ -326,6 +344,17 @@ export function StudyWorkspace({
     try {
       const outcome = await load({ regenerate, options });
       if (!outcome.loaded) {
+        // Only a reply that went missing is worth rescuing. A refusal the
+        // server actually spoke, a rate limit, a Pot that has closed
+        // generation to maintainers, a set a maintainer removed, is news the
+        // reader needs; opening the older set instead swallowed it and left
+        // them wondering why the button did nothing.
+        const lostReply = !outcome.failure || outcome.failure === "generation_failed";
+        if (!lostReply) {
+          setError(message(outcome.failure, outcome.detail));
+          setErrorCode(outcome.failure ?? null);
+          return;
+        }
         // The reply is missing, which is not the same as the work being
         // missing. A generation can finish and be stored and still lose its
         // answer on the way back: the platform cuts a long call off, a phone
@@ -391,6 +420,8 @@ export function StudyWorkspace({
       model: null,
       secured: data.secured === true,
       generation: data.generation,
+      setOptions: data.options ? normalizePracticeOptions(data.options) : null,
+      removed: false,
     });
     // The settings move to the ones this test was written for, so the line
     // above it describes the test on screen rather than the last thing chosen.
@@ -698,7 +729,9 @@ export function StudyWorkspace({
               {opened.cached && opened.generatedAt
                 ? `Built ${relativeTime(opened.generatedAt)} from the notes as they were then. Everyone in the Pot sees this one.`
                 : "Built just now from the notes as they are now."}
-              {` ${describeOptions(options, sectionTitles, kind)}.`}
+              {opened.setOptions
+                ? ` ${describeOptions(opened.setOptions, sectionTitles, kind)}.`
+                : ""}
               {kind === "practice" && opened.secured && opened.studySetId
                 ? " Handed-in results are saved to this Pot, where you and this Pot's maintainers can see them."
                 : kind === "practice"
@@ -725,6 +758,11 @@ export function StudyWorkspace({
                 <span className="inline-flex items-center gap-1.5 rounded-full bg-success-soft px-3 h-8 text-[13px] font-medium text-success">
                   <Check weight="bold" className="size-3.5" aria-hidden />
                   Saved to this Pot
+                </span>
+              ) : opened.removed ? (
+                <span className="text-[12px] text-ink-faint max-w-xs">
+                  A maintainer took this set out of the Pot, so it is not
+                  saved. It is yours to use here.
                 </span>
               ) : (
                 <Button

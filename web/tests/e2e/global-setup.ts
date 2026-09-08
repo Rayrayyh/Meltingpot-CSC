@@ -69,8 +69,11 @@ export default async function globalSetup() {
     const potId = await lookupSeedPot(origin, anonKey);
     if (!potId) {
       throw new Error(
-        `e2e reseed refused (${reseedResponse.status}) and the seed is absent. ` +
-          "Run select public.dev_seed(); as service_role, then run the suite.",
+        `e2e reseed refused (${reseedResponse.status}) and BIO101 does not ` +
+          "answer. Either the seed is absent, or an earlier run regenerated " +
+          "the class code and the seed is there under a code nobody knows. " +
+          "Either way: run select public.dev_seed(); as service_role, then " +
+          "run the suite.",
       );
     }
     const dirty = await seedLooksUsed(origin, anonKey, access_token, potId);

@@ -1,15 +1,18 @@
 import { expect, test } from "@playwright/test";
 
+/**
+ * The seeded person who belongs to no Pot. The suite used to sign a new
+ * account up here, which needed sign_up_student open to the anon key; that
+ * door is Clerk's now and closed to browsers (0060), so the seed carries a
+ * fixture in the state this spec actually needs instead.
+ */
+const NEWCOMER = "newcomer@meltingpot.dev";
+
 test("creating a Pot generates a code and opens the empty Pot", async ({ page }) => {
-  // Fresh account with no memberships.
-  const email = `e2e.creator.${Date.now()}@meltingpot.dev`;
-  await page.goto("/signup");
-  await page.getByLabel("Display name").fill("E2E Creator");
-  await page.getByLabel("Email").fill(email);
-  // Meets every rule in lib/auth/password-rules.ts, symbol included (0042).
-  await page.getByLabel("Password", { exact: true }).fill("E2ePassword1!");
-  await page.getByLabel("Confirm password").fill("E2ePassword1!");
-  await page.getByRole("button", { name: "Create account" }).click();
+  await page.goto("/login");
+  await page.getByLabel("Email").fill(NEWCOMER);
+  await page.getByLabel("Password", { exact: true }).fill("MeltingPot-dev1");
+  await page.getByRole("button", { name: "Sign in", exact: true }).click();
 
   await expect(page).toHaveURL(/\/home/, { timeout: 15_000 });
   await expect(page.getByText("Join your first Pot")).toBeVisible();
@@ -38,4 +41,15 @@ test("creating a Pot generates a code and opens the empty Pot", async ({ page })
   await expect(
     page.getByText("Be the first. Write it however it comes to you."),
   ).toBeVisible();
+
+  // Hand the fixture back as it was found. dev_seed does not know about this
+  // Pot, so without this the newcomer owns one and the next run never sees
+  // the empty dashboard above. Deleting it is a product flow of its own, so
+  // the tidy-up is also the only coverage Pot deletion has.
+  await page.getByRole("link", { name: "Settings", exact: true }).click();
+  await page.getByRole("button", { name: "Delete Pot", exact: true }).click();
+  await page.getByLabel("Type History 7 to confirm").fill("History 7");
+  await page.getByRole("button", { name: "Delete Pot permanently" }).click();
+  await expect(page).toHaveURL(/\/home/, { timeout: 15_000 });
+  await expect(page.getByText("Join your first Pot")).toBeVisible();
 });
