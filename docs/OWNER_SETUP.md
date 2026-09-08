@@ -36,7 +36,7 @@ the deploy that reads it.
 | Switch the main site: variables, secret, account import, deploy | Both | Done 2026-09-08 (deploy 6a9f93095a53e76f7e42b056); the live site signs in through Clerk. Step 5 walk is the owner's next act; `meltingpot-trial` should be deleted in Netlify |
 | Walk docs/CLERK.md step 5 on the live site (sign in, sign out, password change, second factor off and on, share a note with a picture, profile picture, a fresh sign up from a class code) | Owner; a headless browser cannot reach the live site from the build sandbox | Open, the owner's next act |
 | Clerk dashboard, Production: Configure, Paths (sign in meltingpots.xyz/login, sign up meltingpots.xyz/signup, sign out to meltingpots.xyz/login) and Configure, Branding (pot mark, primary color #ab5a14, Clerk branding off) | Owner | Paths seen in progress 2026-09-08; Branding open |
-| Delete the unused Netlify site meltingpot-trial | Owner | Open |
+| The unused Netlify site meltingpot-trial | Nobody | Dropped 2026-09-08: never deployed and never will be, and the owner sees no reason to delete an empty site |
 | Revoke the browser sign up door (sign_up_student) from anon, since Clerk owns sign up | Claude | Done 2026-09-08 (0060). The suite signs in as two seeded fixtures in no Pot instead of signing accounts up |
 | Move the end to end suite to Clerk test tokens, so it exercises the provider the live site uses | Claude | Open. It runs on the Supabase path today, which is still the local dev provider |
 | The user.deleted webhook, so removing someone in Clerk removes their profile | Claude the route, Owner the endpoint and a signing secret | Open. Deleting a Clerk user is a line of SQL today (docs/CLERK.md), and the webhook costs a Netlify variable and a dashboard endpoint |
