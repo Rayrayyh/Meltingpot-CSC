@@ -103,19 +103,27 @@ async function supabaseProxy(request: NextRequest) {
  * check from the Backend API for a token without the claim.
  */
 const clerkProxy = () =>
-  clerkMiddleware(async (auth, request) => {
-    const { pathname } = request.nextUrl;
-    if (!isProtected(pathname)) return NextResponse.next();
-    const { userId, sessionClaims } = await auth();
-    if (!userId) return toSignIn(request, "/login");
-    if (pathname !== "/login/verify") {
-      const claims = sessionClaims as { two_factor?: unknown; fva?: [number, number] } | null;
-      const enrolled = claims?.two_factor === "true" || claims?.two_factor === true;
-      const cleared = !Array.isArray(claims?.fva) || claims.fva[1] >= 0;
-      if (enrolled && !cleared) return toSignIn(request, "/login/verify");
-    }
-    return NextResponse.next();
-  });
+  clerkMiddleware(
+    async (auth, request) => {
+      const { pathname } = request.nextUrl;
+      if (!isProtected(pathname)) return NextResponse.next();
+      const { userId, sessionClaims } = await auth();
+      if (!userId) return toSignIn(request, "/login");
+      if (pathname !== "/login/verify") {
+        const claims = sessionClaims as { two_factor?: unknown; fva?: [number, number] } | null;
+        const enrolled = claims?.two_factor === "true" || claims?.two_factor === true;
+        const cleared = !Array.isArray(claims?.fva) || claims.fva[1] >= 0;
+        if (enrolled && !cleared) return toSignIn(request, "/login/verify");
+      }
+      return NextResponse.next();
+    },
+    // A production Clerk cookie is set on the root domain, so every subdomain
+    // of meltingpots.xyz could present it. Clerk's own deployment checklist
+    // asks the app to name the origins it will accept the session from; this
+    // one accepts only the address it is served at, which APP_ORIGIN names
+    // (the same variable the classwork redirect URIs are built from).
+    process.env.APP_ORIGIN ? { authorizedParties: [process.env.APP_ORIGIN] } : undefined,
+  );
 
 export const proxy = usingClerk() ? clerkProxy() : supabaseProxy;
 
