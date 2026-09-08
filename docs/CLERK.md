@@ -297,6 +297,13 @@ The end to end suite's login helper still speaks Supabase; moving it to
 
 ## Things to know
 
+- There is a throwaway account in the production Clerk instance,
+  `probe.mtsttlzz@meltingpots.xyz`, kept on purpose so the live signed in
+  path can be walked from a session without asking the owner to sign in.
+  It owns nothing and belongs to no Pot. Its password is in the 8 September
+  transcript and guards nothing; treat it as public. Deleting it needs the
+  Clerk dashboard, since the secret key is the owner's alone.
+
 - `auth.uid()` is now wrong to write anywhere in this project. Policies and
   functions ask `public.current_uid()`, storage policies included. A new
   migration that says `auth.uid()` works for Supabase sessions and silently
