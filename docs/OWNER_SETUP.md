@@ -25,15 +25,15 @@ the deploy that reads it.
 | Task | Who | State |
 |---|---|---|
 | Create the application: Consumer, name MeltingPot, Email and Password on, Google, phone and username off | Owner | Done 2026-09-08 |
-| Email address settings: Verify at sign-up off | Owner | Open |
-| Password tab, Update password requirements: minimum length 8; leave Reject compromised passwords off | Owner | Open |
-| Multi-factor: Authenticator application on; SMS, Backup codes and Require multi-factor authentication off | Owner | Open |
-| Protect, Rules: Bot sign-up protection off and Device Trust off (Manage, Enable off, Save) | Owner | Open |
+| Email address settings: Verify at sign-up off | Owner | Done 2026-09-08 |
+| Password tab, Update password requirements: minimum length 8; leave Reject compromised passwords off | Owner | Done 2026-09-08 |
+| Multi-factor: Authenticator application on; SMS, Backup codes and Require multi-factor authentication off | Owner | Done 2026-09-08 |
+| Protect, Rules: Bot sign-up protection off and Device Trust off (Manage, Enable off, Save) | Owner | Done 2026-09-08 |
 | Sessions, Customize session token: the two claims in docs/CLERK.md step 1.6 (email from primary_email_address, two_factor from two_factor_enabled) | Owner | Done 2026-09-08 on the development instance; check the clone carries it |
-| dashboard.clerk.com/setup/supabase: Activate Supabase integration; note the Clerk domain it reveals | Owner | Open |
-| Configure, API keys: send the publishable key and the Clerk domain here; keep the secret key | Owner | Open |
-| Supabase: Authentication, Sign In / Providers, Third Party Auth, Add Clerk, paste the Clerk domain | Owner | Open |
-| Trial site: a second Netlify site at trial.meltingpots.xyz on the same database with the production keys (owner pastes CLERK_SECRET_KEY) and a deploy, so the main site stays on Supabase Auth until the checks pass | Claude, owner for the secret | Open; the owner chose the production path on 2026-09-08 |
+| dashboard.clerk.com/setup/supabase: Activate Supabase integration; note the Clerk domain it reveals | Owner | Done 2026-09-08 on production |
+| Configure, API keys: send the publishable key and the Clerk domain here; keep the secret key | Owner | Done 2026-09-08 (production keys) |
+| Supabase: Authentication, Sign In / Providers, Third Party Auth, Add Clerk, paste the Clerk domain | Owner | Done 2026-09-08 (clerk.meltingpots.xyz) |
+| Trial site: `meltingpot-trial` exists with the public variables; owner pastes CLERK_SECRET_KEY (Project configuration, Environment variables, secret, all scopes) and adds the custom domain trial.meltingpots.xyz (Domain management, Add a domain); then Claude deploys | Claude, owner for the secret and the domain | Site created 2026-09-08; waiting on the secret and the domain |
 | Walk docs/CLERK.md step 5 on the trial site | Both | Open |
 | Google sign in: a Google Cloud OAuth client (separate project from Classroom, consent screen External and published) pasted into Clerk, SSO connections, Google; the button and callback page in the app | Owner the client, Claude the app | Later, after step 5 passes |
 | Passkeys (Face ID, Touch ID, Windows Hello on the web): the two toggles under User & authentication, Passkeys, plus a sign in button and a settings panel in the app; the Biometric tab is for native iOS and Android apps only and does not apply | Owner the toggles, Claude the app | Later, after the switch; the owner asked on 2026-09-08 |
