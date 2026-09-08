@@ -42,23 +42,23 @@ test.describe("account and landing for signed-in people", () => {
     await page.goto("/me/settings");
 
     const root = page.locator("html");
-    // Dark is what someone who has never chosen gets, and it is stamped on the
-    // document rather than left to the device. The browser here runs in the
-    // default light scheme, so the attribute is what proves it: a page
-    // following the device would carry no data-theme at all.
-    await expect(page.getByRole("radio", { name: "Dark" })).toHaveAttribute(
+    // Light is what someone who has never chosen gets (decision 020), and it
+    // is stamped on the document rather than left to the device: a page
+    // following the device would carry no data-theme at all, so the attribute
+    // is what proves the default was applied.
+    await expect(page.getByRole("radio", { name: "Light" })).toHaveAttribute(
       "aria-checked",
       "true",
     );
-    await expect(root).toHaveAttribute("data-theme", "dark");
-
-    await page.getByRole("radio", { name: "Light" }).click();
     await expect(root).toHaveAttribute("data-theme", "light");
+
+    await page.getByRole("radio", { name: "Dark" }).click();
+    await expect(root).toHaveAttribute("data-theme", "dark");
 
     // The choice survives a reload, applied before paint.
     await page.reload();
-    await expect(root).toHaveAttribute("data-theme", "light");
-    await expect(page.getByRole("radio", { name: "Light" })).toHaveAttribute(
+    await expect(root).toHaveAttribute("data-theme", "dark");
+    await expect(page.getByRole("radio", { name: "Dark" })).toHaveAttribute(
       "aria-checked",
       "true",
     );
@@ -73,16 +73,16 @@ test.describe("account and landing for signed-in people", () => {
   test("one tap on the landing header flips the theme", async ({ page }) => {
     await page.goto("/");
     const root = page.locator("html");
-    await expect(root).toHaveAttribute("data-theme", "dark");
+    await expect(root).toHaveAttribute("data-theme", "light");
 
     // The icon says where the tap leads, not where you already are.
-    await page.getByRole("button", { name: "Switch to light theme" }).click();
-    await expect(root).toHaveAttribute("data-theme", "light");
-
-    await page.reload();
-    await expect(root).toHaveAttribute("data-theme", "light");
     await page.getByRole("button", { name: "Switch to dark theme" }).click();
     await expect(root).toHaveAttribute("data-theme", "dark");
+
+    await page.reload();
+    await expect(root).toHaveAttribute("data-theme", "dark");
+    await page.getByRole("button", { name: "Switch to light theme" }).click();
+    await expect(root).toHaveAttribute("data-theme", "light");
   });
 
   test("two-step sign in is offered to the person who runs the Pot", async ({ page }) => {

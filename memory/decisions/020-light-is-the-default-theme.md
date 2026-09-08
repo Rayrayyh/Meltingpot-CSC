@@ -1,12 +1,16 @@
-# Dark is the default theme, and one stored choice covers every surface
+# Light is the default theme, and one stored choice covers every surface
 
-Dark default chosen 2026-08-30 by the owner, superseding the light default
-this note recorded on 2026-08-23 (which itself replaced follow-the-system).
+Light default restored 2026-09-08 by the owner, reversing the dark default
+chosen on 2026-08-30, which had superseded the light default this note
+recorded on 2026-08-23 (which itself replaced follow-the-system). The theme
+has now changed hands three times; whichever it is, it lives in one constant
+(`DEFAULT_THEME` in `web/lib/theme.ts`) and one line of the first paint
+script, and nowhere else.
 
-Nothing stored now means dark, stamped on the document before first paint by
+Nothing stored now means light, stamped on the document before first paint by
 the inline script in `app/layout.tsx` rather than left to a media query, so
-there is no flash of a theme nobody picked. The cream paper light theme is
-one tap away in the landing header.
+there is no flash of a theme nobody picked. The dark theme is one tap away in
+the landing header.
 
 Three stored states, and the difference matters:
 
