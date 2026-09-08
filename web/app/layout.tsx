@@ -74,7 +74,12 @@ export const metadata: Metadata = {
     title: "MeltingPot",
     description:
       "Everyone takes notes. MeltingPot brings them together: one shared vault a class builds and studies from.",
-    images: [{ url: "/og.png", width: 1200, height: 630, alt: "MeltingPot: everyone takes notes, MeltingPot brings them together." }],
+    images: [{
+      url: "/og.png",
+      width: 1200,
+      height: 630,
+      alt: "A MeltingPot class dashboard beside the line: the notes have names on them.",
+    }],
   },
   twitter: {
     card: "summary_large_image",
