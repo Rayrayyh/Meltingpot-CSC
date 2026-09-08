@@ -18,7 +18,7 @@ the deploy that reads it.
 | Registry: Manage, Manage Nameservers, paste Netlify's four nameservers | Owner | Done 2026-09-06 (dns1 to dns4.p04.nsone.net) |
 | Wait for the certificate, then say so | Owner | Done 2026-09-08; https answers |
 | Supabase: Authentication, URL Configuration, Site URL and redirect list on the new domain | Owner | Open |
-| security.txt canonical, README links, redeploy; then a migration moving the hourly cron's URL to the domain | Claude | Files changed in commit d0363df; the netlify.app address still answers (no redirect), so the cron keeps working; deploy and cron move on the owner's word |
+| security.txt canonical, README links, redeploy; then a migration moving the hourly cron's URL to the domain | Claude | Deployed 2026-09-08 (deploy 6a9f5d99c7c197773fc5ca2d, commit 60c3e46); the cron still calls the netlify.app address, which answers without a redirect, and moves with the classwork variables |
 
 ## 2. Clerk (docs/CLERK.md)
 
