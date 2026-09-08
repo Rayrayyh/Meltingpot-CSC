@@ -114,7 +114,7 @@ const nextConfig: NextConfig = {
       // carry nothing to leak. Without this a client that hotlinks the card
       // rather than re-hosting it shows a broken preview.
       {
-        source: "/:file(og.png|icon.png|apple-icon.png|favicon.ico)",
+        source: "/:file(opengraph-image.png|icon.png|apple-icon.png|favicon.ico)",
         headers: [{ key: "Cross-Origin-Resource-Policy", value: "cross-origin" }],
       },
       // Nothing behind a sign in, and none of the doors to it, belongs in an

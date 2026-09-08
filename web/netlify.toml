@@ -31,7 +31,7 @@
 # attachments keep same-origin, which is where that header does real work.
 # A more specific rule wins over /* for the same header name.
 [[headers]]
-  for = "/og.png"
+  for = "/opengraph-image.png"
   [headers.values]
     Cross-Origin-Resource-Policy = "cross-origin"
 

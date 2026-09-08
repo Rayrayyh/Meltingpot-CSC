@@ -28,7 +28,7 @@ const LANDING_STRUCTURED_DATA = {
       offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
       isAccessibleForFree: true,
       audience: { "@type": "EducationalAudience", educationalRole: "student" },
-      screenshot: `${SITE_ORIGIN}/og.png`,
+      screenshot: `${SITE_ORIGIN}/opengraph-image.png`,
     },
   ],
 };

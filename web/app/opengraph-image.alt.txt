@@ -1,0 +1,1 @@
+A MeltingPot class dashboard beside the line: the notes have names on them.

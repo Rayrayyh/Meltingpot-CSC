@@ -25,7 +25,7 @@ describe("proxy matcher", () => {
     const pattern = new RegExp(`^${first}$`);
     expect(pattern.test("/p/abc/feed")).toBe(true);
     expect(pattern.test("/favicon.ico")).toBe(false);
-    expect(pattern.test("/og.png")).toBe(false);
+    expect(pattern.test("/opengraph-image.png")).toBe(false);
     // Without the second entry these two never reached the middleware.
     expect(pattern.test("/api/attachments/pot/contribution/photo.png")).toBe(false);
     expect(pattern.test("/api/attachments/pot/contribution/notes.txt")).toBe(false);

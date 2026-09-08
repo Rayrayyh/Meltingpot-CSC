@@ -71,22 +71,27 @@ export const metadata: Metadata = {
     type: "website",
     siteName: "MeltingPot",
     locale: "en_US",
-    title: "MeltingPot",
+    // The card's own line rather than the brand name, which the site name
+    // already carries: Slack prints both, and printing MeltingPot twice
+    // spent a line saying nothing. This way the words match the picture.
+    title: "The notes have names on them.",
     description:
       "Everyone takes notes. MeltingPot brings them together: one shared vault a class builds and studies from.",
-    images: [{
-      url: "/og.png",
-      width: 1200,
-      height: 630,
-      alt: "A MeltingPot class dashboard beside the line: the notes have names on them.",
-    }],
+    // The card itself is app/opengraph-image.png, with its alt beside it in
+    // app/opengraph-image.alt.txt. Naming it there rather than listing a URL
+    // here is what makes a new card actually show up: Next serves it at
+    // /opengraph-image.png?<hash of the file>, and every platform caches an
+    // embed against the image URL. A card swapped in place under an unchanged
+    // URL stays stale on Discord and the rest for as long as they feel like
+    // holding it; a changed hash misses every one of those caches at once.
   },
   twitter: {
     card: "summary_large_image",
-    title: "MeltingPot",
+    title: "The notes have names on them.",
     description:
       "Everyone takes notes. MeltingPot brings them together: one shared vault a class builds and studies from.",
-    images: ["/og.png"],
+    // No twitter:image on purpose. X falls back to og:image, which carries
+    // the hash; a second copy of the file here would only go stale.
   },
   robots: { index: true, follow: true },
 };
