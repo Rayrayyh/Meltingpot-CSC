@@ -237,10 +237,10 @@ no email is sent. Three moves:
 2. Import, from `web/` with the instance's secret key in the environment:
 
    ```
-   CLERK_SECRET_KEY=sk_live_... node scripts/import-clerk-users.mjs users.json > mapping.sql
+   CLERK_SECRET_KEY=sk_live_... node scripts/import-clerk-users.mjs users.json
    ```
 
-   Progress goes to the terminal; `mapping.sql` collects one line per account.
+   Progress goes to the terminal, and `mapping.sql` appears beside `users.json` with one line per account.
 3. Map: paste `mapping.sql` into the SQL editor and run it. Each line is
 
    ```sql

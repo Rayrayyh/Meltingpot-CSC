@@ -2,17 +2,19 @@
 // Moves the existing accounts into a Clerk instance with their password hashes,
 // so nobody resets anything at the switch (docs/CLERK.md step 4).
 //
-//   CLERK_SECRET_KEY=sk_live_... node scripts/import-clerk-users.mjs users.json > mapping.sql
+//   CLERK_SECRET_KEY=sk_live_... node scripts/import-clerk-users.mjs users.json
 //
-// users.json is the array the export query in docs/CLERK.md step 4 produces:
-// one object per account with id (the profile uuid), email, password_digest
-// (the bcrypt hash from auth.users), created_at, display_name and, for anyone
-// with a verified authenticator app, totp_secret. The script creates each
-// account through Clerk's Backend API, one at a time, and prints to stdout the
-// SQL that maps each Clerk user id back onto its profile. Progress and any
-// refusal go to stderr, so the SQL stays clean. An account Clerk already holds
-// (a second run) is looked up by email and mapped the same way.
-import { readFileSync } from "node:fs";
+// users.json is what the export query in docs/CLERK.md step 4 produces: one
+// object per account with id (the profile uuid), email, password_digest (the
+// bcrypt hash from auth.users), created_at, display_name and, for anyone with
+// a verified authenticator app, totp_secret. Either the bare array or the SQL
+// editor's copy of the whole result (a row wrapping it under "users") is
+// accepted. The script creates each account through Clerk's Backend API, one
+// at a time, and writes mapping.sql beside users.json: the SQL that maps each
+// Clerk user id back onto its profile. An account Clerk already holds (a
+// second run) is looked up by email and mapped the same way.
+import { readFileSync, writeFileSync } from "node:fs";
+import { dirname, join } from "node:path";
 
 const key = process.env.CLERK_SECRET_KEY;
 if (!key) {
@@ -25,11 +27,16 @@ if (!file) {
   process.exit(1);
 }
 
-const users = JSON.parse(readFileSync(file, "utf8"));
+let users = JSON.parse(readFileSync(file, "utf8").replace(/^\uFEFF/, ""));
+// The SQL editor's "copy as JSON" wraps the cell: [{ "users": [...] }].
+if (Array.isArray(users) && users.length === 1 && Array.isArray(users[0]?.users)) users = users[0].users;
+if (!Array.isArray(users) && Array.isArray(users?.users)) users = users.users;
 if (!Array.isArray(users)) {
-  console.error("users.json must hold an array (the export query returns one).");
+  console.error("users.json must hold the array the export query returns.");
   process.exit(1);
 }
+const out = process.argv[3] ?? join(dirname(file), "mapping.sql");
+const lines = [];
 
 const API = "https://api.clerk.com/v1";
 const headers = { Authorization: `Bearer ${key}`, "Content-Type": "application/json" };
@@ -84,11 +91,12 @@ for (const u of users) {
     made += 1;
     console.error(`${u.email}: created ${clerkId}${u.totp_secret ? " (authenticator carried over)" : ""}`);
   }
-  console.log(`update public.profiles set clerk_id = '${clerkId}' where id = '${u.id}';`);
+  lines.push(`update public.profiles set clerk_id = '${clerkId}' where id = '${u.id}';`);
   mapped += 1;
   // The Backend API allows 1000 requests per 10 seconds on production; this
   // is nowhere near it, but a small gap keeps the log readable.
   await pause(300);
 }
-console.error(`\n${made} created, ${mapped} mapped, ${failed} failed, of ${users.length}.`);
+writeFileSync(out, lines.join("\n") + (lines.length ? "\n" : ""));
+console.error(`\n${made} created, ${mapped} mapped, ${failed} failed, of ${users.length}. Mapping written to ${out}.`);
 process.exit(failed ? 2 : 0);
