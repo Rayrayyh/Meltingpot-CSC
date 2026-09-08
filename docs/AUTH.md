@@ -1,9 +1,12 @@
 # Authentication
 
 MeltingPot signs people in with an email and a password, and offers a second
-step with an authenticator app to anyone who runs a Pot. Supabase Auth does the
-work today. Clerk is the intended replacement, and the code is arranged so that
-swap is an implementation, not an excavation.
+step with an authenticator app to anyone who runs a Pot. On meltingpots.xyz
+Clerk does the work, since 2026-09-08; Supabase Auth does it for local runs and
+the Playwright suite. Both sit behind the same seam, which is why the switch
+was a variable and a migration rather than an excavation. Browser sign up
+through Supabase Auth admits only addresses on the test domain the dev seed
+trusts (0057), so a local run signs up as someone@meltingpot.dev.
 
 ## The seam
 
@@ -13,9 +16,9 @@ described in the product's own words rather than any one vendor's:
 | File | What it is |
 |---|---|
 | `types.ts` | The contract: `AuthUser`, `SignInOutcome`, `AuthError`, and the two provider interfaces |
-| `supabase-server.ts` | Reading identity from the request. The live implementation |
-| `supabase-client.ts` | Session lifecycle in the browser. The live implementation |
-| `clerk-server.ts`, `clerk-client.ts` | Clerk behind the same seam, built 2026-09-05 and inert until selected. `docs/CLERK.md` has the switch |
+| `supabase-server.ts` | Reading identity from the request, under Supabase Auth: local runs and the test suite |
+| `supabase-client.ts` | Session lifecycle in the browser, under Supabase Auth |
+| `clerk-server.ts`, `clerk-client.ts` | Clerk behind the same seam, built 2026-09-05 and live on meltingpots.xyz since 2026-09-08. `docs/CLERK.md` records the switch |
 | `provider.ts` | The one place that reads `NEXT_PUBLIC_AUTH_PROVIDER` |
 | `server.ts` | Server entry point: `getAuthUser`, `requireAuthUser`, `getVerifiedSecondFactorId` |
 | `client.ts` | Browser entry point: `getClientAuth()` |

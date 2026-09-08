@@ -10,6 +10,10 @@ import { supabaseBrowser } from "@/lib/supabase/client";
 export const INVALID_CODE_MESSAGE =
   "We couldn't find that Pot. Check the code and try again.";
 
+/** Said when the code is real but the owner has closed joining for now. */
+export const CLOSED_POT_MESSAGE =
+  "That class is not taking new members right now. Ask whoever runs it to open joining again.";
+
 /**
  * The class-code hero. Validates the code in place: an invalid code never
  * navigates away and never clears the input.

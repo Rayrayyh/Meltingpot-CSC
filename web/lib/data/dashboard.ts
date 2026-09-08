@@ -194,6 +194,9 @@ export async function getDashboard(userId: string): Promise<Dashboard> {
     supabase
       .from("shared_notes")
       .select("id, current:note_versions!shared_notes_current_version_fk(title)")
+      // A note a maintainer took out leaves the feed; the Continue link
+      // pointing at it would open the removal notice instead of a note.
+      .is("removed_at", null)
       .in(
         "id",
         active

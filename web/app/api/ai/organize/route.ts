@@ -136,11 +136,11 @@ export async function POST(request: Request) {
         { analysis: AttachmentAnalysis } | { warning: string } | null
       > => {
         const visionRate = await supabase.rpc("consume_ai_generation", { p_kind: "vision" });
-        if (visionRate.error) return null;
+        if (visionRate.error) return { warning: "one image could not be read just now" };
         const { data: file } = await supabase.storage
           .from("attachments")
           .download(attachment.storage_path as string);
-        if (!file) return null;
+        if (!file) return { warning: "one image could not be opened" };
         if (file.size > MAX_IMAGE_BYTES) {
           // Saying so beats a caption that silently never appears.
           return { warning: "one image was too large to read" };

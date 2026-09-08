@@ -33,13 +33,22 @@ function cleanMaterials(materials: ImportedMaterial[]): ImportedMaterial[] {
   return out.sort((a, b) => (a.url < b.url ? -1 : a.url > b.url ? 1 : 0));
 }
 
+/**
+ * Caps a string without splitting a surrogate pair. A cut that landed inside
+ * an emoji left a lone high surrogate, which Postgres refuses in jsonb, and
+ * the whole page of classwork failed to save for one character.
+ */
+function cut(value: string, max: number): string {
+  return value.slice(0, max).replace(/[\uD800-\uDBFF]$/, "");
+}
+
 /** Trim, cap and order, so the hash below is stable. */
 export function normaliseItem(input: ItemInput): ImportedItem {
   return {
     externalId: input.externalId.slice(0, 200),
     kind: input.kind,
-    title: (input.title || "Untitled").trim().slice(0, TITLE_MAX) || "Untitled",
-    description: (input.description ?? "").trim().slice(0, DESCRIPTION_MAX),
+    title: cut((input.title || "Untitled").trim(), TITLE_MAX) || "Untitled",
+    description: cut((input.description ?? "").trim(), DESCRIPTION_MAX),
     dueAt: input.dueAt,
     dueAllDay: Boolean(input.dueAllDay),
     availableFrom: input.availableFrom ?? null,

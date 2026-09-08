@@ -76,8 +76,12 @@ export function TwoFactorPanel({ enrolledFactorId }: { enrolledFactorId: string 
         factorId: enrolling.factorId,
         code: code.trim(),
       });
-    } catch {
-      setError("That code did not match. Codes change every 30 seconds, so try the current one.");
+    } catch (caught) {
+      setError(
+        codeOf(caught) === "invalid_code"
+          ? "That code did not match. Codes change every 30 seconds, so try the current one."
+          : "We could not check that code just now. Try again in a moment.",
+      );
       setBusy(false);
       return;
     }
@@ -90,10 +94,16 @@ export function TwoFactorPanel({ enrolledFactorId }: { enrolledFactorId: string 
 
   async function cancel() {
     if (!enrolling) return;
-    await getClientAuth().cancelSecondFactorSetup({ factorId: enrolling.factorId });
+    // The form closes either way: the next start removes a factor that was
+    // never verified, so a failed cancel costs nothing but the sentence.
+    try {
+      await getClientAuth().cancelSecondFactorSetup({ factorId: enrolling.factorId });
+      setError(null);
+    } catch {
+      setError("Setup was closed, but the unfinished step could not be cleared. It will be when you next start.");
+    }
     setEnrolling(null);
     setCode("");
-    setError(null);
   }
 
   async function turnOff(proof?: string) {
@@ -108,7 +118,11 @@ export function TwoFactorPanel({ enrolledFactorId }: { enrolledFactorId: string 
       setBusy(false);
       setConfirmOff(false);
       const reason = codeOf(caught);
-      if (reason === "reverification_required") setAskCode(true);
+      // Asked for a code once. If a code was given and the answer is still
+      // "prove it", the proof wanted is not one this panel collects, and
+      // asking again would loop without a word.
+      if (reason === "reverification_required" && proof === undefined) setAskCode(true);
+      else if (reason === "reverification_required") setError("We could not confirm that. Sign out, sign back in, and try again.");
       else if (reason === "invalid_code") setError("That code did not match. Try the current one.");
       else setError("We could not turn it off. Sign out, sign back in with a code, and try again.");
       return;

@@ -31,8 +31,9 @@ would need a restricted scope and a security assessment.
    `classroom.courseworkmaterials.readonly`, `classroom.announcements.readonly`,
    `classroom.topics.readonly`.
 4. An OAuth client of type Web application with these authorised redirect URIs:
-   `https://meltingpot-csc.netlify.app/api/classwork/callback/google_classroom` and
-   `http://localhost:3111/api/classwork/callback/google_classroom`.
+   `https://meltingpots.xyz/api/classwork/callback/google_classroom` and
+   `http://localhost:3111/api/classwork/callback/google_classroom`. The
+   netlify.app alias needs none: the proxy sends it to the domain.
 5. Its client id and secret go into Netlify as `CLASSROOM_OAUTH_CLIENT_ID` and
    `CLASSROOM_OAUTH_CLIENT_SECRET`.
 
@@ -42,7 +43,7 @@ Canvas's API policy forbids asking users for manually generated tokens; a multi-
 use OAuth, and OAuth needs a developer key that only the school's Canvas admin can issue.
 
 1. Ask the admin for a developer key of type API Key with the redirect URI
-   `https://meltingpot-csc.netlify.app/api/classwork/callback/canvas` (and the localhost one
+   `https://meltingpots.xyz/api/classwork/callback/canvas` (and the localhost one
    above for development), and either scope enforcement off or exactly these scopes allowed:
    `url:GET|/api/v1/courses`, `url:GET|/api/v1/courses/:course_id/assignments`,
    `url:GET|/api/v1/courses/:course_id/modules`, `url:GET|/api/v1/announcements`,
@@ -93,7 +94,7 @@ the same way (`update_secret` on that name) and set Netlify to match.
 
 ### Netlify
 
-`APP_ORIGIN=https://meltingpot-csc.netlify.app` plus the variables above. Nothing carries a
+`APP_ORIGIN=https://meltingpots.xyz` plus the variables above. Nothing carries a
 `NEXT_PUBLIC_` prefix. With any of `APP_ORIGIN`, `CLASSWORK_STATE_SECRET` or
 `CLASSWORK_SERVER_KEY` unset, the feature reads as "not set up on this site" everywhere and
 every connect button says so; nothing breaks.

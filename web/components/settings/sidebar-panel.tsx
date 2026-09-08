@@ -331,7 +331,7 @@ export function SidebarPanel({
               ))}
             </Reorder.Group>
             <p className="text-[13px] text-ink-muted">
-              The class at the top is the one the pot icon opens while the sidebar is collapsed.
+              Once you have arranged them, the class at the top is the one the pot icon opens while the sidebar is collapsed. Until then it opens a favourite, or the class you opened last.
             </p>
           </div>
         ) : null}

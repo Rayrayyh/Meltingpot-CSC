@@ -31,8 +31,18 @@ const MESSAGES: Record<string, string> = {
   not_configured: "Sign in is not available in this build.",
 };
 
-function friendlyError(error: unknown): string {
+function friendlyError(error: unknown, mode: "login" | "signup"): string {
   const code = error instanceof AuthError ? error.code : "unknown";
+  // The sentence on screen is for the person; the message on the error is
+  // for whoever has to work out why the door would not open. A stop the
+  // form has no words for, and a build that says it is not configured, both
+  // keep their diagnostic in the console rather than losing it.
+  if (!(code in MESSAGES) || code === "not_configured") console.error("[auth]", error);
+  if (code === "not_configured") {
+    return mode === "signup"
+      ? "Creating an account is not available on this site right now."
+      : "Sign in is not available on this site right now.";
+  }
   return MESSAGES[code] ?? "Something went wrong. Try again.";
 }
 
@@ -116,7 +126,7 @@ export function AuthForm({
         return;
       }
     } catch (err) {
-      setError(friendlyError(err));
+      setError(friendlyError(err, mode));
       setBusy(false);
       return;
     }
@@ -143,7 +153,7 @@ export function AuthForm({
         code: secondStepCode.trim(),
       });
     } catch (err) {
-      setError(friendlyError(err));
+      setError(friendlyError(err, mode));
       setBusy(false);
       return;
     }

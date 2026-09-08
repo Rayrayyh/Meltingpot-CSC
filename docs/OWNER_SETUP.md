@@ -48,14 +48,14 @@ the deploy that reads it.
 |---|---|---|
 | Google Cloud project with the Google Classroom API enabled | Owner | Open |
 | OAuth consent screen: External, Testing; add every test user (demo account, pilot class, judges); scopes openid, email and the five read-only Classroom scopes | Owner | Open |
-| OAuth client, Web application, redirect URIs `https://meltingpots.xyz/api/classwork/callback/google_classroom`, the same on meltingpot-csc.netlify.app, and `http://localhost:3111/api/classwork/callback/google_classroom` | Owner | Open, after the domain |
+| OAuth client, Web application, redirect URIs `https://meltingpots.xyz/api/classwork/callback/google_classroom` and `http://localhost:3111/api/classwork/callback/google_classroom` (the netlify.app alias redirects to the domain now, so it needs none) | Owner | Open |
 | Netlify: CLASSROOM_OAUTH_CLIENT_ID and CLASSROOM_OAUTH_CLIENT_SECRET | Owner | Open |
 
 ## 4. Canvas (docs/CLASSWORK.md)
 
 | Task | Who | State |
 |---|---|---|
-| Developer key from the school's Canvas admin, type API Key, redirect URI `https://meltingpots.xyz/api/classwork/callback/canvas` (and the netlify.app and localhost ones) | Owner, waiting on the admin | Open |
+| Developer key from the school's Canvas admin, type API Key, redirect URI `https://meltingpots.xyz/api/classwork/callback/canvas` (and the localhost one) | Owner, waiting on the admin | Open |
 | Netlify: CANVAS_OAUTH_CLIENT_ID, CANVAS_OAUTH_CLIENT_SECRET, CANVAS_INSTANCE_URL | Owner | Open |
 
 ## 5. Classwork secrets and variables (docs/CLASSWORK.md, Secrets and Netlify)

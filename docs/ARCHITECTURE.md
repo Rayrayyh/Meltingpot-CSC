@@ -39,8 +39,8 @@ There are five, and each one re-checks rather than trusting the last.
    `public` schema. Reads are policy-filtered by membership
    (`is_pot_member`) or by ownership (`author_id = current_uid()`, where
    `public.current_uid()` is the caller's profile id whatever signed them in:
-   Supabase Auth's uuid today, a Clerk subject mapped to one once that
-   provider is switched on, migration 0054). Writes that
+   a Clerk subject mapped to one on the live site, Supabase Auth's uuid
+   under local runs and the test suite, migration 0054). Writes that
    matter do not go through table policies at all: they go through security
    definer functions that re-check membership, role, rate limit and payload
    shape, so a client cannot construct a write that skips a guard.
@@ -76,7 +76,8 @@ database as well as by the proxy.
 | Study and organize route handlers | Server | The Pot they were asked about, as the caller | The model API key |
 | Classwork route handlers (`/api/classwork/*`) | Server | The caller's links and connections; a refresh token for one pass, in memory | The server key, the OAuth client secrets, the state secret |
 | The hourly door (`/api/classwork/sync-due`) | Server, called by pg_net | Up to five overdue links a call, as anon plus the key | The trigger bearer and the server key |
-| Supabase Auth | Supabase | Its own tables | Password hashes, TOTP secrets |
+| Clerk (the live site) | Clerk | Its own records | Password hashes, TOTP secrets, sessions |
+| Supabase Auth (local runs and the test suite; banned for the accounts that moved, 0057) | Supabase | Its own tables | Password hashes, TOTP secrets |
 | Supabase Vault | Supabase | Refresh tokens, the server key, the trigger bearer | Read only inside definer functions |
 | Postgres functions (definer) | Supabase | Everything, by design | None; they check the caller first |
 
@@ -93,8 +94,10 @@ getting nothing back from any of them.
   password rules the browser shows, answers an expected refusal (a taken
   email, a weak password) as a value so the attempt stays counted against
   the per-address limit, and hands the insert to `register_student`, which
-  no browser role can call since 0053. Passwords are stored by Supabase Auth
-  with bcrypt. Sign in is GoTrue with the session in an httpOnly cookie.
+  no browser role can call since 0053, and which admits only the test domain
+  since 0057. On the live site Clerk holds the password and the session, in
+  its own cookie on the domain; under Supabase Auth passwords are stored with
+  bcrypt and sign in is GoTrue with the session in an httpOnly cookie.
 - **Changing a password.** `/me/settings` sets the new password and then
   revokes every other session, so a session opened with the old password
   does not survive the change.

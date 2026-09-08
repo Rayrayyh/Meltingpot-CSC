@@ -83,11 +83,14 @@ export function SettingsPanel({
     if (busy || !title.trim()) return;
     setBusy(true);
     setError(null);
-    const { error: updateError } = await supabase
+    // .select proves the write landed: a refused update returns zero rows
+    // without an error, which is not "Saved".
+    const { data: updated, error: updateError } = await supabase
       .from("pots")
       .update({ title: title.trim(), description: description.trim() || null })
-      .eq("id", pot.id);
-    if (updateError) {
+      .eq("id", pot.id)
+      .select("id");
+    if (updateError || !updated || updated.length === 0) {
       setError("Saving didn't go through. Try again.");
     } else {
       setSavedNote("Saved");
@@ -115,13 +118,14 @@ export function SettingsPanel({
 
   async function archive() {
     setBusy(true);
-    const { error: updateError } = await supabase
+    const { data: archived, error: updateError } = await supabase
       .from("pots")
       .update({ archived_at: new Date().toISOString() })
-      .eq("id", pot.id);
+      .eq("id", pot.id)
+      .select("id");
     setDialog(null);
     setBusy(false);
-    if (!updateError) {
+    if (!updateError && archived && archived.length > 0) {
       router.push("/home");
       router.refresh();
     } else {
@@ -133,12 +137,13 @@ export function SettingsPanel({
     if (busy) return;
     setBusy(true);
     setError(null);
-    const { error: updateError } = await supabase
+    const { data: restored, error: updateError } = await supabase
       .from("pots")
       .update({ archived_at: null })
-      .eq("id", pot.id);
+      .eq("id", pot.id)
+      .select("id");
     setBusy(false);
-    if (updateError) {
+    if (updateError || !restored || restored.length === 0) {
       setError("Unarchiving didn't go through. Try again.");
     } else {
       router.refresh();
@@ -147,10 +152,14 @@ export function SettingsPanel({
 
   async function deletePot() {
     setBusy(true);
-    const { error: deleteError } = await supabase.from("pots").delete().eq("id", pot.id);
+    const { data: deleted, error: deleteError } = await supabase
+      .from("pots")
+      .delete()
+      .eq("id", pot.id)
+      .select("id");
     setDialog(null);
     setBusy(false);
-    if (!deleteError) {
+    if (!deleteError && deleted && deleted.length > 0) {
       router.push("/home");
       router.refresh();
     } else {
@@ -167,14 +176,15 @@ export function SettingsPanel({
       setError("You're signed out. Sign in again to leave this Pot.");
       return;
     }
-    const { error: leaveError } = await supabase
+    const { data: left, error: leaveError } = await supabase
       .from("memberships")
       .delete()
       .eq("pot_id", pot.id)
-      .eq("user_id", userId);
+      .eq("user_id", userId)
+      .select("pot_id");
     setDialog(null);
     setBusy(false);
-    if (!leaveError) {
+    if (!leaveError && left && left.length > 0) {
       router.push("/home");
       router.refresh();
     } else {

@@ -1,10 +1,11 @@
 import { getAuthUser } from "@/lib/auth/server";
 import { redirect } from "next/navigation";
 import { BrandLanding } from "@/components/landing/brand-landing";
-import { INVALID_CODE_MESSAGE } from "@/components/landing/join-card";
+import { CLOSED_POT_MESSAGE, INVALID_CODE_MESSAGE } from "@/components/landing/join-card";
 
 const LANDING_ERRORS: Record<string, string> = {
   notfound: INVALID_CODE_MESSAGE,
+  closed: CLOSED_POT_MESSAGE,
   busy: "Too many tries from this network. Wait a few minutes and try again.",
   error: "We couldn't reach that Pot just now. Try again in a moment.",
 };

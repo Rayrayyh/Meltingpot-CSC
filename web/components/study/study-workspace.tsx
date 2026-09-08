@@ -67,6 +67,12 @@ type Loaded = {
   fingerprint: string | null;
   model: string | null;
   /**
+   * Which build of the stored row this is (0057). Sent with a practice hand-in
+   * so a rebuild in the meantime is refused rather than marked against keys
+   * that belong to different questions. Null when the set is not stored.
+   */
+  generation: number | null;
+  /**
    * True when this set's answers live on the server, so handing it in records
    * a marked attempt. Sets from before the boundary carry their answers in the
    * payload and stay client-marked practice.
@@ -157,6 +163,9 @@ function message(
     return "You need to be in this Pot to study from it.";
   if (error === "generation_closed") {
     return "This Pot is set so only maintainers build new study material. Anything the class has already built still opens.";
+  }
+  if (error === "study_set_removed") {
+    return "A maintainer took the set for these notes out of the Pot, so it cannot be built again from them. Ask them if you need it back.";
   }
   return detail || "This study set could not be built.";
 }
@@ -250,6 +259,7 @@ export function StudyWorkspace({
         fingerprint?: string | null;
         model?: string | null;
         secured?: boolean;
+        generation?: number | null;
         error?: string;
         detail?: string;
       } | null;
@@ -265,6 +275,7 @@ export function StudyWorkspace({
           fingerprint: payload.fingerprint ?? null,
           model: payload.model ?? null,
           secured: payload.secured === true,
+          generation: typeof payload.generation === "number" ? payload.generation : null,
         } satisfies Loaded,
       };
     },
@@ -361,7 +372,7 @@ export function StudyWorkspace({
     setErrorCode(null);
     const { data } = await supabaseBrowser()
       .from("study_sets")
-      .select("id, payload, created_at, options, secured")
+      .select("id, payload, created_at, options, secured, generation")
       .eq("id", set.id)
       .is("removed_at", null)
       .maybeSingle();
@@ -379,6 +390,7 @@ export function StudyWorkspace({
       fingerprint: null,
       model: null,
       secured: data.secured === true,
+      generation: data.generation,
     });
     // The settings move to the ones this test was written for, so the line
     // above it describes the test on screen rather than the last thing chosen.
@@ -457,9 +469,13 @@ export function StudyWorkspace({
           p_attempt_id: attemptId,
           p_set_id: opened.studySetId,
           p_answers: { order, choices: answers } as unknown as Json,
+          p_generation: opened.generation,
         },
       );
-      if (rpcError || !data) throw new Error("submit_failed");
+      // The database's own word travels up, so the session can say which
+      // failure this is: a rebuilt set, a removed one, a quota, or the network.
+      if (rpcError) throw new Error(rpcError.message);
+      if (!data) throw new Error("submit_failed");
       const returned = data as {
         firstPass?: boolean;
         correct?: number;
@@ -751,10 +767,12 @@ export function StudyWorkspace({
               shortcuts are global, and losing a half finished deck to a
               stray S would be the worst thing they could do. */}
           {kind === "flashcards" ? (
-            <div data-no-shortcuts>
+            <div data-no-shortcuts="page">
               <FlashcardSession
-                // A rebuilt deck is a new session, not the old one with new cards.
-                key={opened.studySetId ?? opened.generatedAt ?? "deck"}
+                // A rebuilt deck is a new session, not the old one with new
+                // cards. The store keeps one row per material, so a rebuild
+                // keeps the id; the build time is what tells them apart.
+                key={`${opened.studySetId ?? "new"}:${opened.generatedAt ?? "deck"}`}
                 cards={(opened.result as FlashcardResult).cards}
                 onRegenerate={() => void generate(true)}
                 regenerating={busy}
@@ -764,9 +782,9 @@ export function StudyWorkspace({
             </div>
           ) : null}
           {kind === "practice" ? (
-            <div data-no-shortcuts>
+            <div data-no-shortcuts="page">
               <PracticeSession
-                key={opened.studySetId ?? `${opened.generatedAt}:${optionsKey}`}
+                key={`${opened.studySetId ?? "new"}:${opened.generatedAt ?? "test"}:${optionsKey}`}
                 title={(opened.result as PracticeResult).title}
                 questions={(opened.result as PracticeResult).questions}
                 onRegenerate={() => setSettingUp(true)}

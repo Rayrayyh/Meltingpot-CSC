@@ -70,7 +70,7 @@ export function PotFeed({
               <p className="mt-0.5 text-[12px] text-ink-faint">Browse the source notes or generate material from the full class vault.</p>
             </div>
             <div className="grid gap-3 sm:grid-cols-2">
-              <StudyTile href="#raw-notes" title="Raw Notes" description="Shared notes from everyone." icon={<FileText />} />
+              <StudyTile href="#raw-notes" title="Raw notes" description="Shared notes from everyone." icon={<FileText />} />
               <StudyTile href={`/p/${pot.id}/study/summary`} title="Summary" description="Build a fresh study guide." icon={<Sparkle />} />
               <StudyTile href={`/p/${pot.id}/study/flashcards`} title="Flashcards" description="Generate recall cards from the Pot." icon={<Cards />} />
               <StudyTile href={`/p/${pot.id}/study/practice`} title="Practice" description="Set the length and difficulty, then sit it." icon={<Brain />} />

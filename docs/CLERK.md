@@ -1,10 +1,11 @@
 # Clerk behind the seam
 
-How to move sign in from Supabase Auth to Clerk, what is already built, and what
-is left for the person with the dashboards. Written 2026-09-05 after the owner
-asked for the groundwork; decision 041 holds the reasoning. Nothing here is
-switched on: the live site runs Supabase Auth until `NEXT_PUBLIC_AUTH_PROVIDER`
-says otherwise.
+How sign in moved from Supabase Auth to Clerk, what was built for it, and what
+is still the owner's to do. Written 2026-09-05 after the owner asked for the
+groundwork; decision 041 holds the reasoning. Live since 2026-09-08: the site
+at meltingpots.xyz signs in through Clerk (`NEXT_PUBLIC_AUTH_PROVIDER=clerk` on
+the Netlify site), and Supabase Auth remains for local runs and the Playwright
+suite, whose seed accounts never moved.
 
 ## Where this stands
 
@@ -324,7 +325,14 @@ The end to end suite's login helper still speaks Supabase; moving it to
 - Clerk's `fva` claim carries the age of each factor. `getAssuranceLevel()`
   reads it; `has_required_aal()` reads it in Postgres.
 - Rate limiting of sign in and sign up moves to Clerk. `sign_up_student` and
-  its per address limit stay for the Supabase path.
+  its per address limit stay for the Supabase path, and since 0057 that path
+  admits only addresses on the test domain (`@meltingpot.dev`): a real person
+  signs up through Clerk, never around it.
+- An account that moved keeps its `auth.users` row, banned, with every
+  session and refresh token revoked (0057 did this for the first ten; the
+  import script's `mapping.sql` does it for any account moved later). The
+  row stays because deleting it would fire the trigger that removes the
+  profile, and the profile is the person.
 - Sign in and sign up limits move to Clerk, and the numbers change: 5 sign
   ins or sign ups and 3 code attempts per 10 seconds per IP address, and a
   429 blocks that endpoint for the Retry-After period. A class signing in

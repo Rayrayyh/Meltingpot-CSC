@@ -86,7 +86,7 @@ export function NavProfile({
           <div className="my-1 border-t border-edge" />
           <MenuItem
             icon={<SignOut className="size-4" />}
-            label="Log out"
+            label="Sign out"
             onClick={async () => {
               setOpen(false);
               await getClientAuth().signOut();

@@ -14,7 +14,7 @@ the landing header.
 
 Three stored states, and the difference matters:
 
-- absent: dark, the default
+- absent: light, the default
 - `"light"` / `"dark"`: an explicit choice
 - `"system"`: also an explicit choice, stored so it can be told apart from
   never having chosen. Only this one leaves `data-theme` off the root and lets

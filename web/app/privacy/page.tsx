@@ -16,7 +16,7 @@ export default async function PrivacyPage() {
       signedIn={Boolean(user)}
       eyebrow="What we know and who sees it"
       title="Privacy policy"
-      updated="5 September 2026"
+      updated="8 September 2026"
     >
       <section>
         <h2>What we collect</h2>
@@ -86,10 +86,12 @@ export default async function PrivacyPage() {
       <section>
         <h2>Where it lives</h2>
         <p>
-          Data is stored in Supabase, which runs on managed cloud
-          infrastructure. Every table is protected by row level security, so
-          the database itself enforces who can read what, and accounts that
-          maintain classes can turn on two-step sign in.
+          Sign in is handled by Clerk: your email address, password,
+          authenticator secret if you set one up, and your sessions live
+          there. Your notes and class data are stored in Supabase, which runs
+          on managed cloud infrastructure. Every table is protected by row
+          level security, so the database itself enforces who can read what,
+          and accounts that maintain classes can turn on two-step sign in.
         </p>
       </section>
       <section>

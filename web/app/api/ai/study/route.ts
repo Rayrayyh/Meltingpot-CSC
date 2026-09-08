@@ -17,6 +17,16 @@ import {
 import { getAuthUser } from "@/lib/auth/server";
 import { supabaseServer } from "@/lib/supabase/server";
 
+/** True when a normalised result has nothing to study in it. */
+function studyResultIsEmpty(kind: StudyKind, result: unknown): boolean {
+  const item = result as Record<string, unknown>;
+  if (kind === "flashcards") return !Array.isArray(item.cards) || item.cards.length === 0;
+  if (kind === "practice") return !Array.isArray(item.questions) || item.questions.length === 0;
+  const overview = typeof item.overview === "string" ? item.overview.trim() : "";
+  const topics = Array.isArray(item.keyTopics) ? item.keyTopics : [];
+  return overview.length === 0 && topics.length === 0;
+}
+
 const KINDS = new Set<StudyKind>(["summary", "flashcards", "practice"]);
 
 /** Generated material is never HTTP cached; the store below is the only cache. */
@@ -90,7 +100,7 @@ export async function POST(request: Request) {
   if (!force) {
     const { data: stored } = await supabase
       .from("study_sets")
-      .select("id, payload, model, created_at, secured")
+      .select("id, payload, model, created_at, secured, generation")
       .eq("pot_id", potId)
       .eq("kind", kind)
       .eq("source_fingerprint", fingerprint)
@@ -106,6 +116,7 @@ export async function POST(request: Request) {
           generatedAt: stored.created_at,
           studySetId: stored.id,
           secured: stored.secured === true,
+          generation: stored.generation,
         },
         { headers: NO_STORE },
       );
@@ -123,6 +134,26 @@ export async function POST(request: Request) {
       { error: "generation_closed" },
       { status: 403, headers: NO_STORE },
     );
+  }
+
+  // A maintainer took the set for this material down (0053). For anyone
+  // else, building it again would spend a generation, call the model and
+  // hand back the full test, answer key included, because the save is then
+  // refused. Asked here, before any of that, through a definer function:
+  // members cannot see removed rows themselves.
+  const moderates = membership.role === "maintainer" || membership.role === "owner";
+  if (!moderates) {
+    const { data: removed } = await supabase.rpc("study_set_removed_for", {
+      p_pot_id: potId,
+      p_kind: kind,
+      p_fingerprint: fingerprint,
+    });
+    if (removed === true) {
+      return NextResponse.json(
+        { error: "study_set_removed" },
+        { status: 409, headers: NO_STORE },
+      );
+    }
   }
 
   // Only now, with a real generation ahead, do the key and the quota matter.
@@ -196,6 +227,11 @@ export async function POST(request: Request) {
       schema: studySchemas[kind],
     });
     const result = normalizeStudyResult(kind, generated, options.questionCount);
+    // A set with nothing in it is a failed build, not a set. Stored, it would
+    // have been served to the whole class as the set for this material.
+    if (studyResultIsEmpty(kind, result)) {
+      throw new MixError("The mixer returned an empty set", 502);
+    }
 
     // A practice test is split before anything leaves this function. The
     // member payload keeps questions and choices; the answers and their
@@ -244,6 +280,17 @@ export async function POST(request: Request) {
       p_keys: keys,
     });
     const stored = Boolean(saved.data);
+    // Which build of the row this is (0057). A practice hand-in names it, so
+    // a rebuild in the meantime cannot be marked against the wrong keys.
+    let generation: number | null = null;
+    if (stored && kind === "practice") {
+      const { data: row } = await supabase
+        .from("study_sets")
+        .select("generation")
+        .eq("id", saved.data as string)
+        .maybeSingle();
+      generation = row?.generation ?? null;
+    }
     // A maintainer took this material down (0053). The person still gets
     // what they waited for, but nothing is stored and the browser is not
     // asked to try storing it again, which would meet the same refusal.
@@ -257,6 +304,7 @@ export async function POST(request: Request) {
         generatedAt: new Date().toISOString(),
         studySetId: saved.data ?? null,
         secured: kind === "practice" && stored,
+        generation,
         removed,
         // Returned so the browser can save this set itself when the server
         // save failed. For a practice test that fallback stores the full

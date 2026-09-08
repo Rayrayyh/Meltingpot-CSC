@@ -173,6 +173,15 @@ export function ContributeFlow({
   const cancelOrganize = useRef(false);
   const organizeAbort = useRef<AbortController | null>(null);
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // The raw text as last typed and whether a write for it is still waiting
+  // on the 700 ms debounce, so leaving the page can issue that write instead
+  // of dropping it. Refs, because the flush runs from an unmount cleanup and
+  // from Cancel, neither of which should re-run on every keystroke.
+  const latestRaw = useRef(rawText);
+  const rawPending = useRef(false);
+  // Cleared on unmount so a create that lands after leaving cannot rewrite
+  // the address bar of whatever page the reader is on by then.
+  const mounted = useRef(true);
   // The organizer's own last output, so "Organize again" can tell an
   // untouched result from one the contributor has since rewritten. A resumed
   // draft starts null: its stored version may already carry edits made in an
@@ -196,7 +205,8 @@ export function ContributeFlow({
         .insert({
           pot_id: potId,
           author_id: userId,
-          raw_text: rawText,
+          // The column's own limit; a prefill can arrive longer than it.
+          raw_text: rawText.slice(0, 20000),
           // Provenance only; the policy checks the item is one the author can
           // see in this Pot or in their own private list (0049).
           source_lms_item_id: prefill?.itemId ?? null,
@@ -207,7 +217,9 @@ export function ContributeFlow({
         setContributionId(data.id);
         // Without this the composer URL still has no id, so a refresh opens
         // a blank flow and the next keystroke starts a second draft.
-        window.history.replaceState(null, "", `/p/${potId}/contribute/${data.id}`);
+        if (mounted.current) {
+          window.history.replaceState(null, "", `/p/${potId}/contribute/${data.id}`);
+        }
       }
       return data?.id ?? null;
     })();
@@ -228,7 +240,9 @@ export function ContributeFlow({
     if (rawText.trim().length === 0) return;
     if (!dirty.current) return;
     if (saveTimer.current) clearTimeout(saveTimer.current);
+    rawPending.current = true;
     saveTimer.current = setTimeout(async () => {
+      rawPending.current = false;
       const id = await ensureContribution();
       if (!id) return;
       // .select proves the write landed: an RLS-blocked or signed-out
@@ -249,9 +263,33 @@ export function ContributeFlow({
     };
   }, [rawText, ensureContribution, supabase]);
 
+  // Issues the write the debounce is still holding, with the newest text.
+  // Called on Cancel and when the composer unmounts, so the last few hundred
+  // milliseconds of typing survive the sidebar as well as the Continue button.
+  const flushRaw = useCallback(async () => {
+    if (!rawPending.current) return;
+    rawPending.current = false;
+    if (saveTimer.current) clearTimeout(saveTimer.current);
+    const text = latestRaw.current;
+    if (text.trim().length === 0) return;
+    const id = await ensureContribution();
+    if (!id) return;
+    await supabase.from("contributions").update({ raw_text: text }).eq("id", id);
+  }, [ensureContribution, supabase]);
+  const flushRawRef = useRef(flushRaw);
+  flushRawRef.current = flushRaw;
+  useEffect(() => {
+    mounted.current = true;
+    return () => {
+      mounted.current = false;
+      void flushRawRef.current();
+    };
+  }, []);
+
   function handleRawTextChange(next: string) {
     dirty.current = true;
     const trimmed = next.slice(0, 20000);
+    latestRaw.current = trimmed;
     setRawText(trimmed);
     // Autosave only fires for non-empty text; clearing to whitespace must
     // not leave the indicator stuck on "Saving" for a write that never runs.
@@ -437,7 +475,17 @@ export function ContributeFlow({
 
   async function removeAttachment(id: string) {
     const target = attachments.find((a) => a.id === id);
-    await supabase.from("attachments").delete().eq("id", id);
+    // .select proves the delete landed: a refused one returns zero rows
+    // without an error, and the chip must not vanish for a row still there.
+    const { data, error } = await supabase
+      .from("attachments")
+      .delete()
+      .eq("id", id)
+      .select("id");
+    if (error || !data || data.length === 0) {
+      setErrorNote("That attachment couldn't be removed. Try again.");
+      return;
+    }
     // Detaching an uploaded file also removes the object, so nothing
     // orphans in storage. Best effort; the row is the source of truth.
     if (target?.storage_path) {
@@ -767,7 +815,13 @@ export function ContributeFlow({
           icon={<Eye />}
           message="Original text will always be preserved."
         >
-          <Button variant="quiet" href={`/p/${potId}`}>
+          <Button
+            variant="quiet"
+            onClick={async () => {
+              await flushRaw();
+              router.push(`/p/${potId}`);
+            }}
+          >
             Cancel
           </Button>
           <Button
@@ -1133,6 +1187,7 @@ export function ContributeFlow({
           <Button
             variant="quiet"
             onClick={async () => {
+              await flushRaw();
               await flushOrganized();
               router.push(`/p/${potId}`);
             }}

@@ -23,7 +23,9 @@ export default async function ContributePage({
   const prefill: ContributePrefill | undefined = item
     ? {
         itemId: item.id,
-        rawText: [item.title, item.description].filter(Boolean).join("\n\n"),
+        // A title and a description can together pass the column's limit;
+        // the composer would then fail its first save.
+        rawText: [item.title, item.description].filter(Boolean).join("\n\n").slice(0, 20000),
         links: [
           ...item.materials.map((m) => ({ title: m.title, url: m.url })),
           ...(item.url ? [{ title: `${item.title} (${item.courseName})`, url: item.url }] : []),

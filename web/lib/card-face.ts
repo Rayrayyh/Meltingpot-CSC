@@ -70,11 +70,20 @@ export function applyCardFace(next: CardFaceId) {
 
 /** Fires on this tab's own changes and on another tab's. */
 export function subscribeToCardFace(onChange: () => void) {
+  // Another tab's choice restamps this document too, as the theme does.
+  const onStorage = (event: StorageEvent) => {
+    if (event.key !== null && event.key !== CARD_FACE_STORAGE_KEY) return;
+    const face = readCardFace();
+    const root = document.documentElement;
+    if (face === DEFAULT_CARD_FACE) root.removeAttribute("data-card-face");
+    else root.setAttribute("data-card-face", face);
+    onChange();
+  };
   window.addEventListener(CARD_FACE_EVENT, onChange);
-  window.addEventListener("storage", onChange);
+  window.addEventListener("storage", onStorage);
   return () => {
     window.removeEventListener(CARD_FACE_EVENT, onChange);
-    window.removeEventListener("storage", onChange);
+    window.removeEventListener("storage", onStorage);
   };
 }
 

@@ -1,4 +1,4 @@
-import { NextResponse, type NextRequest } from "next/server";
+import { NextResponse, type NextFetchEvent, type NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 import { clerkMiddleware } from "@clerk/nextjs/server";
 import { usingClerk } from "@/lib/auth/provider";
@@ -125,10 +125,44 @@ const clerkProxy = () =>
     process.env.APP_ORIGIN ? { authorizedParties: [process.env.APP_ORIGIN] } : undefined,
   );
 
-export const proxy = usingClerk() ? clerkProxy() : supabaseProxy;
+/**
+ * The same path on the address the site is served at, when the request came
+ * to the netlify.app alias instead. Clerk's session cookie is set for the
+ * domain, so the alias can show the landing but never hold a sign in: a
+ * person who followed an old link would sign in and land signed out. The
+ * hourly classwork door is exempt until the job in the database (0058)
+ * has been seen knocking on the domain.
+ */
+function servedAddress(request: NextRequest): URL | null {
+  const origin = process.env.APP_ORIGIN;
+  if (!origin) return null;
+  const host = request.headers.get("host") ?? request.nextUrl.host;
+  if (!host.endsWith(".netlify.app")) return null;
+  const home = new URL(origin);
+  if (host === home.host) return null;
+  if (request.nextUrl.pathname === "/api/classwork/sync-due") return null;
+  home.pathname = request.nextUrl.pathname;
+  home.search = request.nextUrl.search;
+  return home;
+}
+
+const chosenProxy = usingClerk() ? clerkProxy() : supabaseProxy;
+
+export const proxy = (request: NextRequest, event: NextFetchEvent) => {
+  const home = servedAddress(request);
+  if (home) return NextResponse.redirect(home, 308);
+  return chosenProxy(request, event);
+};
 
 export const config = {
   matcher: [
     "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:png|jpg|jpeg|gif|svg|webp|ico|txt|xml)$).*)",
+    // The first pattern skips anything that ends in an image or text
+    // extension, and an attachment route ends in the file's own name:
+    // /api/attachments/<pot>/<contribution>/photo.png. Under Clerk a route
+    // the middleware never saw cannot read the session, so those files came
+    // back 404 for the members allowed to see them. Every API route runs
+    // through here now, whatever its path ends in.
+    "/api/:path*",
   ],
 };

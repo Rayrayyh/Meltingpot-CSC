@@ -66,9 +66,10 @@ export const metadata: Metadata = {
 // Applies the persisted theme before first paint so neither theme flashes,
 // and leaves the reader's time zone in a cookie so the server can cut the
 // days of their own record where they live rather than in UTC.
-// Nothing stored means dark: the owner's call, 2026-08-30. It has to be
-// stamped here rather than left to the system preference, or a viewer whose
-// machine is light would see light before the choice they never made is even
+// Nothing stored means light: the owner's call, 2026-09-08, decision 020,
+// and DEFAULT_THEME in lib/theme.ts must say the same. It has to be stamped
+// here rather than left to the system preference, or a viewer whose machine
+// is dark would see dark before the choice they never made is even
 // readable. Only "system" leaves the attribute off and lets the media query
 // decide.
 const themeInit = `(function(){var d=document.documentElement;try{var t=localStorage.getItem("mp-theme");if(t==="light"||t==="dark"){d.setAttribute("data-theme",t)}else if(t!=="system"){d.setAttribute("data-theme","light")}if(localStorage.getItem("mp:nav-collapsed")==="1"){d.setAttribute("data-nav","collapsed")}var f=localStorage.getItem("mp-card-face");if(f&&/^(${CARD_FACE_IDS.filter((id) => id !== DEFAULT_CARD_FACE).join("|")})$/.test(f)){d.setAttribute("data-card-face",f)}}catch(e){d.setAttribute("data-theme","light")}try{document.cookie="mp-tz="+encodeURIComponent(Intl.DateTimeFormat().resolvedOptions().timeZone)+";path=/;max-age=31536000;SameSite=Lax"}catch(e){}})()`;

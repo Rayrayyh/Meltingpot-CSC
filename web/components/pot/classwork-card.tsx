@@ -49,10 +49,13 @@ export function ClassworkCard({
   const [unlinking, setUnlinking] = useState<LinkSummary | null>(null);
 
   const choices = useMemo<Choice[]>(() => {
-    const linked = new Set(links.map((l) => `${l.connectionId}:${l.externalCourseId}`));
+    // Keyed on the course itself rather than on whose connection brought
+    // it, so a course another maintainer already linked is not offered a
+    // second time and every item shown twice.
+    const linked = new Set(links.map((l) => `${l.provider}:${l.externalCourseId}`));
     return connections.flatMap((connection) =>
       connection.courses
-        .filter((course) => !linked.has(`${connection.id}:${course.externalId}`))
+        .filter((course) => !linked.has(`${connection.provider}:${course.externalId}`))
         .map((course) => ({
           value: `${connection.id}:${course.externalId}`,
           label: `${course.name}${course.section ? ` (${course.section})` : ""}${connections.length > 1 ? `, ${providerName(connection.provider)}` : ""}`,

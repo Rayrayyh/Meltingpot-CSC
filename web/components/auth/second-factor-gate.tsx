@@ -43,10 +43,14 @@ export function SecondFactorGate({
     try {
       await getClientAuth().verifySecondFactor({ factorId, code });
     } catch (err) {
+      const reason = err instanceof AuthError ? err.code : null;
+      if (reason !== "invalid_code") console.error("[auth]", err);
       setError(
-        err instanceof AuthError && err.code === "invalid_code"
+        reason === "invalid_code"
           ? "That code was not right. Check the app and try the current one."
-          : "That code could not be checked. Try again.",
+          : reason === "reverification_required"
+            ? "This step cannot be finished from here. Sign out and sign back in."
+            : "That code could not be checked. Try again.",
       );
       setBusy(false);
       return;

@@ -31,7 +31,7 @@ test.describe("account and landing for signed-in people", () => {
     await account.click();
     await expect(page.getByRole("button", { name: "My contributions" })).toBeVisible();
     await expect(page.getByRole("button", { name: "About MeltingPot" })).toBeVisible();
-    await expect(page.getByRole("button", { name: "Log out" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Sign out" })).toBeVisible();
 
     await page.getByRole("button", { name: "Settings" }).click();
     await expect(page).toHaveURL(/\/me\/settings/);
@@ -108,7 +108,7 @@ test.describe("account and landing for signed-in people", () => {
 
     await page.goto("/");
     await expect(
-      page.getByRole("heading", { name: "Everyone takes notes. Meltingpot brings them together." }),
+      page.getByRole("heading", { name: "Everyone takes notes. MeltingPot brings them together." }),
     ).toBeVisible();
 
     // No sign-in or sign-up prompts for someone already signed in.

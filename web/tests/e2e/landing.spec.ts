@@ -19,7 +19,7 @@ test.describe("brand landing", () => {
     // Nothing may reintroduce a scroll takeover silently.
     await expect(page.locator("html")).not.toHaveClass(/(^|\s)lenis(\s|$)/);
     await expect(
-      page.getByRole("heading", { name: "Everyone takes notes. Meltingpot brings them together." }),
+      page.getByRole("heading", { name: "Everyone takes notes. MeltingPot brings them together." }),
     ).toBeVisible();
     // The nav offers both paths: sign in and the orange get-started pill.
     await expect(page.getByRole("link", { name: "Get started" }).first()).toBeVisible();

@@ -834,6 +834,7 @@ export type Database = {
           options: Json | null;
           generated_by: string;
           secured: boolean;
+          generation: number;
           created_at: string;
           removed_at: string | null;
           removed_by: string | null;
@@ -849,6 +850,7 @@ export type Database = {
           options?: Json | null;
           generated_by: string;
           secured?: boolean;
+          generation?: number;
           removed_at?: string | null;
           removed_by?: string | null;
           removed_reason?: string | null;
@@ -1029,8 +1031,17 @@ export type Database = {
         Returns: string;
       };
       submit_practice_test: {
-        Args: { p_attempt_id: string; p_set_id: string; p_answers: Json };
+        Args: {
+          p_attempt_id: string;
+          p_set_id: string;
+          p_answers: Json;
+          p_generation?: number | null;
+        };
         Returns: Json;
+      };
+      study_set_removed_for: {
+        Args: { p_pot_id: string; p_kind: string; p_fingerprint: string };
+        Returns: boolean;
       };
       record_flashcard_run: {
         Args: {

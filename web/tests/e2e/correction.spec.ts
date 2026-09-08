@@ -43,7 +43,7 @@ test.describe("correction loop", () => {
     await priya
       .getByLabel("Supporting source (optional)")
       .fill("Lecture 1 slides, slide 9");
-    await priya.getByText("A maintainer approves changes").isVisible();
+    await expect(priya.getByText("A maintainer approves changes")).toBeVisible();
     await priya.getByRole("button", { name: "Continue", exact: true }).click();
 
     // Before and after with the difference made explicit.

@@ -257,7 +257,9 @@ export const clerkClientAuth: ClientAuthProvider = {
       if (!session) throw new AuthError("unknown", "Not signed in.");
       const started = await session.startVerification({ level: "second_factor" });
       if (started.status === "needs_first_factor") {
-        throw new AuthError("unknown", "Clerk wants the password again first. Sign out and back in.");
+        // Nothing this page collects can satisfy that; the gate says so
+        // instead of inviting a retry that would stop in the same place.
+        throw new AuthError("reverification_required", "Clerk wants the password again first. Sign out and back in.");
       }
       if (started.status !== "complete") {
         const verified = await session.attemptSecondFactorVerification({ strategy: "totp", code });
@@ -292,7 +294,10 @@ export const clerkClientAuth: ClientAuthProvider = {
     try {
       await c.user.verifyTOTP({ code });
     } catch (error) {
-      throw new AuthError("invalid_code", clerkErrorMessage(error));
+      // A wrong code becomes invalid_code through the same map as everything
+      // else; a dropped connection or a rate limit keeps its own name rather
+      // than being reported as a code that did not match.
+      throw failure(error);
     }
     // Enrolment may or may not clear the factor for this session (Clerk's
     // docs say the age is stamped at sign in and at reverification). Either

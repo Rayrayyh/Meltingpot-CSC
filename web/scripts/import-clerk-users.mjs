@@ -92,6 +92,12 @@ for (const u of users) {
     console.error(`${u.email}: created ${clerkId}${u.totp_secret ? " (authenticator carried over)" : ""}`);
   }
   lines.push(`update public.profiles set clerk_id = '${clerkId}' where id = '${u.id}';`);
+  // The account now signs in through Clerk; its Supabase Auth row must not
+  // stay a second door beside Clerk's second factor (0057 did this for the
+  // first ten). Banned rather than deleted: deleting it would fire the
+  // trigger that removes the profile.
+  lines.push(`update auth.users set banned_until = 'infinity' where id = '${u.id}';`);
+  lines.push(`delete from auth.sessions where user_id = '${u.id}';`);
   mapped += 1;
   // The Backend API allows 1000 requests per 10 seconds on production; this
   // is nowhere near it, but a small gap keeps the log readable.

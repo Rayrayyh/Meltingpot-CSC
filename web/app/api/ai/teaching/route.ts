@@ -75,7 +75,11 @@ export async function POST(request: Request) {
 
   const rate = await supabase.rpc("consume_ai_generation", { p_kind: "teaching" });
   if (rate.error) {
-    return NextResponse.json({ error: "rate_limited" }, { status: 429, headers: NO_STORE });
+    const limited = rate.error.message.includes("rate_limited");
+    return NextResponse.json(
+      { error: limited ? "rate_limited" : "ai_unavailable" },
+      { status: limited ? 429 : 503, headers: NO_STORE },
+    );
   }
 
   // Sorted by miss rate so the model reads the worst first, and capped so a

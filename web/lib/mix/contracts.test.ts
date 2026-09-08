@@ -23,6 +23,20 @@ describe("mixed response normalization", () => {
     expect(result.usefulForNote).toBe(false);
   });
 
+  it("drops a question whose answer names no choice rather than marking the first one right", () => {
+    const result = normalizeStudyResult("practice", {
+      title: "Test",
+      questions: [
+        { prompt: "Kept", choices: ["a", "b", "c", "d"], answerIndex: 3, explanation: "Because", sourceNoteTitle: "Note" },
+        { prompt: "Out of range", choices: ["a", "b", "c", "d"], answerIndex: 7, explanation: "x", sourceNoteTitle: "Note" },
+        { prompt: "Missing", choices: ["a", "b", "c", "d"], explanation: "x", sourceNoteTitle: "Note" },
+        { prompt: "Negative", choices: ["a", "b", "c", "d"], answerIndex: -2, explanation: "x", sourceNoteTitle: "Note" },
+      ],
+    }, 10) as { questions: Array<{ prompt: string; answerIndex: number }> };
+    expect(result.questions.map((q) => q.prompt)).toEqual(["Kept"]);
+    expect(result.questions[0].answerIndex).toBe(3);
+  });
+
   it("rejects malformed practice questions", () => {
     const result = normalizeStudyResult("practice", {
       title: "Quiz",

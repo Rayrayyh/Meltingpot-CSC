@@ -52,13 +52,25 @@ export function applyThemeChoice(next: ThemeChoice) {
 
 /** Fires on this tab's own changes and on another tab's. */
 export function subscribeToTheme(onChange: () => void) {
+  // A choice made in another tab arrives as a storage event. The controls
+  // used to follow it while the page itself kept the old theme; the attribute
+  // is restamped from what is stored, without writing it back or announcing
+  // it again, before the listener hears.
+  const onStorage = (event: StorageEvent) => {
+    if (event.key !== null && event.key !== THEME_STORAGE_KEY) return;
+    const choice = readThemeChoice();
+    const root = document.documentElement;
+    if (choice === "system") root.removeAttribute("data-theme");
+    else root.setAttribute("data-theme", choice);
+    onChange();
+  };
   window.addEventListener(THEME_EVENT, onChange);
-  window.addEventListener("storage", onChange);
+  window.addEventListener("storage", onStorage);
   const media = window.matchMedia("(prefers-color-scheme: dark)");
   media.addEventListener("change", onChange);
   return () => {
     window.removeEventListener(THEME_EVENT, onChange);
-    window.removeEventListener("storage", onChange);
+    window.removeEventListener("storage", onStorage);
     media.removeEventListener("change", onChange);
   };
 }

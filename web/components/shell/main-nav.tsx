@@ -322,6 +322,11 @@ export function MainNav({
       // modifier is held the keystroke belongs to the browser or the OS, and
       // Control H, Command S and friends must keep meaning what they mean.
       if (event.metaKey || event.ctrlKey) return;
+      // A flashcard or practice run claims the bare keys for the whole page,
+      // not only while focus sits inside it: after a click on the page's
+      // background the target is the body, and losing a half finished run
+      // to a stray S is still the worst thing this shortcut could do.
+      if (document.querySelector('[data-no-shortcuts="page"]')) return;
       const href = DESTINATION_KEYS[event.key.toLowerCase()];
       if (!href) return;
       event.preventDefault();

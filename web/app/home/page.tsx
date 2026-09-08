@@ -16,7 +16,7 @@ import { UserShell } from "@/components/shell/user-shell";
 import { Button } from "@/components/ui/button";
 import { Card, CardSection, Eyebrow } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
-import { INVALID_CODE_MESSAGE } from "@/components/landing/join-card";
+import { CLOSED_POT_MESSAGE, INVALID_CODE_MESSAGE } from "@/components/landing/join-card";
 import {
   classworkOffered,
   getConnections,
@@ -49,11 +49,13 @@ export default async function HomePage({ searchParams }: PageProps<"/home">) {
   const joinError =
     params.error === "notfound"
       ? INVALID_CODE_MESSAGE
-      : params.error === "busy"
-        ? "Too many tries from this network. Wait a few minutes and try again."
-        : params.error === "error"
-          ? "We couldn't reach that Pot just now. Try again in a moment."
-          : null;
+      : params.error === "closed"
+        ? CLOSED_POT_MESSAGE
+        : params.error === "busy"
+          ? "Too many tries from this network. Wait a few minutes and try again."
+          : params.error === "error"
+            ? "We couldn't reach that Pot just now. Try again in a moment."
+            : null;
   // Classwork reads only run on a site where a provider can be connected;
   // everywhere else Home costs exactly what it did before.
   const offered = classworkOffered();

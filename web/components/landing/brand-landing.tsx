@@ -42,7 +42,7 @@ export function BrandLanding({
           <h1 className="font-display text-[32px] sm:text-[clamp(2.1rem,3.4vw,3.4rem)] font-semibold leading-[1.08] tracking-tight text-ink">
             Everyone takes notes.
             <br />
-            Meltingpot brings
+            MeltingPot brings
             <br />
             them together.
           </h1>
@@ -117,7 +117,7 @@ export function BrandLanding({
             </h2>
             <p className="text-lg text-ink-muted leading-relaxed">
               A classmate&apos;s notebook often holds the note you need, written
-              in a hurry with no other reader in mind. Meltingpot prepares an
+              in a hurry with no other reader in mind. MeltingPot prepares an
               organized version alongside the original, with uncertain passages
               marked, and shares it with the class once the writer approves.
             </p>

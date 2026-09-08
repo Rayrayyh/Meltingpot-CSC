@@ -107,6 +107,9 @@ export function FlashcardSession({
 
   const tags = deckTags(cards);
   const progress = flashcardProgress(session);
+  // What "study the rest" will actually deal: every card not yet marked
+  // known, which mid round includes the ones skipped past or not reached.
+  const notYetKnown = session.order.filter((card) => session.verdicts[card] !== "known").length;
   const recordedRound = useRef(false);
   useEffect(() => {
     if (!session.finished) {
@@ -306,7 +309,7 @@ export function FlashcardSession({
                 size="sm"
                 onClick={() => dispatch({ type: "studyLearning" })}
               >
-                Study the {progress.learning} still learning
+                Study the {notYetKnown} not yet known
               </Button>
             ) : null}
           </div>

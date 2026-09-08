@@ -114,7 +114,7 @@ export const studySchemas = {
           properties: {
             prompt: { type: "string" },
             choices: { type: "array", items: { type: "string" } },
-            answerIndex: { type: "integer" },
+            answerIndex: { type: "integer", minimum: 0, maximum: 3 },
             explanation: { type: "string" },
             sourceNoteTitle: { type: "string" },
           },
@@ -231,10 +231,16 @@ export function normalizeStudyResult(
       const answerIndex = Math.trunc(Number(row.answerIndex));
       return {
         prompt: text(row.prompt, 900), choices,
-        answerIndex: answerIndex >= 0 && answerIndex < choices.length ? answerIndex : 0,
+        // An answer that names no choice used to become the first one, which
+        // marked the first choice right for a question whose answer nobody
+        // knew. It is a sentinel now, and the filter below drops the question.
+        answerIndex:
+          Number.isInteger(answerIndex) && answerIndex >= 0 && answerIndex < choices.length
+            ? answerIndex
+            : -1,
         explanation: text(row.explanation, 900), sourceNoteTitle: text(row.sourceNoteTitle, 160),
       };
-    }).filter((question) => question.prompt && question.choices.length === 4),
+    }).filter((question) => question.prompt && question.choices.length === 4 && question.answerIndex >= 0),
   };
 }
 
