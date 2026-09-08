@@ -204,23 +204,53 @@ against a development id goes stale at the switch. On the development instance
 sign the seed and test accounts up fresh and let them be thrown away.
 
 Clerk's Backend API imports users with their bcrypt hashes, so nobody has to
-reset a password. For each `auth.users` row call `clerkClient().users.createUser`
-(POST /users) with `emailAddress`, `passwordDigest` (the `encrypted_password`
-column; pgcrypto's `$2a$` hashes are the shape Clerk expects),
-`passwordHasher: "bcrypt"`, `externalId` set to the profile uuid (Clerk then
-carries the mapping too, and its `user.deleted` event names it),
-`unsafeMetadata: { displayName }` from `profiles.display_name`, `createdAt`,
-and `totpSecret` from `auth.mfa_factors.secret` for anyone with a verified
-factor, or they arrive without one and enrol again. Addresses are created
-verified; no email is sent. The endpoint shares the Backend API limit (1000
-requests per 10 seconds on production), so pace the loop. Then set
-`profiles.clerk_id` to the returned user id so the person keeps their uuid and
-everything attached to it, before that person signs in through Clerk for the
-first time:
+reset a password. `web/scripts/import-clerk-users.mjs` does it: one POST /users
+per account with the email, the `encrypted_password` hash as a bcrypt digest,
+`external_id` set to the profile uuid (so Clerk carries the mapping too, and
+its `user.deleted` event names it), the display name in unsafe metadata, the
+original `created_at`, and the authenticator secret for anyone with a verified
+factor, so their second factor carries over. Addresses are created verified;
+no email is sent. Three moves:
 
-```sql
-update public.profiles set clerk_id = '<clerk user id>' where id = '<profile uuid>';
-```
+1. Export, in the Supabase SQL editor (it runs as the service role there):
+
+   ```sql
+   select json_agg(json_build_object(
+     'id', u.id,
+     'email', u.email,
+     'password_digest', u.encrypted_password,
+     'created_at', u.created_at,
+     'display_name', p.display_name,
+     'totp_secret', (
+       select f.secret from auth.mfa_factors f
+       where f.user_id = u.id and f.factor_type = 'totp' and f.status = 'verified'
+       order by f.updated_at desc limit 1
+     )
+   )) as users
+   from auth.users u
+   join public.profiles p on p.id = u.id
+   where u.email not like '%@meltingpot.dev' and u.email not like 'e2e.%';
+   ```
+
+   Copy the one cell it returns into a file named `users.json`. It holds
+   password hashes, so it stays on your machine and is deleted after.
+2. Import, from `web/` with the instance's secret key in the environment:
+
+   ```
+   CLERK_SECRET_KEY=sk_live_... node scripts/import-clerk-users.mjs users.json > mapping.sql
+   ```
+
+   Progress goes to the terminal; `mapping.sql` collects one line per account.
+3. Map: paste `mapping.sql` into the SQL editor and run it. Each line is
+
+   ```sql
+   update public.profiles set clerk_id = '<clerk user id>' where id = '<profile uuid>';
+   ```
+
+   and it must run before that person signs in through Clerk for the first
+   time. The seed accounts (`@meltingpot.dev`) are left out on purpose: the
+   end to end suite makes its own, and the demo Pot's contents stay readable
+   without their owners signing in.
 
 An account that is not mapped when it first signs in gets a fresh profile,
 derived from its Clerk id, carrying that `clerk_id`, and sees an empty vault.
