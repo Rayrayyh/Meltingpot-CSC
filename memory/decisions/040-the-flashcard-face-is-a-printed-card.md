@@ -1,6 +1,6 @@
 # 040 The flashcard face is a printed card
 
-Superseded by 042 on 2026-09-08: the art is gone and the face is a colour chosen in settings. The theme call in point 2 still stands.
+Superseded by 042 on 2026-09-08: the art is gone and the face is a color chosen in settings. The theme call in point 2 still stands.
 
 Summary: The flashcard's two faces carry the brand's cream card art (the pot, the blobs) instead of a plain surface, with the light theme's ink on them in either theme, and a soft paper veil under the words so long answers stay readable; the owner asked for the art on 2026-09-05, and the theme call is the reason a cream card sits on the dark desk unchanged.
 

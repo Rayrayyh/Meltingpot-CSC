@@ -1019,12 +1019,12 @@ html[data-nav="collapsed"] .mp-side .mp-nav-alerts {
   transform: none;
 }
 
-/* A flashcard is a printed card. Its paper is a colour chosen in settings
+/* A flashcard is a printed card. Its paper is a color chosen in settings
    (lib/card-face.ts; the default is a light orange and the attribute is
    stamped before first paint by app/layout.tsx), and it keeps the light
    theme's ink in either theme: a pale card on a dark desk is what a card
    looks like. The faint and primary inks sit a shade deeper than the page's,
-   so every colour on the list clears body text contrast. */
+   so every color on the list clears body text contrast. */
 :root {
   --card-face: #f7dfc6;
 }

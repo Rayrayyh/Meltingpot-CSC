@@ -83,7 +83,7 @@ export default async function AccountSettingsPage({ searchParams }: PageProps<"/
             </div>
             <ThemeChoice />
             <div className="space-y-2 border-t border-edge pt-4">
-              <p className="text-sm font-medium text-ink">Flashcard colour</p>
+              <p className="text-sm font-medium text-ink">Flashcard color</p>
               <p className="text-sm text-ink-muted leading-relaxed">
                 The paper your flashcards are printed on. Every choice keeps the
                 writing easy to read.

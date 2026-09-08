@@ -51,7 +51,7 @@ This directory is the project's knowledge base. It makes the repo, not chat hist
 - 039 A bug pass fixes what it confirms, and names what it leaves: the 5 September pass, migration 0053, the two items deferred with reasons
 - 040 The flashcard face is a printed card: the brand's card art on both faces, light ink in either theme, a paper veil under the words (superseded by 042)
 - 041 Clerk groundwork, without switching: the seam's Clerk halves, Supabase third-party auth, current_uid() in front of every policy, all inert until the switch
-- 042 The flashcard face is a colour you choose: six colours in settings, peach by default, each measured against every ink on the face
+- 042 The flashcard face is a color you choose: six colors in settings, peach by default, each measured against every ink on the face
 - 041 Clerk groundwork, without switching: current_uid() in front of every policy (0054), the seam's Clerk halves built and inert, the switch and a domain left to the owner
 ### Lessons
 - 001 Reading the spec PDFs in this container requires poppler, not pypdf

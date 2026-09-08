@@ -12,7 +12,7 @@ import {
 } from "@/lib/card-face";
 
 /**
- * Flashcard colour picker for the settings page. Six swatches, each already
+ * Flashcard color picker for the settings page. Six swatches, each already
  * checked to keep the card's ink readable, with a small card beside them that
  * shows the choice as it will look, in the light ink the face always uses.
  */
@@ -22,7 +22,7 @@ export function CardFaceChoice() {
 
   return (
     <div className="flex flex-wrap items-start gap-5">
-      <div role="radiogroup" aria-label="Flashcard colour" className="flex flex-wrap gap-2">
+      <div role="radiogroup" aria-label="Flashcard color" className="flex flex-wrap gap-2">
         {CARD_FACES.map((face) => {
           const active = choice === face.id;
           return (

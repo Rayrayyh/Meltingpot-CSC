@@ -9,8 +9,8 @@ import {
   readCardFace,
 } from "./card-face";
 
-describe("the card face colours", () => {
-  it("every colour keeps every ink the face uses at body text contrast", () => {
+describe("the card face colors", () => {
+  it("every color keeps every ink the face uses at body text contrast", () => {
     for (const face of CARD_FACES) {
       for (const [name, ink] of Object.entries(CARD_FACE_INK)) {
         expect(contrastRatio(face.hex, ink), `${face.id} under ${name}`).toBeGreaterThanOrEqual(4.5);

@@ -1,10 +1,10 @@
 /**
- * The colour of a flashcard's face, chosen in settings.
+ * The color of a flashcard's face, chosen in settings.
  *
  * A flashcard is a printed card, so its face keeps the light theme's ink in
- * either theme and only its paper changes. Every colour here has been checked
+ * either theme and only its paper changes. Every color here has been checked
  * against the four ink tokens the face uses (lib/card-face.test.ts holds the
- * numbers): each pair clears 4.5 to 1, the level body text needs, so a colour
+ * numbers): each pair clears 4.5 to 1, the level body text needs, so a color
  * that would make a hint or a label hard to read never reaches the list. The
  * choice is kept the way the theme is: in this browser, applied before first
  * paint by the script in app/layout.tsx, and read by CSS alone.
@@ -28,7 +28,7 @@ export const CARD_FACES: { id: CardFaceId; label: string; hex: string }[] = [
 export const DEFAULT_CARD_FACE: CardFaceId = "peach";
 
 /**
- * The ink the face paints over every colour above. Slightly deeper than the
+ * The ink the face paints over every color above. Slightly deeper than the
  * page's own faint and primary tokens, which sit at the edge of legibility on
  * a tinted card.
  */
@@ -78,7 +78,7 @@ export function subscribeToCardFace(onChange: () => void) {
   };
 }
 
-/** WCAG relative luminance of a six digit hex colour. */
+/** WCAG relative luminance of a six digit hex color. */
 function luminance(hex: string): number {
   const c = hex.replace("#", "");
   const channel = (i: number) => {
@@ -88,7 +88,7 @@ function luminance(hex: string): number {
   return 0.2126 * channel(0) + 0.7152 * channel(2) + 0.0722 * channel(4);
 }
 
-/** WCAG contrast ratio between two six digit hex colours. */
+/** WCAG contrast ratio between two six digit hex colors. */
 export function contrastRatio(a: string, b: string): number {
   const [light, dark] = [luminance(a), luminance(b)].sort((x, y) => y - x);
   return (light + 0.05) / (dark + 0.05);
