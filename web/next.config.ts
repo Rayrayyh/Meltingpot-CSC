@@ -107,6 +107,16 @@ const nextConfig: NextConfig = {
             : []),
         ],
       },
+      // The public brand images are meant to be embedded elsewhere: a social
+      // card is only useful in someone else's page. The blanket
+      // same-origin policy above is right for our documents and our
+      // attachments, and wrong for these, which are public, static and
+      // carry nothing to leak. Without this a client that hotlinks the card
+      // rather than re-hosting it shows a broken preview.
+      {
+        source: "/:file(og.png|icon.png|apple-icon.png|favicon.ico)",
+        headers: [{ key: "Cross-Origin-Resource-Policy", value: "cross-origin" }],
+      },
       // Nothing behind a sign in, and none of the doors to it, belongs in an
       // index. robots.txt says so for well behaved crawlers; this header says
       // it to the ones that fetch first and ask later.
