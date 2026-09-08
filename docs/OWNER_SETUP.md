@@ -29,7 +29,7 @@ the deploy that reads it.
 | Password tab, Update password requirements: minimum length 8; leave Reject compromised passwords off | Owner | Open |
 | Multi-factor: Authenticator application on; SMS, Backup codes and Require multi-factor authentication off | Owner | Open |
 | Protect, Rules: Bot sign-up protection off and Device Trust off (Manage, Enable off, Save) | Owner | Open |
-| Sessions, Customize session token: the two claims in docs/CLERK.md step 1.6 (email and two_factor) | Owner | Open |
+| Sessions, Customize session token: the two claims in docs/CLERK.md step 1.6 (email from primary_email_address, two_factor from two_factor_enabled) | Owner | Done 2026-09-08 on the development instance; check the clone carries it |
 | dashboard.clerk.com/setup/supabase: Activate Supabase integration; note the Clerk domain it reveals | Owner | Open |
 | Configure, API keys: send the publishable key and the Clerk domain here; keep the secret key | Owner | Open |
 | Supabase: Authentication, Sign In / Providers, Third Party Auth, Add Clerk, paste the Clerk domain | Owner | Open |

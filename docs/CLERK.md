@@ -54,10 +54,6 @@ session that starts fresh reads it before anything else.
   worker that keeps the token fresh.
 - Seven route handlers and one component that read the user straight from
   Supabase now read it from the seam, which under Clerk is the only way.
-- `web/app/api/auth/second-factor/route.ts` mirrors whether the account has a
-  second factor into Clerk's public metadata, from Clerk's own record, so the
-  session token can carry it as the `two_factor` claim (step 1.6); the browser
-  half calls it after every sign in and after turning the factor on or off.
 - Clerk refuses a password change or a factor change ten minutes after sign in
   until the person proves themselves again. The seam runs that reverification
   itself and the settings panels ask for the one thing that clears it (the
@@ -159,20 +155,19 @@ install.
    ```json
    {
      "email": "{{user.primary_email_address}}",
-     "two_factor": "{{user.public_metadata.two_factor}}"
+     "two_factor": "{{user.two_factor_enabled}}"
    }
    ```
 
-   Both are documented shortcodes. `email` saves the server a Backend API
-   call on every page. `two_factor` is written into the account's public
-   metadata by the app itself (`app/api/auth/second-factor`), from Clerk's
-   own record, after every sign in and every change to the factor; the edge
-   proxy and `has_required_aal()` in Postgres read it to tell an enrolled
-   account from one that is not, and without it the database's second factor
-   boundary (`docs/ARCHITECTURE.md`) does not exist for Clerk sessions. An
-   unknown shortcode renders as null, which is why the claim is not taken
-   from a Clerk field that the shortcode list does not name. Step 5 checks
-   the token carries both.
+   Both are shortcodes the claims editor offers in its own "Insert
+   shortcodes" list (`user.two_factor_enabled` sits there even though the
+   docs page of shortcodes leaves it out, which is why an earlier draft of
+   this step went through metadata instead). `email` saves the server a
+   Backend API call on every page. `two_factor` is how the edge proxy and
+   `has_required_aal()` in Postgres tell an enrolled account from one that
+   is not; without it the database's second factor boundary
+   (`docs/ARCHITECTURE.md`) does not exist for Clerk sessions. Step 5
+   checks the token carries both.
 7. Configure, API keys: the publishable key (`pk_test_`) and the secret key
    (`sk_test_`). Send the first one and the Clerk domain from step 5 here;
    the secret key goes into Netlify and `.env.local` by your own hand.

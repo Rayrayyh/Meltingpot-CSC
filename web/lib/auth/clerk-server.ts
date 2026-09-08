@@ -18,9 +18,8 @@ import { AuthError, type AssuranceLevel, type AuthUser, type ServerAuthProvider 
  *
  * The session token is the first source for everything here. docs/CLERK.md
  * step 1.6 puts the primary email and the second factor state into it as the
- * `email` and `two_factor` claims (the latter mirrored from Clerk's own
- * record by app/api/auth/second-factor/route.ts), so a render costs no
- * Backend API call. That API answers 100 requests per 10 seconds on a
+ * `email` and `two_factor` claims, both from Clerk's own fields, so a render
+ * costs no Backend API call. That API answers 100 requests per 10 seconds on a
  * development instance, which a class online at once would exceed; it is
  * reached only when a claim is missing or a profile has to be made.
  *

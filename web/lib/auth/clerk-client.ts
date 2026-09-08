@@ -75,19 +75,12 @@ async function ensureProfile(c: LoadedClerk): Promise<void> {
 }
 
 /**
- * Asks the server to mirror the account's second factor into the token's
- * two_factor claim (app/api/auth/second-factor/route.ts), then fetches the
- * token that carries it. Best effort: a failure here leaves the claim stale
- * until the next sign in repeats it, and the server's own read of the account
- * still gates every page, so it is logged rather than thrown.
+ * Fetches a fresh session token so the next request carries what just
+ * changed: the two_factor claim (docs/CLERK.md step 1.6 reads it straight
+ * from Clerk's own two_factor_enabled field) and, after reverification, the
+ * factor's age. Clerk caches the token for a minute otherwise.
  */
-async function syncSecondFactorClaim(c: LoadedClerk): Promise<void> {
-  try {
-    const response = await fetch("/api/auth/second-factor", { method: "POST" });
-    if (!response.ok) console.warn(`second factor claim not mirrored: ${response.status}`);
-  } catch (error) {
-    console.warn("second factor claim not mirrored", error);
-  }
+async function refreshToken(c: LoadedClerk): Promise<void> {
   await c.session?.getToken({ skipCache: true });
 }
 
@@ -196,7 +189,7 @@ export const clerkClientAuth: ClientAuthProvider = {
       if (attempt.status === "complete") {
         await activate(c, attempt.createdSessionId);
         await ensureProfile(c);
-        await syncSecondFactorClaim(c);
+        await refreshToken(c);
         return { status: "signed-in" };
       }
       if (attempt.status === "needs_second_factor") {
@@ -251,7 +244,7 @@ export const clerkClientAuth: ClientAuthProvider = {
         if (attempt.status !== "complete") throw new AuthError("invalid_code");
         await activate(c, attempt.createdSessionId);
         await ensureProfile(c);
-        await syncSecondFactorClaim(c);
+        await refreshToken(c);
         return;
       }
       // No sign in pending, so this is an open session whose factor has not
@@ -303,10 +296,10 @@ export const clerkClientAuth: ClientAuthProvider = {
     }
     // Enrolment may or may not clear the factor for this session (Clerk's
     // docs say the age is stamped at sign in and at reverification). Either
-    // way the claim is mirrored now and the token refreshed, so the next
-    // protected page sees the account as enrolled; if the age still says
-    // never, that page asks for a code once, through verifySecondFactor.
-    await syncSecondFactorClaim(c);
+    // way the token is refreshed now, so the next protected page sees the
+    // account as enrolled; if the age still says never, that page asks for a
+    // code once, through verifySecondFactor.
+    await refreshToken(c);
   },
 
   async cancelSecondFactorSetup(): Promise<void> {
@@ -326,6 +319,6 @@ export const clerkClientAuth: ClientAuthProvider = {
     } catch (error) {
       throw failure(error);
     }
-    await syncSecondFactorClaim(c);
+    await refreshToken(c);
   },
 };
