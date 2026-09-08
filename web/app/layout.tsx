@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { SITE_ORIGIN } from "@/lib/site";
 import {
   Baloo_2,
   Bricolage_Grotesque,
@@ -55,12 +56,34 @@ const silkscreen = Silkscreen({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(SITE_ORIGIN),
   title: {
     default: "MeltingPot",
     template: "%s | MeltingPot",
   },
   description:
-    "A shared class vault where contributing knowledge is as easy as typing what you know.",
+    "A shared class vault where contributing knowledge is as easy as typing what you know. Rough notes in, organized notes out, flashcards and practice tests from what the class wrote.",
+  applicationName: "MeltingPot",
+  // Resolved against the page's own path, so every public page names itself
+  // as its canonical address and the netlify.app alias never is one.
+  alternates: { canonical: "./" },
+  openGraph: {
+    type: "website",
+    siteName: "MeltingPot",
+    locale: "en_US",
+    title: "MeltingPot",
+    description:
+      "Everyone takes notes. MeltingPot brings them together: one shared vault a class builds and studies from.",
+    images: [{ url: "/og.png", width: 1200, height: 630, alt: "MeltingPot: everyone takes notes, MeltingPot brings them together." }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "MeltingPot",
+    description:
+      "Everyone takes notes. MeltingPot brings them together: one shared vault a class builds and studies from.",
+    images: ["/og.png"],
+  },
+  robots: { index: true, follow: true },
 };
 
 // Applies the persisted theme before first paint so neither theme flashes,

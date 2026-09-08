@@ -107,6 +107,26 @@ const nextConfig: NextConfig = {
             : []),
         ],
       },
+      // Nothing behind a sign in, and none of the doors to it, belongs in an
+      // index. robots.txt says so for well behaved crawlers; this header says
+      // it to the ones that fetch first and ask later.
+      ...[
+        "/home",
+        "/p/:path*",
+        "/me/:path*",
+        "/pots/:path*",
+        "/study/:path*",
+        "/calendar",
+        "/search",
+        "/login/:path*",
+        "/signup",
+        "/join/:path*",
+        "/api/:path*",
+        "/dev/:path*",
+      ].map((source) => ({
+        source,
+        headers: [{ key: "X-Robots-Tag", value: "noindex, nofollow" }],
+      })),
     ];
   },
 };

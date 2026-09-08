@@ -1,7 +1,7 @@
 import { UserShell } from "@/components/shell/user-shell";
 import { JoinCard } from "@/components/landing/join-card";
 
-export const metadata = { title: "Join a Pot" };
+export const metadata = { title: "Join a Pot", robots: { index: false, follow: false } };
 
 export default function JoinPage() {
   return (

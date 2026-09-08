@@ -61,6 +61,10 @@ export function AuthForm({
   const [displayName, setDisplayName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  // Sign up asks for the password twice. The field hides what is typed, so
+  // a slip goes unnoticed until the next sign in fails; typing it again is
+  // the one check that catches it.
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   // Set once a password is accepted but the account also asks for a code.
@@ -104,6 +108,10 @@ export function AuthForm({
       // The checklist under the field shows which rule is still open; this
       // just stops the round trip the server would reject anyway.
       setError("Your password doesn't meet every rule in the list yet.");
+      return;
+    }
+    if (mode === "signup" && confirmPassword !== password) {
+      setError("Those passwords don't match. Type the same password in both fields.");
       return;
     }
     setBusy(true);
@@ -299,6 +307,20 @@ export function AuthForm({
             </Field>
             {mode === "signup" ? <PasswordChecklist password={password} /> : null}
           </div>
+          {mode === "signup" ? (
+            <Field label="Confirm password">
+              {(props) => (
+                <PasswordInput
+                  {...props}
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  autoComplete="new-password"
+                  required
+                  minLength={8}
+                />
+              )}
+            </Field>
+          ) : null}
           {error ? (
             <p role="alert" className="text-[13px] text-danger">
               {error}

@@ -6,7 +6,11 @@ import { normalizeClassCode } from "@/lib/class-code";
 import { signedInDestination } from "@/lib/auth/signed-in-destination";
 import { supabaseServer } from "@/lib/supabase/server";
 
-export const metadata = { title: "Sign in" };
+export const metadata = {
+  title: "Sign in",
+  description: "Sign in to MeltingPot to open your classes.",
+  robots: { index: false, follow: false },
+};
 
 export default async function LoginPage({ searchParams }: PageProps<"/login">) {
   const params = await searchParams;

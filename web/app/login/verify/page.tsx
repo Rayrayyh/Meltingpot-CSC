@@ -8,7 +8,7 @@ import {
 } from "@/lib/auth/server";
 import { safeNextPath } from "@/lib/auth/next-path";
 
-export const metadata = { title: "One more step" };
+export const metadata = { title: "One more step", robots: { index: false, follow: false } };
 
 /**
  * Where a half-finished sign in lands.

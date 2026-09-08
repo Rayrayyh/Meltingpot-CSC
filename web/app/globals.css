@@ -772,6 +772,31 @@ blockquote {
   color: #fffcf7;
 }
 
+/* The row of actions under the words. The 404 has one; the error page has
+   a primary and a quiet one beside it, in the same pill. */
+.mp-404-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 14px;
+}
+
+.mp-404-cta {
+  border: 0;
+  cursor: pointer;
+}
+
+.mp-404-cta-quiet {
+  background: transparent;
+  color: #c4570e;
+  box-shadow: inset 0 0 0 2px #e8b98a;
+}
+
+.mp-404-cta-quiet:hover {
+  background: #fbe9d3;
+  color: #c4570e;
+}
+
 /* The design has no reduced-motion handling. Without this the 404 would be
    the only page in the product that ignores the preference. */
 @media (prefers-reduced-motion: reduce) {

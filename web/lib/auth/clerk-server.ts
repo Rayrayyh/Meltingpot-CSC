@@ -2,7 +2,12 @@ import { cache } from "react";
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { isClerkAPIResponseError } from "@clerk/nextjs/errors";
 import { supabaseServer } from "@/lib/supabase/server";
-import { AuthError, type AssuranceLevel, type AuthUser, type ServerAuthProvider } from "@/lib/auth/types";
+import {
+  AuthError,
+  type AssuranceLevel,
+  type AuthUser,
+  type ServerAuthProvider,
+} from "@/lib/auth/types";
 
 /**
  * Clerk behind the seam, server half, selected when
@@ -27,11 +32,25 @@ import { AuthError, type AssuranceLevel, type AuthUser, type ServerAuthProvider 
  */
 
 /** What the token says, read leniently: a template renders strings as often as booleans. */
-function claimsOf(sessionClaims: unknown): { email?: string; twoFactor?: boolean } {
-  const claims = sessionClaims as { email?: unknown; two_factor?: unknown } | null;
-  const email = typeof claims?.email === "string" && claims.email.includes("@") ? claims.email : undefined;
+function claimsOf(sessionClaims: unknown): {
+  email?: string;
+  twoFactor?: boolean;
+} {
+  const claims = sessionClaims as {
+    email?: unknown;
+    two_factor?: unknown;
+  } | null;
+  const email =
+    typeof claims?.email === "string" && claims.email.includes("@")
+      ? claims.email
+      : undefined;
   const raw = claims?.two_factor;
-  const twoFactor = raw === true || raw === "true" ? true : raw === false || raw === "false" ? false : undefined;
+  const twoFactor =
+    raw === true || raw === "true"
+      ? true
+      : raw === false || raw === "false"
+        ? false
+        : undefined;
   return { email, twoFactor };
 }
 
@@ -43,7 +62,8 @@ const clerkUser = cache(async () => {
   try {
     return { user: await currentUser(), limited: false };
   } catch (error) {
-    if (isClerkAPIResponseError(error) && error.status === 429) return { user: null, limited: true };
+    if (isClerkAPIResponseError(error) && error.status === 429)
+      return { user: null, limited: true };
     throw error;
   }
 });
@@ -58,17 +78,25 @@ function displayNameOf(
   } | null,
   email: string | undefined,
 ): string {
-  const chosen = typeof user?.unsafeMetadata?.displayName === "string" ? user.unsafeMetadata.displayName : "";
+  const chosen =
+    typeof user?.unsafeMetadata?.displayName === "string"
+      ? user.unsafeMetadata.displayName
+      : "";
   const full = [user?.firstName, user?.lastName].filter(Boolean).join(" ");
-  const local = (user?.emailAddresses[0]?.emailAddress ?? email ?? "").split("@")[0];
+  const local = (user?.emailAddresses[0]?.emailAddress ?? email ?? "").split(
+    "@",
+  )[0];
   return (chosen.trim() || full.trim() || local || "Student").slice(0, 80);
 }
 
 /**
  * Clerk knows who this is and Supabase would not say. Thrown rather than
- * returned as nobody, because nobody would send the person to the sign in
- * form, where Clerk would sign them straight back in, forever. A page that
- * fails loudly names the setup step instead.
+ * a crash: getUser catches it and answers nobody, with the message in the
+ * server log. Nobody sends the person to the sign in form, which does not
+ * sign anyone in by itself; when they submit it, the browser half meets the
+ * same refusal and says sign in is not available on this site right now,
+ * which is true and names no vendor. The message here names the setup step
+ * for whoever reads the log.
  */
 function refused(step: string, detail: string | undefined): AuthError {
   return new AuthError(
@@ -93,52 +121,79 @@ async function enrolled(sessionClaims: unknown): Promise<boolean> {
   return user?.twoFactorEnabled === true;
 }
 
+/**
+ * Who is signed in: the profile the Clerk subject maps to, made on first
+ * arrival. Throws not_configured when Postgres or Clerk refuse the session.
+ */
+async function readUser(
+  userId: string,
+  sessionClaims: unknown,
+): Promise<AuthUser | null> {
+  const claims = claimsOf(sessionClaims);
+  const supabase = await supabaseServer();
+  const { data: found, error: lookupError } = await supabase
+    .from("profiles")
+    .select("id, display_name, avatar_url")
+    .eq("clerk_id", userId)
+    .maybeSingle();
+  if (lookupError) throw refused("the profile lookup", lookupError.message);
+
+  let profile = found;
+  let email = claims.email;
+  if (!profile || email === undefined) {
+    const { user } = await clerkUser();
+    email ??=
+      user?.emailAddresses.find((e) => e.id === user.primaryEmailAddressId)
+        ?.emailAddress ??
+      user?.emailAddresses[0]?.emailAddress ??
+      "";
+    if (!profile) {
+      // First arrival: the row the trigger on auth.users used to make.
+      const { data: id, error } = await supabase.rpc("ensure_profile", {
+        p_display_name: displayNameOf(user, email),
+      });
+      if (error || !id) throw refused("ensure_profile", error?.message);
+      const { data: made, error: readError } = await supabase
+        .from("profiles")
+        .select("id, display_name, avatar_url")
+        .eq("id", id)
+        .maybeSingle();
+      if (readError || !made)
+        throw refused("reading the new profile", readError?.message);
+      profile = made;
+    }
+  }
+
+  return {
+    id: profile.id,
+    email,
+    displayName: profile.display_name,
+    avatarPath: profile.avatar_url,
+  };
+}
+
 export const clerkServerAuth: ServerAuthProvider = {
   name: "clerk",
 
   async getUser(): Promise<AuthUser | null> {
     const { userId, sessionClaims } = await auth();
     if (!userId) return null;
-    const claims = claimsOf(sessionClaims);
-
-    const supabase = await supabaseServer();
-    const { data: found, error: lookupError } = await supabase
-      .from("profiles")
-      .select("id, display_name, avatar_url")
-      .eq("clerk_id", userId)
-      .maybeSingle();
-    if (lookupError) throw refused("the profile lookup", lookupError.message);
-
-    let profile = found;
-    let email = claims.email;
-    if (!profile || email === undefined) {
-      const { user } = await clerkUser();
-      email ??=
-        user?.emailAddresses.find((e) => e.id === user.primaryEmailAddressId)?.emailAddress ??
-        user?.emailAddresses[0]?.emailAddress ??
-        "";
-      if (!profile) {
-        // First arrival: the row the trigger on auth.users used to make.
-        const { data: id, error } = await supabase.rpc("ensure_profile", {
-          p_display_name: displayNameOf(user, email),
-        });
-        if (error || !id) throw refused("ensure_profile", error?.message);
-        const { data: made, error: readError } = await supabase
-          .from("profiles")
-          .select("id, display_name, avatar_url")
-          .eq("id", id)
-          .maybeSingle();
-        if (readError || !made) throw refused("reading the new profile", readError?.message);
-        profile = made;
+    try {
+      return await readUser(userId, sessionClaims);
+    } catch (error) {
+      // Postgres refused Clerk's token, or Clerk's own API could not be
+      // asked (the setup steps in docs/CLERK.md). Thrown, this took every
+      // page down to "Something went wrong" with the reason hidden in a
+      // production digest. Read as signed out instead: the protected page
+      // sends the person to sign in, and the sign in form, meeting the same
+      // refusal, says sign in is not available on this site right now. The
+      // reason goes to the server log, where whoever runs the site reads it.
+      if (error instanceof AuthError && error.code === "not_configured") {
+        console.error("[auth] Clerk session refused:", error.message);
+        return null;
       }
+      throw error;
     }
-
-    return {
-      id: profile.id,
-      email,
-      displayName: profile.display_name,
-      avatarPath: profile.avatar_url,
-    };
   },
 
   async getAssuranceLevel(): Promise<AssuranceLevel> {

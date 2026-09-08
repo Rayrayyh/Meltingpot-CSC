@@ -38,6 +38,7 @@ test.describe("joining a Pot", () => {
     await page.getByLabel("Email").fill(email);
     // Meets every rule in lib/auth/password-rules.ts, symbol included (0042).
     await page.getByLabel("Password", { exact: true }).fill("E2ePassword1!");
+    await page.getByLabel("Confirm password").fill("E2ePassword1!");
     await page.getByRole("button", { name: "Create account and enter" }).click();
 
     // Membership finalized; straight into the Pot, no login wall, no detours.

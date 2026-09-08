@@ -96,7 +96,7 @@ for (const u of users) {
   // stay a second door beside Clerk's second factor (0057 did this for the
   // first ten). Banned rather than deleted: deleting it would fire the
   // trigger that removes the profile.
-  lines.push(`update auth.users set banned_until = 'infinity' where id = '${u.id}';`);
+  lines.push(`update auth.users set banned_until = '2999-01-01T00:00:00Z' where id = '${u.id}';`);
   lines.push(`delete from auth.sessions where user_id = '${u.id}';`);
   mapped += 1;
   // The Backend API allows 1000 requests per 10 seconds on production; this
