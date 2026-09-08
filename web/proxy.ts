@@ -97,10 +97,11 @@ async function supabaseProxy(request: NextRequest) {
  * same list of prefixes. Clerk will not open a session for an enrolled
  * account until its factor has cleared, so the half signed in session has one
  * cause here: the factor was turned on inside it. The session token says so
- * (two_factor from the claim docs/CLERK.md step 1.5 adds, fva[1] of -1 for a
- * factor never cleared), and such a session goes to the verify step the same
- * way the Supabase branch sends its aal1 sessions. requireAuthUser makes the
- * same check from the Backend API for a token without the claim.
+ * (two_factor, the claim docs/CLERK.md step 1.6 adds from the metadata that
+ * app/api/auth/second-factor mirrors, and fva[1] of -1 for a factor never
+ * cleared), and such a session goes to the verify step the same way the
+ * Supabase branch sends its aal1 sessions. requireAuthUser makes the same
+ * check from the Backend API for a token without the claim.
  */
 const clerkProxy = () =>
   clerkMiddleware(async (auth, request) => {

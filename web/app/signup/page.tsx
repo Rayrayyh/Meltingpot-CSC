@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { AuthForm } from "@/components/auth/auth-form";
 import { Wordmark } from "@/components/shell/wordmark";
 import { normalizeClassCode } from "@/lib/class-code";
+import { signedInDestination } from "@/lib/auth/signed-in-destination";
 import { supabaseServer } from "@/lib/supabase/server";
 
 export const metadata = { title: "Create account" };
@@ -13,9 +14,9 @@ export default async function SignupPage({ searchParams }: PageProps<"/signup">)
   const code = rawCode ? normalizeClassCode(rawCode) : "";
 
   const user = await getAuthUser();
-  if (user) redirect(code ? `/join/${code}` : "/home");
 
   const supabase = await supabaseServer();
+  if (user) redirect(await signedInDestination(supabase, code));
 
   let potTitle: string | undefined;
   if (code.length === 6) {

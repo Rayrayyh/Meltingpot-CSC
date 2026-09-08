@@ -54,6 +54,18 @@ session that starts fresh reads it before anything else.
   worker that keeps the token fresh.
 - Seven route handlers and one component that read the user straight from
   Supabase now read it from the seam, which under Clerk is the only way.
+- `web/app/api/auth/second-factor/route.ts` mirrors whether the account has a
+  second factor into Clerk's public metadata, from Clerk's own record, so the
+  session token can carry it as the `two_factor` claim (step 1.6); the browser
+  half calls it after every sign in and after turning the factor on or off.
+- Clerk refuses a password change or a factor change ten minutes after sign in
+  until the person proves themselves again. The seam runs that reverification
+  itself and the settings panels ask for the one thing that clears it (the
+  password before setup, a code before turning off or changing a password
+  with a factor on). Under Supabase the question never appears.
+- The sign in and sign up pages send a signed in person to the same place the
+  form's own finish would, because under Clerk opening a session refreshes the
+  page mid form and the two navigations must agree.
 
 ## What the owner does
 
@@ -89,13 +101,28 @@ meltingpots.xyz, registered 2026-09-06. Two jobs, in this order.
    classwork variables are set, and Supabase Authentication, URL Configuration
    (Site URL and the redirect list) so the password reset email lands on the
    new domain. A deploy after the security.txt change.
-4. Clerk production, only when the main site moves to Clerk: in the Clerk
-   dashboard switch the instance selector to Production, give it
-   meltingpots.xyz, and it lists the DNS records it needs (CNAMEs for
-   clerk.meltingpots.xyz to Clerk's Frontend API, accounts. for the account
-   portal, clkmail. and two _domainkey records for email). Each goes into
-   Netlify DNS as a CNAME. Production keys start pk_live_ and sk_live_ and
-   replace the test ones on the main site only.
+4. Clerk production, only when the main site moves to Clerk. Everything in
+   steps 1 to 3 is per instance, and a production instance starts empty.
+   In the Clerk dashboard select the Development button at the top, choose
+   Create production instance, and in the modal clone the development
+   settings (Clerk says SSO connections, Integrations and Paths do not copy).
+   Enter meltingpots.xyz. The Domains page then lists the DNS records; add
+   each to Netlify DNS exactly as shown (expect about five CNAMEs: the
+   Frontend API at clerk.meltingpots.xyz, the account portal, and email).
+   Propagation can take up to 48 hours. When every check passes a Deploy
+   certificates button appears on the dashboard home; select it. If
+   issuance stalls, the apex must carry no CAA record that shuts out Let's
+   Encrypt or Google Trust Services. Then, with the selector on Production:
+   redo step 1.5 (the Supabase integration is not cloned), check that the
+   step 1.6 claims survived the clone, and in Supabase edit the Clerk entry's
+   domain from `<slug>.clerk.accounts.dev` to `clerk.meltingpots.xyz` (up to
+   30 minutes to be honoured). Before pasting the `pk_live_` and `sk_live_`
+   keys on the main site, clear the development trial's traces from the
+   database, since a development user id never exists on production:
+   `delete from public.profiles where clerk_id is not null and id = public.clerk_uuid(clerk_id);`
+   (a Pot such a profile owns blocks it until `owner_id` moves), then
+   `update public.profiles set clerk_id = null where clerk_id is not null;`.
+   Then step 4, against production only, then the keys and a deploy.
 
 ### 1. Clerk dashboard
 
@@ -126,11 +153,26 @@ install.
    Supabase requires and reveals the Clerk domain to paste into Supabase in
    step 2 (on a development instance it looks like `<slug>.clerk.accounts.dev`,
    the same host the publishable key encodes).
-6. Configure, Sessions, Customize session token, claims editor:
-   `{ "two_factor": "{{user.two_factor_enabled}}" }`, Save. The edge proxy and
-   `has_required_aal()` in Postgres read this claim to tell an enrolled
-   account from one that is not; without it the database's second factor
-   boundary (`docs/ARCHITECTURE.md`) does not exist for Clerk sessions.
+6. Configure, Sessions, Customize session token, claims editor. Paste and
+   Save:
+
+   ```json
+   {
+     "email": "{{user.primary_email_address}}",
+     "two_factor": "{{user.public_metadata.two_factor}}"
+   }
+   ```
+
+   Both are documented shortcodes. `email` saves the server a Backend API
+   call on every page. `two_factor` is written into the account's public
+   metadata by the app itself (`app/api/auth/second-factor`), from Clerk's
+   own record, after every sign in and every change to the factor; the edge
+   proxy and `has_required_aal()` in Postgres read it to tell an enrolled
+   account from one that is not, and without it the database's second factor
+   boundary (`docs/ARCHITECTURE.md`) does not exist for Clerk sessions. An
+   unknown shortcode renders as null, which is why the claim is not taken
+   from a Clerk field that the shortcode list does not name. Step 5 checks
+   the token carries both.
 7. Configure, API keys: the publishable key (`pk_test_`) and the secret key
    (`sk_test_`). Send the first one and the Clerk domain from step 5 here;
    the secret key goes into Netlify and `.env.local` by your own hand.
@@ -159,10 +201,25 @@ security policy is computed from the publishable key at build time.
 
 ### 4. Existing accounts
 
+Production instance only, after 0a.4. Clerk user ids are per instance and
+Clerk does not move users from development to production, so anything mapped
+against a development id goes stale at the switch. On the development instance
+sign the seed and test accounts up fresh and let them be thrown away.
+
 Clerk's Backend API imports users with their bcrypt hashes, so nobody has to
-reset a password. For each imported account, set `profiles.clerk_id` to the
-Clerk user id so the person keeps their uuid and everything attached to it,
-and do it before that person signs in through Clerk for the first time:
+reset a password. For each `auth.users` row call `clerkClient().users.createUser`
+(POST /users) with `emailAddress`, `passwordDigest` (the `encrypted_password`
+column; pgcrypto's `$2a$` hashes are the shape Clerk expects),
+`passwordHasher: "bcrypt"`, `externalId` set to the profile uuid (Clerk then
+carries the mapping too, and its `user.deleted` event names it),
+`unsafeMetadata: { displayName }` from `profiles.display_name`, `createdAt`,
+and `totpSecret` from `auth.mfa_factors.secret` for anyone with a verified
+factor, or they arrive without one and enrol again. Addresses are created
+verified; no email is sent. The endpoint shares the Backend API limit (1000
+requests per 10 seconds on production), so pace the loop. Then set
+`profiles.clerk_id` to the returned user id so the person keeps their uuid and
+everything attached to it, before that person signs in through Clerk for the
+first time:
 
 ```sql
 update public.profiles set clerk_id = '<clerk user id>' where id = '<profile uuid>';
@@ -180,16 +237,35 @@ update. Mapping first is the easy order.
 
 ### 5. Check
 
-`docs/CLASSWORK_VERIFICATION.md` has the habit; the same applies here. Sign up
-from a class code and land in the Pot, which proves the profile row exists
-before the membership is written; sign in, sign out; change a password (the
-panel asks for the current one under Clerk) and confirm the other session
-ended; turn the second factor on, expect one code ask on the next protected
-page, sign in with a code, turn it off; open a Pot and share a note, which
-proves the token reaches Postgres and `current_uid()` resolved it; attach a
-picture to a note and upload a profile picture, which prove the storage
-policies from 0056. The end to end suite's login helper still speaks Supabase;
-moving it to `@clerk/testing` tokens is part of the switch, not the groundwork.
+`docs/CLASSWORK_VERIFICATION.md` has the habit; the same applies here. In order:
+
+1. Token first. Sign in with a test account and read the session token
+   (decode the `__session` cookie, or log `sessionClaims` from `auth()` in a
+   server component): `role` must be `authenticated`, `email` an address,
+   `two_factor` present (`false` for an account without a factor; never
+   null). A null means step 1.6 did not take.
+2. Sign up from a class code and land in the Pot, which proves the profile
+   row exists before the membership is written. Watch for a flash of
+   `/join/<code>` or `/home` on the way; a flash is the page and the form
+   racing, and both must end in the Pot. Then sign in with `?next=` on the
+   sign in URL and land there.
+3. Sign out, sign in. Change the password (the panel asks for the current
+   one) and confirm the other session ended. Wait ten minutes and change it
+   again: the panel asks for the password once more and then succeeds.
+4. Turn the second factor on. The next protected page either asks for a code
+   once or lets you through; both are correct, and the doc should record
+   which happened. Sign out and in: the code is asked for. Read the token
+   again: `two_factor` is `true`. Turn the factor off after ten minutes: the
+   panel asks for a code and then succeeds.
+5. Open a Pot and share a note, which proves the token reaches Postgres and
+   `current_uid()` resolved it. Attach a picture to a note and upload a
+   profile picture, which prove the storage policies from 0056.
+6. Five quick sign ins from one machine inside ten seconds show the "Too many
+   attempts from this network" sentence once; that is Clerk's per address
+   limit doing its job, not a fault.
+
+The end to end suite's login helper still speaks Supabase; moving it to
+`@clerk/testing` tokens is part of the switch, not the groundwork.
 
 ## Things to know
 
@@ -222,3 +298,29 @@ moving it to `@clerk/testing` tokens is part of the switch, not the groundwork.
   reads it; `has_required_aal()` reads it in Postgres.
 - Rate limiting of sign in and sign up moves to Clerk. `sign_up_student` and
   its per address limit stay for the Supabase path.
+- Sign in and sign up limits move to Clerk, and the numbers change: 5 sign
+  ins or sign ups and 3 code attempts per 10 seconds per IP address, and a
+  429 blocks that endpoint for the Retry-After period. A class signing in
+  together behind one school address can see the "Too many attempts from this
+  network" sentence; the copy is in place, and staggering the class is the
+  answer. Clerk's lockout rule (Protect, Rules, Lockout) is on by default and
+  pauses an account for an hour after ten wrong passwords; the form says so.
+- A person who loses their authenticator cannot get back in on their own:
+  backup codes are off and Clerk has no end user reset. You unlock them in
+  the Clerk dashboard (Users, the person, Two step verifications, the menu
+  next to Authenticator app, Remove method). Clerk then disables the factor
+  for that account, and it is password only until they enrol again. The
+  `two_factor` claim catches up at their next sign in.
+- Supabase counts people who reach Postgres with a Clerk token as third-party
+  monthly active users: 50,000 are included on the Free plan, and the rest
+  are priced per user. A class will not get near it.
+- When the deletion webhook is built: a public route handler calling
+  `verifyWebhook` from `@clerk/nextjs/webhooks` with
+  `CLERK_WEBHOOK_SIGNING_SECRET` in Netlify, deleting the profile by
+  `data.external_id` (the profile uuid set at import) or by `data.id` through
+  a definer function, registered on the Webhooks page of each instance
+  separately.
+- The custom flow doc Clerk shows first describes its newer signals API. The
+  code uses the resource API (`signUp.create`, `signIn.create`), which the
+  installed SDK still types without deprecation; compare against the legacy
+  email and password page when in doubt.

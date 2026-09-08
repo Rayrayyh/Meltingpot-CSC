@@ -19,11 +19,12 @@ async function clerkToken(): Promise<string | null> {
  * sends Clerk's token, which Supabase verifies through third-party auth, and
  * public.current_uid() (migration 0054) turns its subject into the profile
  * id every policy keys on. That client is built from supabase-js directly:
- * the ssr wrapper subscribes to auth events as it constructs, and supabase-js
- * refuses every auth call once a token supplier is set, so the two cannot be
- * combined (lib/supabase/access-token.test.ts holds that fact). Nothing is
- * lost; the wrapper exists to move a Supabase session between cookies, and
- * under Clerk there is none.
+ * the ssr wrapper's server client subscribes to auth events as it constructs,
+ * and supabase-js refuses every auth call once a token supplier is set, so
+ * the two cannot be combined (lib/supabase/access-token.test.ts holds that
+ * fact; the wrapper's browser client has no such subscription and takes the
+ * option as is). Nothing is lost; the server wrapper exists to move a
+ * Supabase session between cookies, and under Clerk there is none.
  */
 export const supabaseServer = cache(async function supabaseServer(): Promise<SupabaseClient<Database>> {
   if (usingClerk()) {

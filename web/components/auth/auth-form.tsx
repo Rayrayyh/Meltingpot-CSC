@@ -26,6 +26,8 @@ const MESSAGES: Record<string, string> = {
   rate_limited: "Too many attempts from this network. Wait a few minutes and try again.",
   invalid_code:
     "That code did not match. Codes change every 30 seconds, so try the current one.",
+  account_locked: "Too many wrong attempts. This account is paused for about an hour. Try again after that.",
+  password_compromised: "This password has appeared in a data breach. Choose a different one.",
   not_configured: "Sign in is not available in this build.",
 };
 

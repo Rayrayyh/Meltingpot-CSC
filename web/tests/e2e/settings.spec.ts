@@ -15,7 +15,9 @@ test.describe("search and settings", () => {
     await loginAs(page, "ava@meltingpot.dev");
 
     await page.goto("/search?q=slug");
-    await expect(page.getByText("Osmosis and tonicity")).toBeVisible();
+    // Scoped to the results: the notification list in the nav names the same
+    // note while it is unread, which depends on which specs ran before this.
+    await expect(page.getByRole("main").getByText("Osmosis and tonicity")).toBeVisible();
     await expect(page.getByText(/Salt on a slug/).first()).toBeVisible();
 
     await page.goto("/search?q=falsifiable");

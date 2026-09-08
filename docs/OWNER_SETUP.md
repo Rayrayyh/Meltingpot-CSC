@@ -29,14 +29,14 @@ the deploy that reads it.
 | Password tab, Update password requirements: minimum length 8; leave Reject compromised passwords off | Owner | Open |
 | Multi-factor: Authenticator application on; SMS, Backup codes and Require multi-factor authentication off | Owner | Open |
 | Protect, Rules: Bot sign-up protection off and Device Trust off (Manage, Enable off, Save) | Owner | Open |
-| Sessions, Customize session token: `{ "two_factor": "{{user.two_factor_enabled}}" }` | Owner | Open |
+| Sessions, Customize session token: the two claims in docs/CLERK.md step 1.6 (email and two_factor) | Owner | Open |
 | dashboard.clerk.com/setup/supabase: Activate Supabase integration; note the Clerk domain it reveals | Owner | Open |
 | Configure, API keys: send the publishable key and the Clerk domain here; keep the secret key | Owner | Open |
 | Supabase: Authentication, Sign In / Providers, Third Party Auth, Add Clerk, paste the Clerk domain | Owner | Open |
 | Trial Netlify site with the three Clerk variables (owner pastes CLERK_SECRET_KEY) and a deploy | Claude, owner for the secret | Open |
 | Walk docs/CLERK.md step 5 on the trial site | Both | Open |
 | Google sign in: a Google Cloud OAuth client (separate project from Classroom, consent screen External and published) pasted into Clerk, SSO connections, Google; the button and callback page in the app | Owner the client, Claude the app | Later, after step 5 passes |
-| Production instance on meltingpots.xyz: DNS records from the Clerk dashboard into Netlify DNS, live keys on the main site | Owner | Only when the main site moves to Clerk |
+| Production instance on meltingpots.xyz: create it cloning the development settings, DNS records from its Domains page into Netlify DNS, Deploy certificates, redo the Supabase integration and update the Supabase third-party domain, clear the trial's profiles, import accounts, live keys on the main site (docs/CLERK.md 0a.4 and 4) | Owner, Claude the SQL and the import script | Only when the main site moves to Clerk |
 
 ## 3. Google Classroom (docs/CLASSWORK.md)
 
