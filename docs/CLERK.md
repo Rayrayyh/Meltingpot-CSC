@@ -16,7 +16,7 @@ session that starts fresh reads it before anything else.
 |---|---|---|
 | Code and migrations 0054 to 0056 | Done, commit bdb6b4d | Reviewed adversarially; nothing switched on |
 | 0. Domain | In progress, 2026-09-06 | Owner registered meltingpots.xyz at the .xyz registry (auto renew on, expires 2027-09-07). Registrar contact verification pending (14 day window). Plan: Netlify DNS for the main site first, Clerk production records later; see "The domain" below |
-| 1. Clerk application and settings | In progress, 2026-09-06 | Owner is at Create application (Consumer, name MeltingPot, Email and Password on, Google off). Settings after creation still to do. Owner is on Clerk's student plan; the plan changes limits, not steps |
+| 1. Clerk application and settings | In progress, 2026-09-08 | Application "Meltingpot" exists (Development, Student workspace). Settings 1.2 to 1.7 still to do; menu names corrected against Clerk's docs on 2026-09-08 |
 | 1.6 Keys sent back | Waiting | Publishable key may be pasted here; the secret key goes straight into Netlify and .env.local |
 | 2. Supabase third-party auth | Not started | Needs the Clerk domain from step 1.4 |
 | 3. Netlify variables and redeploy | Not started | Three variables, then a deploy |
@@ -61,9 +61,15 @@ session that starts fresh reads it before anything else.
 
 A Clerk production instance needs DNS records (CNAMEs for its Frontend API
 and account portal) on a domain you control. `meltingpot-csc.netlify.app` cannot
-carry them. Until a domain such as meltingpot.io points at Netlify, Clerk runs
-as a development instance: it works on the netlify.app URL, shows a development
-mark, and is not meant for real users. Everything below works on either.
+carry them. Until meltingpots.xyz answers on Netlify (section 0a), Clerk runs
+as a development instance: it works on any address with the `pk_test` and
+`sk_test` keys, the site itself looks the same (the product uses its own
+forms, not Clerk's components, so no development mark appears; the Clerk
+dashboard carries the banner), session state travels in a `__clerk_db_jwt`
+query parameter instead of a cookie, and it is capped at 100 users whose
+accounts cannot be moved to production. So no real class enrols on the
+development instance; test accounts made there are thrown away at the switch.
+Everything below works on either.
 
 ### 0a. The domain, step by step
 
@@ -93,31 +99,50 @@ meltingpots.xyz, registered 2026-09-06. Two jobs, in this order.
 
 ### 1. Clerk dashboard
 
-1. Create the application. Sign-in methods: Email address and Password. Turn
-   off any requirement the product has no step for yet, in particular email
-   verification at sign up and bot sign-up protection (Attack protection); the
-   product's own sign up form has no slot for a captcha, and the browser half
-   refuses with `not_configured` and says so if Clerk asks for more than an
-   email and a password.
-2. Password policy: at least what the app enforces today (8 characters, upper,
-   lower, digit, symbol), or accept Clerk's.
-3. Multi-factor: turn on Authenticator app. The settings panel's "two-step sign
-   in" runs on it.
-4. Integrations, Supabase, Activate. This adds the `role: authenticated` claim
-   Supabase requires and shows the Clerk domain to paste into Supabase.
-5. Sessions, Customize session token, add
-   `"two_factor": "{{user.two_factor_enabled}}"`. The edge proxy and
-   `has_required_aal()` in Postgres read this claim to tell an enrolled account
-   from one that is not; without it the database's second factor boundary
-   (`docs/ARCHITECTURE.md`) does not exist for Clerk sessions, and the app is
-   stricter than the database instead of agreeing with it.
-6. Copy the publishable key and the secret key.
+Menu names checked against Clerk's docs on 2026-09-08. The instance selector
+is top left (Development until step 0 is done). Skip the Overview page's
+"Agent setup" prompt: the app already speaks to Clerk, nothing is left to
+install.
+
+1. Create the application: Consumer, name MeltingPot, Email and Password on;
+   Google, phone and username off.
+2. Configure, User & authentication. Under Email address keep "Require email
+   address" on and turn "Verify at sign-up" off; the product has no
+   verification step and sign up refuses loudly if Clerk asks for one. On the
+   Password tab, "Update password requirements": minimum length 8; leave
+   "Reject compromised passwords" off, since that path stops a sign in at a
+   status (needs_new_password) the product has no screen for.
+3. Configure, User & authentication, Multi-factor: Authenticator application
+   on. SMS verification code off, Backup codes off, and "Require multi-factor
+   authentication" off. That last switch would give every new session a
+   pending setup task the app cannot show, and the proxy would send everyone
+   back to sign in forever. Save.
+4. Configure, Protect, Rules: on the Bot sign-up protection row, Manage,
+   toggle off Enable, Save; the product's own sign up form has no slot for the
+   captcha. On the Device Trust row the same: Manage, Enable off, Save; it adds
+   a mid sign in check the product does not handle.
+5. dashboard.clerk.com/setup/supabase: choose the options offered and select
+   "Activate Supabase integration". This adds the `role: authenticated` claim
+   Supabase requires and reveals the Clerk domain to paste into Supabase in
+   step 2 (on a development instance it looks like `<slug>.clerk.accounts.dev`,
+   the same host the publishable key encodes).
+6. Configure, Sessions, Customize session token, claims editor:
+   `{ "two_factor": "{{user.two_factor_enabled}}" }`, Save. The edge proxy and
+   `has_required_aal()` in Postgres read this claim to tell an enrolled
+   account from one that is not; without it the database's second factor
+   boundary (`docs/ARCHITECTURE.md`) does not exist for Clerk sessions.
+7. Configure, API keys: the publishable key (`pk_test_`) and the secret key
+   (`sk_test_`). Send the first one and the Clerk domain from step 5 here;
+   the secret key goes into Netlify and `.env.local` by your own hand.
 
 ### 2. Supabase dashboard
 
-Authentication, Sign In / Providers, Third-party auth, Add Clerk, paste the
-domain from step 1.4. Postgres then accepts Clerk session tokens, and
-`current_uid()` turns their subject into a profile id.
+Authentication, Sign In / Providers, Third-party auth, Add provider, Clerk,
+paste the Clerk domain from step 1.5. Postgres then accepts Clerk session
+tokens, and `current_uid()` turns their subject into a profile id. The Free
+plan covers it (50,000 third-party monthly active users included); a changed
+domain or rotated keys can take up to 30 minutes to be honoured, since
+Supabase caches the signing keys.
 
 ### 3. Variables
 

@@ -24,14 +24,14 @@ the deploy that reads it.
 
 | Task | Who | State |
 |---|---|---|
-| Create the application: Consumer, name MeltingPot, Email and Password on, Google, phone and username off | Owner | In progress |
+| Create the application: Consumer, name MeltingPot, Email and Password on, Google, phone and username off | Owner | Done 2026-09-08 |
 | Email address settings: Verify at sign-up off | Owner | Open |
-| Password rules: 8 characters, upper, lower, number, symbol; reject compromised | Owner | Open |
-| Multi-factor: Authenticator application on, nothing else | Owner | Open |
-| Attack protection: Bot sign-up protection off | Owner | Open |
+| Password tab, Update password requirements: minimum length 8; leave Reject compromised passwords off | Owner | Open |
+| Multi-factor: Authenticator application on; SMS, Backup codes and Require multi-factor authentication off | Owner | Open |
+| Protect, Rules: Bot sign-up protection off and Device Trust off (Manage, Enable off, Save) | Owner | Open |
 | Sessions, Customize session token: `{ "two_factor": "{{user.two_factor_enabled}}" }` | Owner | Open |
-| Integrations, Supabase: Activate; note the Clerk domain it shows | Owner | Open |
-| Developers, API keys: send the publishable key and the Clerk domain here; keep the secret key | Owner | Open |
+| dashboard.clerk.com/setup/supabase: Activate Supabase integration; note the Clerk domain it reveals | Owner | Open |
+| Configure, API keys: send the publishable key and the Clerk domain here; keep the secret key | Owner | Open |
 | Supabase: Authentication, Sign In / Providers, Third Party Auth, Add Clerk, paste the Clerk domain | Owner | Open |
 | Trial Netlify site with the three Clerk variables (owner pastes CLERK_SECRET_KEY) and a deploy | Claude, owner for the secret | Open |
 | Walk docs/CLERK.md step 5 on the trial site | Both | Open |
