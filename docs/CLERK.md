@@ -16,7 +16,7 @@ session that starts fresh reads it before anything else.
 |---|---|---|
 | Code and migrations 0054 to 0056 | Done, commit bdb6b4d | Reviewed adversarially; nothing switched on |
 | 0. Domain | Live, 2026-09-08 | meltingpots.xyz answers over https on Netlify DNS (dns1 to dns4.p04.nsone.net); registered 2026-09-07 23:37 UTC, expires 2027-09-07, auto renew on. Registrar contact verification email arrives within a week; must be done then. Clerk production records only when the main site moves to Clerk |
-| 1. Clerk application and settings | In progress, 2026-09-08 | Application "Meltingpot" exists (Development, Student workspace). Settings 1.2 to 1.7 still to do; menu names corrected against Clerk's docs on 2026-09-08 |
+| 1. Clerk application and settings | In progress, 2026-09-08 | Application "Meltingpot" exists (Development, Student workspace). Settings 1.2 to 1.7 still to do; menu names corrected against Clerk's docs on 2026-09-08. The owner has Clerk Pro through the student plan and asked for the production path: finish the development settings so the clone carries them, create the production instance on meltingpots.xyz (0a.4), check it on trial.meltingpots.xyz (a second Netlify site on the same database, production keys) before the main site switches. Ten real accounts exist on the database beside the seed and must be imported (step 4) before the switch |
 | 1.6 Keys sent back | Waiting | Publishable key may be pasted here; the secret key goes straight into Netlify and .env.local |
 | 2. Supabase third-party auth | Not started | Needs the Clerk domain from step 1.4 |
 | 3. Netlify variables and redeploy | Not started | Three variables, then a deploy |

@@ -33,7 +33,7 @@ the deploy that reads it.
 | dashboard.clerk.com/setup/supabase: Activate Supabase integration; note the Clerk domain it reveals | Owner | Open |
 | Configure, API keys: send the publishable key and the Clerk domain here; keep the secret key | Owner | Open |
 | Supabase: Authentication, Sign In / Providers, Third Party Auth, Add Clerk, paste the Clerk domain | Owner | Open |
-| Trial Netlify site with the three Clerk variables (owner pastes CLERK_SECRET_KEY) and a deploy | Claude, owner for the secret | Open |
+| Trial site: a second Netlify site at trial.meltingpots.xyz on the same database with the production keys (owner pastes CLERK_SECRET_KEY) and a deploy, so the main site stays on Supabase Auth until the checks pass | Claude, owner for the secret | Open; the owner chose the production path on 2026-09-08 |
 | Walk docs/CLERK.md step 5 on the trial site | Both | Open |
 | Google sign in: a Google Cloud OAuth client (separate project from Classroom, consent screen External and published) pasted into Clerk, SSO connections, Google; the button and callback page in the app | Owner the client, Claude the app | Later, after step 5 passes |
 | Production instance on meltingpots.xyz: create it cloning the development settings, DNS records from its Domains page into Netlify DNS, Deploy certificates, redo the Supabase integration and update the Supabase third-party domain, clear the trial's profiles, import accounts, live keys on the main site (docs/CLERK.md 0a.4 and 4) | Owner, Claude the SQL and the import script | Only when the main site moves to Clerk |
