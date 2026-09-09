@@ -69,7 +69,7 @@ export default async function globalSetup() {
     const potId = await lookupSeedPot(origin, anonKey);
     if (!potId) {
       throw new Error(
-        `e2e reseed refused (${reseedResponse.status}) and BIO101 does not ` +
+        `e2e reseed refused (${reseedResponse.status}) and 5R22AX does not ` +
           "answer. Either the seed is absent, or an earlier run regenerated " +
           "the class code and the seed is there under a code nobody knows. " +
           "Either way: run select public.dev_seed(); as service_role, then " +
@@ -96,7 +96,7 @@ async function lookupSeedPot(
   const response = await fetch(`${origin}/rest/v1/rpc/lookup_pot_by_code`, {
     method: "POST",
     headers: { apikey: anonKey, "Content-Type": "application/json" },
-    body: JSON.stringify({ p_code: "BIO101" }),
+    body: JSON.stringify({ p_code: "5R22AX" }),
   });
   if (!response.ok) return null;
   const body = (await response.text()).trim();

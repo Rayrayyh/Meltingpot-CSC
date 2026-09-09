@@ -22,7 +22,7 @@ test.describe("Pot feed", () => {
     // Vitals row.
     await expect(page.getByRole("main").getByText("Contributors", { exact: true })).toBeVisible();
     await expect(page.getByRole("main").getByText("Shared notes", { exact: true })).toBeVisible();
-    await expect(page.getByRole("main").getByText("BIO101")).toBeVisible();
+    await expect(page.getByRole("main").getByText("5R22AX")).toBeVisible();
 
     await expect(page.getByRole("link", { name: /Raw notes/ })).toBeVisible();
     await expect(page.getByRole("link", { name: /Summary/ })).toBeVisible();

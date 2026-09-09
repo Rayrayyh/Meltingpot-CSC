@@ -16,12 +16,12 @@ test.describe("joining a Pot", () => {
     page,
   }) => {
     await page.goto("/");
-    await page.getByLabel("Enter class code").fill("bio101");
+    await page.getByLabel("Enter class code").fill("5r22ax");
     await page.getByRole("button", { name: "See the Pot" }).click();
 
     // Pot preview before any authentication. This is the product rule: the
     // code shows the Pot, and only then does anyone ask who you are.
-    await expect(page).toHaveURL(/\/join\/BIO101/);
+    await expect(page).toHaveURL(/\/join\/5R22AX/);
     await expect(page.getByText("You found")).toBeVisible();
     await expect(page.getByRole("heading", { name: "Biology 101" })).toBeVisible();
     await expect(page.getByText(/\d+ members/)).toBeVisible();
@@ -57,7 +57,7 @@ test.describe("joining a Pot", () => {
     await page.getByRole("button", { name: "Sign in", exact: true }).click();
     await expect(page).toHaveURL(/\/home/, { timeout: 15_000 });
 
-    await page.goto("/join/BIO101");
+    await page.goto("/join/5R22AX");
     await expect(page.getByText("Welcome back to")).toBeVisible();
     await page.getByRole("button", { name: "Open Pot" }).click();
     await expect(page).toHaveURL(/\/p\//, { timeout: 15_000 });
