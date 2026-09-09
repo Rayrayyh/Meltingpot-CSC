@@ -22,15 +22,17 @@ would need a restricted scope and a security assessment.
 ### Google Cloud
 
 1. A Google Cloud project with the Google Classroom API enabled.
-2. OAuth consent screen: user type External, publishing status Testing. Add every account that
+2. Google Auth Platform, which is where Google moved the OAuth consent screen in 2025
+   (console.cloud.google.com/auth). Under Audience: user type External, publishing status
+   Testing. Add every account that
    will connect as a test user (the demo account, the pilot class, the judges' accounts if they
    will try it). Up to 100. In Testing, each person's consent lapses seven days after it was
    given and the product asks them to reconnect; that is expected until verification.
-3. Scopes on the consent screen: `openid`, `email`, and the five read-only Classroom scopes
+3. Scopes, under Data Access, Add or remove scopes: `openid`, `email`, and the five read-only Classroom scopes
    `classroom.courses.readonly`, `classroom.coursework.me.readonly`,
    `classroom.courseworkmaterials.readonly`, `classroom.announcements.readonly`,
    `classroom.topics.readonly`.
-4. An OAuth client of type Web application with these authorised redirect URIs:
+4. Under Clients, Create client: an OAuth client of type Web application with these authorised redirect URIs:
    `https://meltingpots.xyz/api/classwork/callback/google_classroom` and
    `http://localhost:3111/api/classwork/callback/google_classroom`. The
    netlify.app alias needs none: the proxy sends it to the domain.

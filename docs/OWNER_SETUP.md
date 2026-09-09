@@ -50,8 +50,8 @@ the deploy that reads it.
 | Task | Who | State |
 |---|---|---|
 | Google Cloud project with the Google Classroom API enabled | Owner | Open |
-| OAuth consent screen: External, Testing; add every test user (demo account, pilot class, judges); scopes openid, email and the five read-only Classroom scopes | Owner | Open |
-| OAuth client, Web application, redirect URIs `https://meltingpots.xyz/api/classwork/callback/google_classroom` and `http://localhost:3111/api/classwork/callback/google_classroom` (the netlify.app alias redirects to the domain now, so it needs none) | Owner | Open |
+| Google Auth Platform (Google renamed this from "OAuth consent screen" in 2025; console.cloud.google.com/auth). Branding: app name and support email. Audience: type External, publishing status Testing, and add every test user under Test users (demo account, pilot class, judges). Data Access, Add or remove scopes: openid, email and the five read-only Classroom scopes | Owner | Open |
+| Google Auth Platform, Clients, Create client, type Web application (console.cloud.google.com/auth/clients, not the old APIs and Services, Credentials page, which now serves API keys). Authorised redirect URIs `https://meltingpots.xyz/api/classwork/callback/google_classroom` and `http://localhost:3111/api/classwork/callback/google_classroom` (the netlify.app alias redirects to the domain now, so it needs none) | Owner | Open |
 | Netlify: CLASSROOM_OAUTH_CLIENT_ID and CLASSROOM_OAUTH_CLIENT_SECRET | Owner | Open |
 
 ## 4. Canvas (docs/CLASSWORK.md)
