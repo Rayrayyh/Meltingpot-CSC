@@ -74,3 +74,41 @@ Cream paper background (#faf4e6), warm white surfaces, near-black ink, brand ora
 - Do not schedule recurring pull request check-ins or any other self-firing routine. Report on a PR when the owner asks, or when a GitHub event actually needs a decision.
 - When something breaks, check `memory/lessons/` first, and record any new lesson worth keeping.
 - Log every architectural or scope decision in `memory/decisions/` at the moment it is made.
+
+## Session stats, before the context goes
+
+The context window is compacted by the harness, and everything not written down
+goes with it. By 2026-09-09 that had happened seventeen times, and the running
+account of the project had to be rebuilt from the raw transcript
+(`docs/reference/session-logbook/`). Claude Code's own `/insights` reads only
+the current window, so after a compaction it reports one afternoon as the whole
+project: it gave 9 messages and 1 commit for a session that was 341 messages and
+229 commits.
+
+Do not try to catch the moment before a compaction. There is no reliable signal:
+compaction is performed by the harness and is not announced to the model in
+advance, so an instruction to "stop just before 950k tokens" cannot be followed
+and will silently do nothing. Snapshot regularly instead, which survives either
+way.
+
+Run `node scripts/session-stats.mjs` from the repo root and commit the refreshed
+`docs/SESSION_STATS.md`:
+
+- at the end of any exchange that produced commits;
+- before anything that will eat a lot of context: a full bug pass, a workflow
+  fan-out, a long end to end run, a large file read;
+- whenever the conversation has been running long and the last snapshot in
+  `docs/SESSION_STATS.md` is stale.
+
+It records span, messages typed, assistant turns, tool calls and their mix, tool
+error rate, compactions so far, output tokens, and the code totals: lines
+standing, files, migrations, commits, and lines added and removed across all
+commits. It costs one command.
+
+Two counting traps, both already fallen into once. Tool results, command
+invocations, system reminders and task notifications all arrive in the `user`
+role, and counting them as messages inflates the total by about a third; the
+script filters them, so do not hand-count from the transcript instead. And the
+harness's own `files_modified` counter watches Edit and Write only, so in auto
+mode, where edits go through Bash heredocs and `sed`, it reads zero on a day
+that rewrote half the docs. Never quote it.

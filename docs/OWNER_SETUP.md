@@ -13,7 +13,7 @@ the deploy that reads it.
 
 | Task | Who | State |
 |---|---|---|
-| Verify the registry contact email when it arrives (the registry sends it within a week of 2026-09-08) | Owner | Open, waiting for the email |
+| Verify the registry contact email | Owner | Done 2026-09-09, owner confirmed. The domain is no longer at risk of suspension |
 | Netlify: site meltingpot-csc, Domain management, Add a domain, choose Netlify DNS | Owner | Done 2026-09-06; Netlify lists meltingpots.xyz as the primary address |
 | Registry: Manage, Manage Nameservers, paste Netlify's four nameservers | Owner | Done 2026-09-06 (dns1 to dns4.p04.nsone.net) |
 | Wait for the certificate, then say so | Owner | Done 2026-09-08; https answers |
