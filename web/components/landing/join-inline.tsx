@@ -7,7 +7,7 @@ import { CLASS_CODE_LENGTH, ClassCodeInput } from "@/components/ui/class-code-in
 import { supabaseBrowser } from "@/lib/supabase/client";
 
 /**
- * The compact code entry inside the "I have a class code" door. Same
+ * The compact code entry in the join strip under section two's bento. Same
  * validate-in-place behavior as JoinCard, with two deliberate differences:
  * the button is never disabled (a short code gets a plain sentence instead of
  * a control that ignores the click, and no request is fired for it), and the
@@ -59,7 +59,7 @@ export function JoinInline({
   }
 
   return (
-    <form onSubmit={submit} className="space-y-3">
+    <form onSubmit={submit} className="flex flex-col justify-between gap-3">
       <ClassCodeInput
         value={code}
         onValueChange={(next) => {

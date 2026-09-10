@@ -94,6 +94,49 @@ test.describe("brand landing", () => {
     });
   }
 
+  // Section two is a bento of eight tiles (2026-09-10), and each one lifts
+  // into place on its own. A single Reveal around the whole grid never crossed
+  // its own in-view threshold, because the grid is taller than a laptop
+  // viewport, and left all eight at opacity zero, so the resting opacity is
+  // held to a test rather than trusted. The three ways in that the bento
+  // replaced still have to be reachable: the hero, the header and the closing
+  // band all land on #join.
+  test("section two is a bento, and every tile lifts into place", async ({ page }) => {
+    await page.goto("/");
+    const section = page.locator("#spaces");
+    const titles = [
+      "Your record is your own.",
+      "Every version stays.",
+      "Calendar",
+      "Corrections carry reasons.",
+      "Shared notes",
+      "Study tools",
+      "The organizer proposes. You publish.",
+      "Search",
+    ];
+    for (const name of titles) {
+      await expect(section.getByRole("heading", { name, exact: true })).toBeVisible();
+    }
+
+    const tiles = page.getByTestId("feature-bento").locator("> *");
+    await expect(tiles).toHaveCount(8);
+    // Two stops, because scrollIntoViewIfNeeded jumps: the top row would
+    // never have been on screen if the only stop were the bottom row.
+    for (const name of ["Every version stays.", "Search"]) {
+      await section.getByRole("heading", { name, exact: true }).scrollIntoViewIfNeeded();
+      await settleScroll(page);
+      await page.waitForTimeout(900);
+    }
+    const resting = await tiles.evaluateAll((els) =>
+      els.map((el) => getComputedStyle(el).opacity),
+    );
+    expect(resting).toEqual(Array(8).fill("1"));
+
+    await expect(section.getByLabel("Enter class code")).toBeVisible();
+    await expect(section.getByRole("link", { name: "Open the demo Pot" })).toBeVisible();
+    await expect(section.getByRole("link", { name: "Create a Pot" })).toBeVisible();
+  });
+
   test("anchors scroll to their sections, including back up past the pin", async ({ page }) => {
     await page.goto("/");
 

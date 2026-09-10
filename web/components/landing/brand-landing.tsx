@@ -1,5 +1,6 @@
 import { ArrowDown, ArrowRight } from "@phosphor-icons/react/dist/ssr";
 import { CursorLock } from "@/components/landing/cursor-lock";
+import { FeatureBento } from "@/components/landing/feature-bento";
 import { HeroDashboard } from "@/components/landing/hero-dashboard";
 import { JoinInline } from "@/components/landing/join-inline";
 import { NamesOnTheNote } from "@/components/landing/names-on-the-note";
@@ -123,60 +124,45 @@ export function BrandLanding({
             </p>
           </div>
 
-          <div id="join" className="scroll-mt-24 mt-14 grid gap-6 md:grid-cols-3">
-            <Reveal className="h-full">
-              <div className="flex h-full flex-col rounded-(--radius-card) border border-edge-strong bg-paper p-6">
-                <p className="text-[12px] font-semibold tracking-[0.14em] uppercase text-clay">
-                  No code? Start here
-                </p>
-                <h3 className="mt-3 text-lg font-semibold text-ink">
-                  Peek inside a real class
-                </h3>
-                <p className="mt-2 flex-1 text-sm text-ink-muted leading-relaxed">
-                  Human Biology is our live demo Pot: shared notes, open
-                  corrections, flashcards, the lot. Open it and see the class
-                  before you make any account.
-                </p>
-                <div className="mt-5 space-y-3">
+          <div className="mt-14">
+            <FeatureBento />
+          </div>
+
+          {/* The three doors this section used to be, folded into one strip.
+              The bento took their place, but #join is where the header, the
+              hero and the closing band all land, and a landing whose only
+              entry point is the footer converts nobody. Each column is a
+              label over a control, spread top and bottom, so the code field's
+              extra button does not leave the other two floating. */}
+          <div
+            id="join"
+            className="scroll-mt-24 mt-4 flex flex-col gap-8 rounded-(--radius-card) border border-edge-strong bg-paper p-6 lg:flex-row lg:items-stretch lg:justify-between lg:gap-12 lg:p-7"
+          >
+            <div className="max-w-xs lg:self-center">
+              <p className="text-[12px] font-semibold uppercase tracking-[0.14em] text-clay">
+                Three ways in
+              </p>
+              <p className="mt-2 text-sm leading-relaxed text-ink-muted">
+                Look inside a real class without an account, open the Pot your
+                class already shares, or start one of your own.
+              </p>
+            </div>
+            <div className="grid gap-6 sm:grid-cols-3 sm:gap-5 lg:w-[34rem] lg:shrink-0">
+              <div className="flex flex-col justify-between gap-2">
+                <p className="text-[13px] font-medium text-ink">No account needed</p>
+                <div>
                   <Button href="/join/HXU863" size="md" className="w-full" roll>
                     Open the demo Pot
                   </Button>
-                  <p className="text-center text-[12px] text-ink-faint">
-                    Class code <span className="font-mono tracking-[0.2em]">HXU863</span>
+                  <p className="mt-2 text-center text-[12px] text-ink-faint">
+                    Code <span className="font-mono tracking-[0.2em]">HXU863</span>
                   </p>
                 </div>
               </div>
-            </Reveal>
-            <Reveal delay={0.08} className="h-full">
-              <div className="flex h-full flex-col rounded-(--radius-card) border border-edge bg-surface-raised p-6">
-                <p className="text-[12px] font-semibold tracking-[0.14em] uppercase text-ink-faint">
-                  For students
-                </p>
-                <h3 className="mt-3 text-lg font-semibold text-ink">
-                  I have a class code
-                </h3>
-                <p className="mt-2 text-sm text-ink-muted leading-relaxed">
-                  Enter the 6 characters your class shared. You see the Pot
-                  before you join anything.
-                </p>
-                <div className="mt-5">
-                  <JoinInline initialCode={initialCode} initialError={initialError} />
-                </div>
-              </div>
-            </Reveal>
-            <Reveal delay={0.16} className="h-full">
-              <div className="flex h-full flex-col rounded-(--radius-card) border border-edge bg-surface-raised p-6">
-                <p className="text-[12px] font-semibold tracking-[0.14em] uppercase text-ink-faint">
-                  For teachers
-                </p>
-                <h3 className="mt-3 text-lg font-semibold text-ink">
-                  I run a class
-                </h3>
-                <p className="mt-2 flex-1 text-sm text-ink-muted leading-relaxed">
-                  Create a Pot and share one code. Your class joins in seconds,
-                  and everything they type stays theirs to approve.
-                </p>
-                <div className="mt-5">
+              <JoinInline initialCode={initialCode} initialError={initialError} />
+              <div className="flex flex-col justify-between gap-2">
+                <p className="text-[13px] font-medium text-ink">Teaching a class</p>
+                <div>
                   <Button
                     href="/pots/new"
                     variant="secondary"
@@ -186,11 +172,13 @@ export function BrandLanding({
                   >
                     Create a Pot
                   </Button>
+                  <p className="mt-2 text-center text-[12px] text-ink-faint">
+                    Share one code
+                  </p>
                 </div>
               </div>
-            </Reveal>
+            </div>
           </div>
-
         </div>
         <a
           href="#explore"
