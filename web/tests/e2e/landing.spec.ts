@@ -104,33 +104,46 @@ test.describe("brand landing", () => {
   test("section two is a bento, and every tile lifts into place", async ({ page }) => {
     await page.goto("/");
     const section = page.locator("#spaces");
+    // The eight headings the reference sheets carry, verbatim.
     const titles = [
-      "Your record is your own.",
-      "Every version stays.",
+      "Contributions make progress visible.",
+      "Version history",
       "Calendar",
-      "Corrections carry reasons.",
+      "Collaboration",
       "Shared notes",
       "Study tools",
-      "The organizer proposes. You publish.",
+      "AI summaries",
       "Search",
     ];
     for (const name of titles) {
       await expect(section.getByRole("heading", { name, exact: true })).toBeVisible();
     }
 
-    const tiles = page.getByTestId("feature-bento").locator("> *");
+    // The middle band nests two tiles inside one grid cell, so the count is
+    // over the tiles themselves rather than the grid's direct children.
+    const tiles = page.getByTestId("feature-bento").locator("[data-bento-tile]");
     await expect(tiles).toHaveCount(8);
     // Two stops, because scrollIntoViewIfNeeded jumps: the top row would
     // never have been on screen if the only stop were the bottom row.
-    for (const name of ["Every version stays.", "Search"]) {
+    for (const name of ["Version history", "Search"]) {
       await section.getByRole("heading", { name, exact: true }).scrollIntoViewIfNeeded();
       await settleScroll(page);
       await page.waitForTimeout(900);
     }
     const resting = await tiles.evaluateAll((els) =>
-      els.map((el) => getComputedStyle(el).opacity),
+      els.map((el) => getComputedStyle(el.parentElement as Element).opacity),
     );
     expect(resting).toEqual(Array(8).fill("1"));
+
+    // The grid is a reproduction of meltingpot-bento.png, so it keeps that
+    // sheet's 1672 by 941 proportions rather than reflowing to the viewport.
+    const ratio = await page
+      .getByTestId("feature-bento")
+      .evaluate((el) => {
+        const r = el.getBoundingClientRect();
+        return r.width / r.height;
+      });
+    expect(ratio).toBeCloseTo(1672 / 941, 2);
 
     await expect(section.getByLabel("Enter class code")).toBeVisible();
     await expect(section.getByRole("link", { name: "Open the demo Pot" })).toBeVisible();

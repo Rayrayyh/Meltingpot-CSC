@@ -123,11 +123,15 @@ export function BrandLanding({
               marked, and shares it with the class once the writer approves.
             </p>
           </div>
+        </div>
 
-          <div className="mt-14">
-            <FeatureBento />
-          </div>
+        {/* The bento is the reference sheet at its own size, 1672 by 941, so
+            it steps outside the section's 1152px container. */}
+        <div className="mt-14">
+          <FeatureBento />
+        </div>
 
+        <div className="mx-auto mt-4 w-full max-w-6xl">
           {/* The three doors this section used to be, folded into one strip.
               The bento took their place, but #join is where the header, the
               hero and the closing band all land, and a landing whose only
@@ -136,7 +140,7 @@ export function BrandLanding({
               extra button does not leave the other two floating. */}
           <div
             id="join"
-            className="scroll-mt-24 mt-4 flex flex-col gap-8 rounded-(--radius-card) border border-edge-strong bg-paper p-6 lg:flex-row lg:items-stretch lg:justify-between lg:gap-12 lg:p-7"
+            className="scroll-mt-24 flex flex-col gap-8 rounded-(--radius-card) border border-edge-strong bg-paper p-6 lg:flex-row lg:items-stretch lg:justify-between lg:gap-12 lg:p-7"
           >
             <div className="max-w-xs lg:self-center">
               <p className="text-[12px] font-semibold uppercase tracking-[0.14em] text-clay">

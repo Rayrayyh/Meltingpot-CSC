@@ -1075,3 +1075,180 @@ html[data-card-face="sky"] {
   --primary: #964d10;
   background-color: var(--card-face);
 }
+
+/* ---------------------------------------------------------------- bento --
+   Section two's bento is a reproduction of the owner's nine reference sheets
+   (main, 68d6448), measured off the PNGs rather than eyeballed: every hex and
+   every dimension below was sampled from the artwork.
+
+   The frame is the sheet: 1672 by 941, the exact size of meltingpot-bento.png,
+   with the same 45px side margins and the same 14px gutters. --u is one
+   reference pixel, so the whole grid scales as one picture and holds the
+   sheet's proportions at every width instead of reflowing.
+
+   These are illustration colours, not theme tokens, and they are deliberately
+   the same in both themes: a picture does not invert. The owner asked for the
+   references reproduced exactly on 2026-09-10, which lifts the no-gradients
+   rule for this block alone. Everything else on the page still obeys it. */
+.bento-frame {
+  container-type: inline-size;
+  width: 100%;
+  max-width: 1672px;
+  margin-inline: auto;
+}
+
+.bento {
+  --u: calc(100cqw / 1672);
+  --b-ink: #0a2350;
+  --b-ink-muted: #5f74a2;
+  --b-ink-soft: #8296c4;
+  --b-orange: #e2600f;
+  --b-orange-deep: #c2410c;
+  --b-amber: #fcb75c;
+  --b-amber-soft: #fddfae;
+  --b-green: #05a954;
+  --b-slate: #647492;
+  --b-rail: #3f68b8;
+  --b-bar: #e0e0e0;
+  color: var(--b-ink);
+  font-family: var(--font-figtree), ui-sans-serif, system-ui, sans-serif;
+  letter-spacing: -0.01em;
+  display: grid;
+  aspect-ratio: 1672 / 941;
+  padding: calc(var(--u) * 30) calc(var(--u) * 45) calc(var(--u) * 36);
+  gap: calc(var(--u) * 14);
+  /* 456 / 752 / 343 across, 282 / 320 / 245 down: the tile rectangles the
+     reference sheet actually draws, not an even twelve column split. */
+  grid-template-columns: minmax(0, 456fr) minmax(0, 752fr) minmax(0, 343fr);
+  /* minmax(0, ...) rather than a bare fr, so a row keeps the sheet's
+     proportion instead of growing to whatever its content asks for. */
+  grid-template-rows: minmax(0, 282fr) minmax(0, 320fr) minmax(0, 245fr);
+}
+
+/* Below the sheet's own width the picture would only get smaller and smaller,
+   so past a laptop the tiles go back to stacking and size themselves. */
+@media (max-width: 1100px) {
+  .bento {
+    --u: 1px;
+    aspect-ratio: auto;
+    padding: 0;
+    grid-template-columns: 1fr;
+    grid-template-rows: none;
+  }
+  .bento-band {
+    grid-template-columns: 1fr !important;
+  }
+  /* The stack has no columns to place into. */
+  .bento > * {
+    grid-column: auto !important;
+    grid-row: auto !important;
+  }
+}
+
+.bento > *,
+.bento-band > * {
+  min-height: 0;
+}
+
+.bento-band {
+  display: grid;
+  min-height: 0;
+  grid-template-columns: 421fr 317fr;
+  gap: calc(var(--u) * 14);
+  min-width: 0;
+}
+
+.bento-tile {
+  position: relative;
+  overflow: hidden;
+  min-width: 0;
+  border-radius: calc(var(--u) * 26);
+  isolation: isolate;
+}
+
+/* The glass lip along the top edge that every card in the references has. */
+.bento-lip::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.5),
+    inset 0 0 0 1px rgb(255 255 255 / 0.16);
+}
+
+/* Not a top to bottom ramp. Sampling the sheet shows the ground is DARKEST in
+   the core and lifts towards every edge, with a specular bloom off the top
+   left corner and a soft lighter wedge cutting the bottom right. */
+.bento-contrib {
+  background:
+    radial-gradient(58% 40% at 3% 1%, rgb(255 255 255 / 0.55) 0%, rgb(255 232 210 / 0.2) 30%, transparent 62%),
+    radial-gradient(42% 30% at 100% 100%, rgb(255 178 116 / 0.4) 0%, transparent 72%),
+    radial-gradient(38% 28% at 0% 100%, rgb(255 164 96 / 0.28) 0%, transparent 72%),
+    linear-gradient(180deg, rgb(255 206 166 / 0.65) 0%, transparent 4%),
+    radial-gradient(125% 96% at 50% 52%, #b9460a 0%, #bf4d10 40%, #cf5c1a 74%, #e87a35 96%, #f28c46 100%),
+    #c2500f;
+}
+
+.bento-history {
+  background:
+    radial-gradient(105% 72% at 88% 16%, rgb(255 255 255 / 0.6), transparent 62%),
+    linear-gradient(180deg, #fdeeca 0%, #fddc9a 72%, #fcd287 100%);
+}
+
+.bento-calendar {
+  background: linear-gradient(180deg, #fbfaf9 0%, #f6f3f0 100%);
+}
+
+.bento-collab {
+  background: linear-gradient(155deg, #fdfaf5 0%, #f8f5f0 56%, #fcf7ee 100%);
+}
+
+.bento-notes {
+  background: linear-gradient(160deg, #fef9f2 0%, #fdf3e5 100%);
+}
+
+.bento-tools {
+  background: linear-gradient(155deg, #fffefd 0%, #fdf6ed 100%);
+}
+
+.bento-ai {
+  background:
+    radial-gradient(70% 90% at 4% 2%, rgb(255 255 255 / 0.4) 0%, transparent 58%),
+    linear-gradient(180deg, rgb(255 206 166 / 0.6) 0%, transparent 5%),
+    radial-gradient(120% 130% at 50% 46%, #cb5519 0%, #d35f1e 34%, #e07a2f 70%, #f18f48 94%, #f89a53 100%),
+    #d4601f;
+}
+
+.bento-search {
+  background:
+    radial-gradient(105% 70% at 86% 14%, rgb(255 255 255 / 0.55), transparent 60%),
+    linear-gradient(180deg, #fdf1c9 0%, #fcd68d 68%, #fbcd80 100%);
+}
+
+/* The one version chip the references light up, ringed in white and lifted. */
+.bento-chip-now {
+  background: linear-gradient(150deg, #e2680f 0%, #bf440a 100%);
+  box-shadow:
+    0 0 0 3px #ffffff,
+    0 8px 20px rgb(191 68 10 / 0.32);
+}
+
+/* The glowing "Key points ready" capsule on the AI card. */
+.bento-glow {
+  background: linear-gradient(160deg, #e07422 0%, #c2560f 100%);
+  box-shadow:
+    0 0 0 2px rgb(253 190 90 / 0.95),
+    0 0 26px 6px rgb(253 170 60 / 0.5),
+    inset 0 1px 0 rgb(255 255 255 / 0.25);
+}
+
+.bento-panel {
+  background: rgb(255 255 255 / 0.12);
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.14);
+}
+
+.bento-float {
+  box-shadow: 0 10px 26px rgb(10 35 80 / 0.12);
+}

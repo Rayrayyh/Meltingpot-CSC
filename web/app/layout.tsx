@@ -38,7 +38,9 @@ const bricolage = Bricolage_Grotesque({
 
 const figtree = Figtree({
   variable: "--font-figtree",
-  weight: ["400", "500", "600", "700"],
+  // 800 is section two's bento: the reference sheets set their headlines in a
+  // heavier weight than anything else on the site uses.
+  weight: ["400", "500", "600", "700", "800"],
   subsets: ["latin"],
 });
 
