@@ -18,7 +18,7 @@ The four historical vision PDFs and the pasted rules text were removed from the 
 
 ## Stack
 
-Next.js (App Router, TypeScript, Tailwind) in `web/`, Supabase (Postgres + Auth + Storage) with RLS enabled on every table, Netlify for hosting, Framer Motion (+ GSAP where a timeline helps) for restrained animation. The AI organizer is a deterministic provider behind an interface (`memory/decisions/003-ai-organizer.md`); no live model calls in the MVP.
+Next.js (App Router, TypeScript, Tailwind) in `web/`, Supabase (Postgres + Auth + Storage) with RLS enabled on every table, Netlify for hosting, Framer Motion (+ GSAP, with `@gsap/react`'s `useGSAP`, where a timeline helps) for restrained animation; every GSAP timeline sits inside `gsap.matchMedia("(prefers-reduced-motion: no-preference)")` so the preference gets the static page rather than a faster one (`memory/decisions/047`). The AI organizer is a deterministic provider behind an interface (`memory/decisions/003-ai-organizer.md`); no live model calls in the MVP.
 
 ## Commands
 

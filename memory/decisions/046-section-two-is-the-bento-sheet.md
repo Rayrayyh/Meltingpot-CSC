@@ -96,3 +96,10 @@ is on screen, and the grid is taller than a laptop viewport, so a single
 wrapper never reached its threshold and left the whole section at opacity zero.
 `tests/e2e/landing.spec.ts` holds the resting opacity of all eight tiles, and
 the grid's aspect ratio, to a test.
+
+## What happened next
+
+On 2026-09-11 the block stopped being only a picture: it gained a hover
+lift, a pointer light, a link on every tile, and a cap that fits the grid
+to the window. `memory/decisions/047` records that and the landing's wider
+motion layer.

@@ -3,6 +3,7 @@ import { ArrowRight } from "@phosphor-icons/react/dist/ssr";
 import { CursorLock } from "@/components/landing/cursor-lock";
 import { FeatureBento } from "@/components/landing/feature-bento";
 import { HeroDashboard } from "@/components/landing/hero-dashboard";
+import { HeroMotion } from "@/components/landing/hero-motion";
 import { NamesOnTheNote } from "@/components/landing/names-on-the-note";
 import { ScrollStopper } from "@/components/landing/scroll-stopper";
 import { SiteFooter } from "@/components/landing/site-footer";
@@ -10,6 +11,7 @@ import { SiteHeader } from "@/components/landing/site-header";
 import { PRINCIPLES, STEPS } from "@/components/landing/site-content";
 import { Button } from "@/components/ui/button";
 import { Reveal } from "@/components/ui/reveal";
+import { Magnetic } from "@/components/ui/magnetic";
 import { RollText } from "@/components/ui/roll-text";
 
 /**
@@ -22,6 +24,7 @@ export function BrandLanding({ signedIn = false }: { signedIn?: boolean }) {
   return (
     <div className="flex flex-col">
       <CursorLock />
+      <HeroMotion />
       {/* Same ground as the hero, so the top of the page is one surface
           rather than a paper band over a sunken one. */}
       <div className="bg-sunken">
@@ -32,21 +35,36 @@ export function BrandLanding({ signedIn = false }: { signedIn?: boolean }) {
       <section id="top" className="relative overflow-hidden bg-sunken">
         <div className="mx-auto w-full max-w-[1400px] px-4 sm:px-12 pt-8 sm:pt-10 pb-16 md:pb-0 text-center">
           {/* Fluid so the three forced lines never become four or five. */}
+          {/* One mask per line, so each can rise out of its own edge rather
+              than the whole block fading. The three lines were already forced
+              with breaks, so nothing about the wrapping changes. */}
           <h1 className="font-display text-[32px] sm:text-[clamp(2.1rem,3.4vw,3.4rem)] font-semibold leading-[1.08] tracking-tight text-ink">
-            Everyone takes notes.
-            <br />
-            MeltingPot brings
-            <br />
-            them together.
+            {["Everyone takes notes.", "MeltingPot brings", "them together."].map(
+              (line) => (
+                <span key={line} className="block overflow-hidden pb-[0.06em]">
+                  <span data-hero-line className="block">
+                    {line}
+                  </span>
+                </span>
+              ),
+            )}
           </h1>
-          <p className="mx-auto mt-5 max-w-2xl text-lg sm:text-xl text-ink-muted leading-relaxed">
+          <p
+            data-hero-support
+            className="mx-auto mt-5 max-w-2xl text-lg sm:text-xl text-ink-muted leading-relaxed"
+          >
             Turn scattered notes, resources, and explanations into one
             shared course space your whole class can explore.
           </p>
-          <div className="mt-8 flex flex-wrap items-center justify-center gap-8">
-            <Button href={signedIn ? "/home" : "/join"} size="lg" roll>
-              {signedIn ? "Go to dashboard" : "Join a class"}
-            </Button>
+          <div
+            data-hero-support
+            className="mt-8 flex flex-wrap items-center justify-center gap-8"
+          >
+            <Magnetic>
+              <Button href={signedIn ? "/home" : "/join"} size="lg" roll>
+                {signedIn ? "Go to dashboard" : "Join a class"}
+              </Button>
+            </Magnetic>
             <a
               href="#explore"
               className="group/roll inline-flex items-center gap-2 text-[16px] font-medium text-ink hover:text-primary transition-colors"
@@ -71,6 +89,7 @@ export function BrandLanding({ signedIn = false }: { signedIn?: boolean }) {
         <div
           aria-hidden
           inert
+          data-hero-shot
           className="pointer-events-none select-none mt-10 hidden h-[586px] justify-start overflow-hidden md:flex min-[1360px]:justify-center"
         >
           {/* The shadow lives here, on an untransformed wrapper, as a filter:
@@ -98,7 +117,7 @@ export function BrandLanding({ signedIn = false }: { signedIn?: boolean }) {
           CTAs point at /join, the page that still owns a code field. */}
       <section
         id="spaces"
-        className="px-6 sm:px-10 py-24 sm:py-28 bg-surface border-y border-edge scroll-mt-8"
+        className="px-6 sm:px-10 py-16 sm:py-20 bg-surface border-y border-edge scroll-mt-8"
       >
         {/* Layer-cake scanning only works when a heading summarises what sits
             under it, and the old one described the problem while the grid
@@ -118,7 +137,7 @@ export function BrandLanding({ signedIn = false }: { signedIn?: boolean }) {
 
         {/* The bento is the reference sheet at its own size, 1672 by 941, so
             it steps outside the section's 1152px container. */}
-        <div className="mt-14">
+        <div className="mt-10">
           <FeatureBento />
         </div>
 

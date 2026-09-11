@@ -167,7 +167,9 @@ test.describe("brand landing", () => {
 
     // The nav now navigates to real pages; the landing's own join anchor
     // hangs off the hero call to action instead.
-    await page.getByRole("link", { name: "Classes" }).click();
+    // Exact, because section two's search tile now carries an "Explore
+    // classes" link of its own.
+    await page.getByRole("link", { name: "Classes", exact: true }).click();
     await page.waitForURL("**/classes");
     await expect(
       page.getByRole("heading", { name: "Classes", exact: true }),

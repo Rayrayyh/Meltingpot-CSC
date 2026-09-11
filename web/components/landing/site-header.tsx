@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ThemeToggle } from "@/components/brand/theme-toggle";
 import { Wordmark } from "@/components/shell/wordmark";
+import { Magnetic } from "@/components/ui/magnetic";
 import { RollText } from "@/components/ui/roll-text";
 import { cn } from "@/lib/cn";
 
@@ -64,12 +65,14 @@ export function SiteHeader({
               the whole of it for anyone who has not signed in yet. */}
           <ThemeToggle />
           {signedIn ? (
-            <Link
-              href="/home"
-              className="group/roll inline-flex h-11 shrink-0 items-center whitespace-nowrap rounded-full bg-primary px-4 sm:px-6 text-[14px] sm:text-[15px] font-medium text-on-primary transition-opacity hover:opacity-90"
-            >
-              <RollText>Go to dashboard</RollText>
-            </Link>
+            <Magnetic>
+              <Link
+                href="/home"
+                className="group/roll inline-flex h-11 shrink-0 items-center whitespace-nowrap rounded-full bg-primary px-4 sm:px-6 text-[14px] sm:text-[15px] font-medium text-on-primary transition-opacity hover:opacity-90"
+              >
+                <RollText>Go to dashboard</RollText>
+              </Link>
+            </Magnetic>
           ) : (
             <>
               <Link
@@ -80,12 +83,14 @@ export function SiteHeader({
               </Link>
               {/* Orange like the hero's Join a class button on purpose: the
                   two go to the same place, and matching color says so. */}
-              <a
-                href={getStartedHref}
-                className="group/roll inline-flex h-11 shrink-0 items-center whitespace-nowrap rounded-full bg-primary px-4 sm:px-6 text-[14px] sm:text-[15px] font-medium text-on-primary transition-opacity hover:opacity-90"
-              >
-                <RollText>Get started</RollText>
-              </a>
+              <Magnetic>
+                <a
+                  href={getStartedHref}
+                  className="group/roll inline-flex h-11 shrink-0 items-center whitespace-nowrap rounded-full bg-primary px-4 sm:px-6 text-[14px] sm:text-[15px] font-medium text-on-primary transition-opacity hover:opacity-90"
+                >
+                  <RollText>Get started</RollText>
+                </a>
+              </Magnetic>
             </>
           )}
         </nav>

@@ -1093,7 +1093,15 @@ html[data-card-face="sky"] {
 .bento-frame {
   container-type: inline-size;
   width: 100%;
-  max-width: 1672px;
+  /* The sheet's own width is the ceiling, but a grid that is 941px tall the
+     moment the window is wide enough puts its bottom row under the fold on
+     every laptop, and the block only makes its point when the eight tiles are
+     read together. So the picture is also capped by what is left of the
+     window once the section's own chrome is paid for: 280px covers the two
+     64px pads, the heading block and the gap under it. 1.7768 is 1672/941,
+     so the cap is a width that yields a height that fits. The floor is the
+     width at which the tiles stop being a picture and stack anyway. */
+  max-width: clamp(1100px, calc((100svh - 280px) * 1.7768), 1672px);
   margin-inline: auto;
 }
 
@@ -1251,4 +1259,110 @@ html[data-card-face="sky"] {
 
 .bento-float {
   box-shadow: 0 10px 26px rgb(10 35 80 / 0.12);
+}
+
+/* ---------------------------------------------------------------------- */
+/* The bento as a component, not only a picture.                          */
+/*                                                                        */
+/* The sheet is a flat illustration; on a laptop it reads as a poster      */
+/* rather than something to touch. Three restrained additions fix that     */
+/* without moving a single tile off the reference geometry: a lift, a      */
+/* light that follows the pointer, and a link chip on the four tiles the   */
+/* sheet leaves no room for a drawn button in.                            */
+
+/* The light. It paints above the tile's own content, which is how the     */
+/* effect reads as light on glass rather than a shape behind the copy, and */
+/* it rests at zero so a tile nobody is pointing at looks exactly as the   */
+/* sheet draws it. `--mx` and `--my` come from BentoPointer.              */
+.bento-tile::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 260ms ease;
+  background: radial-gradient(
+    calc(var(--u) * 260) circle at var(--mx, 50%) var(--my, 50%),
+    rgb(255 255 255 / 0.18),
+    rgb(255 255 255 / 0.05) 44%,
+    transparent 70%
+  );
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .bento-tile {
+    transition:
+      transform 280ms cubic-bezier(0.22, 0.7, 0.24, 1),
+      box-shadow 280ms cubic-bezier(0.22, 0.7, 0.24, 1);
+  }
+  .bento-tile:hover {
+    transform: translateY(calc(var(--u) * -5));
+    box-shadow: 0 calc(var(--u) * 18) calc(var(--u) * 42) rgb(10 35 80 / 0.18);
+  }
+  .bento-tile:hover::before {
+    opacity: 1;
+  }
+}
+
+/* A whole-tile link for the four tiles whose geometry leaves no room for the
+   white pill the wide ones carry. The chip is the visible half: it rests
+   hidden so the picture is unchanged until someone reaches for it, and it
+   comes up on hover or on keyboard focus. */
+.bento-cta {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-end;
+  border-radius: inherit;
+  padding: calc(var(--u) * 20);
+}
+
+.bento-cta-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: calc(var(--u) * 7);
+  border-radius: 999px;
+  background: #ffffff;
+  color: var(--b-ink);
+  font-weight: 600;
+  font-size: calc(var(--u) * 15);
+  padding: calc(var(--u) * 9) calc(var(--u) * 16);
+  box-shadow: 0 calc(var(--u) * 10) calc(var(--u) * 26) rgb(10 35 80 / 0.2);
+  opacity: 0;
+  transform: translateY(calc(var(--u) * 8));
+  transition:
+    opacity 220ms ease,
+    transform 220ms cubic-bezier(0.22, 0.7, 0.24, 1);
+}
+
+.bento-tile:hover .bento-cta-chip,
+.bento-cta:focus-visible .bento-cta-chip {
+  opacity: 1;
+  transform: none;
+}
+
+/* No hover means no way to discover a hidden chip, so it simply stays. */
+@media (hover: none) {
+  .bento-cta-chip {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bento-tile,
+  .bento-tile::before,
+  .bento-cta-chip {
+    transition: none;
+  }
+  .bento-tile:hover {
+    transform: none;
+  }
+  .bento-cta-chip {
+    transform: none;
+  }
 }

@@ -16,6 +16,8 @@ import {
   Users,
   UsersThree,
 } from "@phosphor-icons/react/dist/ssr";
+import { BentoMotion } from "@/components/landing/bento-motion";
+import { BentoPointer } from "@/components/landing/bento-pointer";
 import { PotMark } from "@/components/brand/pot-mark";
 import { Avatar } from "@/components/ui/avatar";
 import { Reveal } from "@/components/ui/reveal";
@@ -59,6 +61,8 @@ export function FeatureBento() {
         <AiTile />
         <SearchTile />
       </div>
+      <BentoMotion />
+      <BentoPointer />
     </div>
   );
 }
@@ -76,6 +80,8 @@ function Tile({
   lip = false,
   pad = 22,
   delay,
+  href,
+  cta,
   children,
 }: {
   /** Where the tile sits in the sheet's grid. It has to land on the Reveal,
@@ -86,6 +92,11 @@ function Tile({
   lip?: boolean;
   pad?: number;
   delay: number;
+  /** Four of the eight tiles carry a drawn button the sheet itself puts in
+   *  their header. The other four are too narrow for one, so they take a
+   *  whole-tile link instead and show its chip when reached for. */
+  href?: string;
+  cta?: string;
   children: React.ReactNode;
 }) {
   return (
@@ -96,8 +107,27 @@ function Tile({
         style={{ padding: u(pad) }}
       >
         {children}
+        {href && cta ? <TileCta href={href} label={cta} /> : null}
       </div>
     </Reveal>
+  );
+}
+
+/** The whole-tile link and its chip. Everything under it is already
+ *  aria-hidden drawn chrome, so the link's own label is the accessible name
+ *  a screen reader gets for the destination. */
+function TileCta({ href, label }: { href: string; label: string }) {
+  return (
+    <Link href={href} className="bento-cta">
+      <span className="bento-cta-chip">
+        {label}
+        <ArrowRight
+          weight="bold"
+          style={{ width: u(15), height: u(15) }}
+          aria-hidden
+        />
+      </span>
+    </Link>
   );
 }
 
@@ -194,6 +224,8 @@ function ContributionsTile() {
       lip
       pad={24}
       delay={0}
+      href="/contributions"
+      cta="See contributions"
     >
       <div className="flex items-center justify-between" style={{ gap: u(8) }}>
         <div className="flex min-w-0 items-center" style={{ gap: u(9) }}>
@@ -282,6 +314,7 @@ function ContributionsTile() {
         />
         <div className="min-w-0 flex-1">
           <p
+            data-count-to="128"
             className="font-extrabold leading-none tracking-[-0.02em]"
             style={{ fontSize: u(34), color: "var(--b-ink)" }}
           >
@@ -299,7 +332,9 @@ function ContributionsTile() {
           style={{ gap: u(3), fontSize: u(20), color: "var(--b-green)" }}
         >
           <ArrowUp style={{ width: u(17), height: u(17) }} weight="bold" />
-          +24%
+          <span data-count-to="24" data-count-prefix="+" data-count-suffix="%">
+            +24%
+          </span>
         </span>
       </div>
 
@@ -309,6 +344,7 @@ function ContributionsTile() {
             {HEATMAP.map((row, r) => (
               <span
                 key={r}
+                data-heat-cell
                 className="aspect-square"
                 style={{ borderRadius: u(3), background: HEAT[Number(row[col]) - 1] }}
               />
@@ -483,6 +519,8 @@ function CalendarTile() {
       area="[grid-column:3] [grid-row:1/span_2]"
       skin="bento-calendar"
       delay={0.12}
+      href="/how-it-works"
+      cta="See the calendar"
     >
       <div className="flex items-start" style={{ gap: u(12) }}>
         <CalendarStar
@@ -592,7 +630,12 @@ const MESSAGES = [
 
 function CollaborationTile() {
   return (
-    <Tile skin="bento-collab" delay={0.06}>
+    <Tile
+      skin="bento-collab"
+      delay={0.06}
+      href="/classes"
+      cta="See a class"
+    >
       <div className="flex items-start justify-between" style={{ gap: u(10) }}>
         <div className="flex min-w-0 items-start" style={{ gap: u(12) }}>
           <UsersThree
@@ -945,7 +988,14 @@ const TAGS = ["#integrals", "#u-substitution", "#partial-fractions"];
 
 function SearchTile() {
   return (
-    <Tile area="[grid-column:3] [grid-row:3]" skin="bento-search" lip delay={0.18}>
+    <Tile
+      area="[grid-column:3] [grid-row:3]"
+      skin="bento-search"
+      lip
+      delay={0.18}
+      href="/classes"
+      cta="Explore classes"
+    >
       <div className="flex items-start" style={{ gap: u(12) }}>
         <MagnifyingGlass
           className="shrink-0"
