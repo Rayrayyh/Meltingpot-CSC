@@ -22,12 +22,30 @@ test.describe("brand landing", () => {
       page.getByRole("heading", { name: "Everyone takes notes. MeltingPot brings them together." }),
     ).toBeVisible();
     // The nav offers both paths: sign in and the orange get-started pill.
-    await expect(page.getByRole("link", { name: "Get started" }).first()).toBeVisible();
-    // The join door stays one anchor away, and the code validates in place.
-    await expect(page.getByLabel("Enter class code")).toBeVisible();
+    const getStarted = page.getByRole("link", { name: "Get started" }).first();
+    await expect(getStarted).toBeVisible();
 
+    // Section two is the bento now, so the landing has no code field of its
+    // own. Every way in points at /join, which does, and that is where the
+    // code validates in place.
+    await expect(page.getByLabel("Enter class code")).toHaveCount(0);
+    await expect(getStarted).toHaveAttribute("href", "/join");
+
+    await page.goto("/join");
     await page.getByLabel("Enter class code").fill("zzzzzz");
-    await page.getByRole("button", { name: "See the Pot" }).click();
+    await page.getByRole("button", { name: "Join Pot" }).click();
+    await expect(
+      page.getByText("We couldn't find that Pot. Check the code and try again."),
+    ).toBeVisible();
+    await expect(page.getByLabel("Enter class code")).toHaveValue("ZZZZZZ");
+  });
+
+  // A dead invite link used to report itself under the landing's own code
+  // field. That field went with section two, so the reason now travels to the
+  // page that still has one rather than vanishing.
+  test("a dead invite link lands on /join with the reason", async ({ page }) => {
+    await page.goto("/?code=ZZZZZZ&error=notfound");
+    await expect(page).toHaveURL(/\/join\?/);
     await expect(
       page.getByText("We couldn't find that Pot. Check the code and try again."),
     ).toBeVisible();
@@ -98,9 +116,7 @@ test.describe("brand landing", () => {
   // into place on its own. A single Reveal around the whole grid never crossed
   // its own in-view threshold, because the grid is taller than a laptop
   // viewport, and left all eight at opacity zero, so the resting opacity is
-  // held to a test rather than trusted. The three ways in that the bento
-  // replaced still have to be reachable: the hero, the header and the closing
-  // band all land on #join.
+  // held to a test rather than trusted.
   test("section two is a bento, and every tile lifts into place", async ({ page }) => {
     await page.goto("/");
     const section = page.locator("#spaces");
@@ -144,10 +160,6 @@ test.describe("brand landing", () => {
         return r.width / r.height;
       });
     expect(ratio).toBeCloseTo(1672 / 941, 2);
-
-    await expect(section.getByLabel("Enter class code")).toBeVisible();
-    await expect(section.getByRole("link", { name: "Open the demo Pot" })).toBeVisible();
-    await expect(section.getByRole("link", { name: "Create a Pot" })).toBeVisible();
   });
 
   test("anchors scroll to their sections, including back up past the pin", async ({ page }) => {
@@ -163,19 +175,21 @@ test.describe("brand landing", () => {
     await page.goBack();
     await page.waitForURL("**/");
 
-    // The hero call to action scrolls to the join card.
+    // The hero call to action goes to the join page.
     await page.evaluate(() => window.scrollTo(0, 0));
     await settleScroll(page);
     await page.getByRole("link", { name: "Join a class" }).first().click();
-    await settleScroll(page);
-    await expect(page.getByLabel("Enter class code")).toBeInViewport();
+    await page.waitForURL("**/join");
+    await expect(page.getByLabel("Enter class code")).toBeVisible();
 
-    // Upward, past the pinned melt, from the closing card.
+    // So does the closing band, from the bottom of the page.
+    await page.goBack();
+    await page.waitForURL("**/");
     await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
     await settleScroll(page);
     await page.getByRole("link", { name: "or enter a class code" }).click();
-    await settleScroll(page);
-    await expect(page.getByLabel("Enter class code")).toBeInViewport();
+    await page.waitForURL("**/join");
+    await expect(page.getByLabel("Enter class code")).toBeVisible();
   });
 
   // A scroll takeover (Lenis, since removed) once overwrote the browser's own

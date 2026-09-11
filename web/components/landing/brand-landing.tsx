@@ -1,8 +1,8 @@
-import { ArrowDown, ArrowRight } from "@phosphor-icons/react/dist/ssr";
+import Link from "next/link";
+import { ArrowRight } from "@phosphor-icons/react/dist/ssr";
 import { CursorLock } from "@/components/landing/cursor-lock";
 import { FeatureBento } from "@/components/landing/feature-bento";
 import { HeroDashboard } from "@/components/landing/hero-dashboard";
-import { JoinInline } from "@/components/landing/join-inline";
 import { NamesOnTheNote } from "@/components/landing/names-on-the-note";
 import { ScrollStopper } from "@/components/landing/scroll-stopper";
 import { SiteFooter } from "@/components/landing/site-footer";
@@ -18,22 +18,14 @@ import { RollText } from "@/components/ui/roll-text";
  * account calls to action turn into a way back to their dashboard rather than
  * asking them to sign in again.
  */
-export function BrandLanding({
-  initialCode,
-  initialError,
-  signedIn = false,
-}: {
-  initialCode?: string;
-  initialError?: string | null;
-  signedIn?: boolean;
-}) {
+export function BrandLanding({ signedIn = false }: { signedIn?: boolean }) {
   return (
     <div className="flex flex-col">
       <CursorLock />
       {/* Same ground as the hero, so the top of the page is one surface
           rather than a paper band over a sunken one. */}
       <div className="bg-sunken">
-        <SiteHeader signedIn={signedIn} getStartedHref="#join" />
+        <SiteHeader signedIn={signedIn} getStartedHref="/join" />
       </div>
 
       <main id="main" className="flex flex-col">
@@ -52,7 +44,7 @@ export function BrandLanding({
             shared course space your whole class can explore.
           </p>
           <div className="mt-8 flex flex-wrap items-center justify-center gap-8">
-            <Button href={signedIn ? "/home" : "#join"} size="lg" roll>
+            <Button href={signedIn ? "/home" : "/join"} size="lg" roll>
               {signedIn ? "Go to dashboard" : "Join a class"}
             </Button>
             <a
@@ -102,25 +94,24 @@ export function BrandLanding({
           teacher path in 13px fine print and the demo class nowhere. Now the
           codeless majority gets the live demo Pot, code holders get a compact
           entry whose button never plays dead, and teachers get equal billing.
-          The old #spaces id survives for stale links; #join is where the hero
-          and header CTAs land. */}
+          The old #spaces id survives for stale links. The hero and header
+          CTAs point at /join, the page that still owns a code field. */}
       <section
         id="spaces"
         className="px-6 sm:px-10 py-24 sm:py-28 bg-surface border-y border-edge scroll-mt-8"
       >
-        <div className="mx-auto w-full max-w-6xl">
-          <div className="mx-auto max-w-3xl text-center space-y-6">
-            <p className="text-[12px] font-semibold tracking-[0.14em] uppercase text-clay">
-              How notes reach the class
-            </p>
-            <h2 className="font-display text-4xl sm:text-5xl font-semibold tracking-tight leading-[1.08] text-ink">
-              The part you need is in someone else&apos;s handwriting.
+        {/* Layer-cake scanning only works when a heading summarises what sits
+            under it, and the old one described the problem while the grid
+            below shows eight features. The heading now names the grid, in the
+            product's own earlier words, and the eyebrow is gone: it is a
+            minority pattern and it was saying what the heading already says. */}
+        <div className="mx-auto w-full max-w-[1672px] px-0">
+          <div className="mx-auto max-w-2xl text-center space-y-4">
+            <h2 className="font-display text-3xl sm:text-4xl font-semibold tracking-tight leading-[1.1] text-ink">
+              Everything your class knows, in one Pot.
             </h2>
             <p className="text-lg text-ink-muted leading-relaxed">
-              A classmate&apos;s notebook often holds the note you need, written
-              in a hurry with no other reader in mind. MeltingPot prepares an
-              organized version alongside the original, with uncertain passages
-              marked, and shares it with the class once the writer approves.
+              Shared notes, corrections, study tools and due dates, in one place.
             </p>
           </div>
         </div>
@@ -131,66 +122,6 @@ export function BrandLanding({
           <FeatureBento />
         </div>
 
-        <div className="mx-auto mt-4 w-full max-w-6xl">
-          {/* The three doors this section used to be, folded into one strip.
-              The bento took their place, but #join is where the header, the
-              hero and the closing band all land, and a landing whose only
-              entry point is the footer converts nobody. Each column is a
-              label over a control, spread top and bottom, so the code field's
-              extra button does not leave the other two floating. */}
-          <div
-            id="join"
-            className="scroll-mt-24 flex flex-col gap-8 rounded-(--radius-card) border border-edge-strong bg-paper p-6 lg:flex-row lg:items-stretch lg:justify-between lg:gap-12 lg:p-7"
-          >
-            <div className="max-w-xs lg:self-center">
-              <p className="text-[12px] font-semibold uppercase tracking-[0.14em] text-clay">
-                Three ways in
-              </p>
-              <p className="mt-2 text-sm leading-relaxed text-ink-muted">
-                Look inside a real class without an account, open the Pot your
-                class already shares, or start one of your own.
-              </p>
-            </div>
-            <div className="grid gap-6 sm:grid-cols-3 sm:gap-5 lg:w-[34rem] lg:shrink-0">
-              <div className="flex flex-col justify-between gap-2">
-                <p className="text-[13px] font-medium text-ink">No account needed</p>
-                <div>
-                  <Button href="/join/HXU863" size="md" className="w-full" roll>
-                    Open the demo Pot
-                  </Button>
-                  <p className="mt-2 text-center text-[12px] text-ink-faint">
-                    Code <span className="font-mono tracking-[0.2em]">HXU863</span>
-                  </p>
-                </div>
-              </div>
-              <JoinInline initialCode={initialCode} initialError={initialError} />
-              <div className="flex flex-col justify-between gap-2">
-                <p className="text-[13px] font-medium text-ink">Teaching a class</p>
-                <div>
-                  <Button
-                    href="/pots/new"
-                    variant="secondary"
-                    size="md"
-                    className="w-full"
-                    roll
-                  >
-                    Create a Pot
-                  </Button>
-                  <p className="mt-2 text-center text-[12px] text-ink-faint">
-                    Share one code
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        <a
-          href="#explore"
-          className="group/roll mx-auto mt-14 flex w-fit items-center justify-center gap-2 text-[12px] text-ink-faint transition-colors hover:text-primary"
-        >
-          <ArrowDown className="size-3.5" aria-hidden />
-          <RollText>See how the melt works</RollText>
-        </a>
       </section>
 
       <div id="explore" className="scroll-mt-8">
@@ -271,12 +202,12 @@ export function BrandLanding({
             >
               Create a Pot
             </Button>
-            <a
-              href="#join"
+            <Link
+              href="/join"
               className="text-[14px] font-medium text-on-primary/90 hover:text-on-primary underline underline-offset-4"
             >
               or enter a class code
-            </a>
+            </Link>
           </div>
         </Reveal>
       </section>

@@ -16,7 +16,7 @@ import { UserShell } from "@/components/shell/user-shell";
 import { Button } from "@/components/ui/button";
 import { Card, CardSection, Eyebrow } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
-import { CLOSED_POT_MESSAGE, INVALID_CODE_MESSAGE } from "@/components/landing/join-card";
+import { CLOSED_POT_MESSAGE, INVALID_CODE_MESSAGE } from "@/lib/join-messages";
 import {
   classworkOffered,
   getConnections,

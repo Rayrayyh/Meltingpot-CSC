@@ -40,7 +40,7 @@ Database changes go through Supabase MCP migrations (`apply_migration`), one mig
 
 ## Product rules that are easy to violate
 
-- No login wall before showing the Pot: code -> Pot preview -> auth -> membership finalized.
+- No login wall before showing the Pot: code -> Pot preview -> auth -> membership finalized. Since 2026-09-11 the one place a code is typed is `/join`, which is why it is not in `proxy.ts`'s protected list: gating it would put the sign in first. The landing's own field went with the bento (`memory/decisions/046`).
 - Never publish anything automatically. The contributor approves contributions; a maintainer approves corrections.
 - Always store and show both raw and organized content. The original is never deleted or overwritten.
 - Pot titles may duplicate; Pot IDs and class codes are unique; never use titles as identifiers.

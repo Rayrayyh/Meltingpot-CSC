@@ -988,14 +988,14 @@ function SearchTile() {
         </span>
       </div>
 
-      <div aria-hidden className="flex flex-nowrap" style={{ marginTop: u(6), gap: u(6) }}>
+      <div aria-hidden className="flex flex-wrap" style={{ marginTop: u(6), gap: u(6) }}>
         {TAGS.map((t) => (
           <span
             key={t}
-            className="shrink-0 whitespace-nowrap rounded-full font-extrabold"
+            className="whitespace-nowrap rounded-full font-extrabold"
             style={{
-              padding: `${u(6)} ${u(11)}`,
-              fontSize: u(13),
+              padding: `${u(6)} ${u(10)}`,
+              fontSize: u(12),
               background: "#fef2df",
               color: "var(--b-ink)",
             }}

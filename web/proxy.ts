@@ -17,12 +17,14 @@ const PROTECTED_PREFIXES = [
   "/calendar",
 ];
 
-// Signed-in pages whose path is also the start of a public one: /join is the
-// signed-in join page, /join/<code> is the preview anyone may see.
-const PROTECTED_EXACT = ["/join"];
-
+// /join is deliberately absent. It was a signed-in page while the landing
+// carried a code field of its own; section two became the bento on
+// 2026-09-10 and took that field with it, so /join is now the one place
+// anybody enters a code. Gating it would put a sign in ahead of seeing the
+// Pot, which the product does not do. It shows a code field and nothing
+// else; /join/<code> is the preview anyone may see, and the join itself
+// still asks for an account.
 function isProtected(pathname: string) {
-  if (PROTECTED_EXACT.includes(pathname)) return true;
   return PROTECTED_PREFIXES.some(
     (prefix) => pathname === prefix.replace(/\/$/, "") || pathname.startsWith(prefix),
   );

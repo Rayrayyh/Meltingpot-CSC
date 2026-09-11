@@ -19,15 +19,14 @@ for (const theme of themes) {
   });
 }
 
-test("landing shows the class code hero", async ({ page }) => {
-  await page.goto("/");
+// The landing's own inline code field went with section two on 2026-09-10;
+// /join and its JoinCard are the shipped entry now. JoinCard holds its button
+// closed until the code is the full six characters.
+test("the join page holds its button until the code is complete", async ({ page }) => {
+  await page.goto("/join");
   await expect(page.getByLabel("Enter class code")).toBeVisible();
-  // The inline join never disables its button: a short code gets a plain
-  // sentence and no request, which is what is checked here.
-  await page.getByRole("button", { name: "See the Pot" }).click();
-  await expect(page.getByText("Codes are 6 characters.")).toBeVisible();
+  await expect(page.getByRole("button", { name: "Join Pot" })).toBeDisabled();
   await page.getByLabel("Enter class code").fill("d2z7gg");
   await expect(page.getByLabel("Enter class code")).toHaveValue("D2Z7GG");
-  await expect(page.getByText("Codes are 6 characters.")).toHaveCount(0);
-  await expect(page.getByRole("button", { name: "See the Pot" })).toBeEnabled();
+  await expect(page.getByRole("button", { name: "Join Pot" })).toBeEnabled();
 });

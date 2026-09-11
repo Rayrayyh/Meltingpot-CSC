@@ -95,19 +95,19 @@ test.describe("search and settings", () => {
     expect(newCode).toMatch(/^[A-Z0-9]{6}$/);
     expect(newCode).not.toBe(oldCode);
 
-    // Old code now fails at the landing lookup.
+    // Old code now fails at the join page lookup.
     const anon = await page.context().browser()!.newContext();
     const visitor = await anon.newPage();
-    await visitor.goto("/");
+    await visitor.goto("/join");
     await visitor.getByLabel("Enter class code").fill(oldCode);
-    await visitor.getByRole("button", { name: "See the Pot" }).click();
+    await visitor.getByRole("button", { name: "Join Pot" }).click();
     await expect(
       visitor.getByText("We couldn't find that Pot. Check the code and try again."),
     ).toBeVisible();
 
     // The new code resolves to the renamed Pot.
     await visitor.getByLabel("Enter class code").fill(newCode);
-    await visitor.getByRole("button", { name: "See the Pot" }).click();
+    await visitor.getByRole("button", { name: "Join Pot" }).click();
     await expect(visitor).toHaveURL(new RegExp(`/join/${newCode}`));
     await expect(visitor.getByRole("heading", { name: "Biology 101H" })).toBeVisible();
     await anon.close();

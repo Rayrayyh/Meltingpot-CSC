@@ -6,7 +6,7 @@ import { ArrowRight } from "@phosphor-icons/react";
 import { CLASS_CODE_LENGTH, normalizeClassCode } from "@/components/ui/class-code-input";
 import { SmoothCaretInput } from "@/components/ui/smooth-caret";
 import { supabaseBrowser } from "@/lib/supabase/client";
-import { INVALID_CODE_MESSAGE } from "@/components/landing/join-card";
+import { INVALID_CODE_MESSAGE } from "@/lib/join-messages";
 
 /** Compact inline join field for the dashboard. */
 export function HomeJoinCard({

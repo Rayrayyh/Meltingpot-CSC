@@ -58,11 +58,37 @@ copying a layout. The circles, their sizes, their overlap and the "+3" chip are
 reproduced; the faces are the app's own avatars. If the owner wants
 photographs, they need to supply them.
 
-## What survived from the first build
+## The heading over it, and where the ways in went
 
-The three doors are not deleted. They are one strip under the grid still
-carrying `id="join"`, because the hero, the header and the closing band all
-land there and a landing whose only entry point is the footer converts nobody.
+Chosen 2026-09-11, after the owner asked what professional bento grids carry
+above them. An audit of around thirty shipping pages plus NN/g's layer-cake
+scanning work says the same thing: a heading that summarises what sits under
+it, a line of support, and an eyebrow only where a section needs a label the
+heading cannot carry. Roughly half the audited grids carry an eyebrow; a few
+(Supabase among them) carry no heading at all.
+
+The old header described the problem ("The part you need is in someone else's
+handwriting.") over a grid that shows eight features, so it summarised nothing
+below it. It now names the grid in the product's own words, "Everything your
+class knows, in one Pot.", over one line of support. The eyebrow is gone: it
+was saying what the heading already said.
+
+The three doors under the grid are gone too, on the owner's instruction, along
+with the "See how the melt works" link below them. That strip held the only
+code field a signed-out visitor could reach, so `/join` became it: the header
+pill, the hero and the closing band all point there, and a dead invite link
+that used to report itself under the landing's own field is forwarded there
+with its reason (`/home` for a signed-in visitor, which has a field of its
+own). `/join` left the proxy's protected list to make that work. Gating it
+would have put a sign in ahead of seeing the Pot, which is the one thing the
+join flow does not do; the page shows a code field and nothing else, and the
+join itself still asks for an account.
+
+Moving those strings also fixed a bug they had been sitting on. They lived in
+`join-card.tsx`, a client component, and an export of one of those reaches a
+server component as a module reference rather than the value: `/home` had been
+reading `INVALID_CODE_MESSAGE` and getting nothing. They live in
+`lib/join-messages.ts` now.
 
 The lift is per tile rather than one wrapper around the grid: framer starts a
 `whileInView` animation only once the fraction of the element named by `amount`

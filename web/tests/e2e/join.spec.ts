@@ -4,20 +4,20 @@ const INVALID_MESSAGE = "We couldn't find that Pot. Check the code and try again
 
 test.describe("joining a Pot", () => {
   test("invalid code shows the error and keeps the input", async ({ page }) => {
-    await page.goto("/");
+    await page.goto("/join");
     await page.getByLabel("Enter class code").fill("zzzzzz");
-    await page.getByRole("button", { name: "See the Pot" }).click();
+    await page.getByRole("button", { name: "Join Pot" }).click();
     await expect(page.getByText(INVALID_MESSAGE)).toBeVisible();
     await expect(page.getByLabel("Enter class code")).toHaveValue("ZZZZZZ");
-    await expect(page).toHaveURL("/");
+    await expect(page).toHaveURL("/join");
   });
 
   test("a stranger joins with a code, sees the Pot, signs in, lands inside", async ({
     page,
   }) => {
-    await page.goto("/");
+    await page.goto("/join");
     await page.getByLabel("Enter class code").fill("5r22ax");
-    await page.getByRole("button", { name: "See the Pot" }).click();
+    await page.getByRole("button", { name: "Join Pot" }).click();
 
     // Pot preview before any authentication. This is the product rule: the
     // code shows the Pot, and only then does anyone ask who you are.
