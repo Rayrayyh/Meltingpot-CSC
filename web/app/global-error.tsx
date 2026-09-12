@@ -6,16 +6,26 @@ import { MeltFrame } from "@/components/errors/melt-frame";
 import "./globals.css";
 
 // The root boundary replaces the root layout, fonts included, so the two
-// faces the frame uses are loaded here again.
+// faces the frame uses are loaded here again. Not preloaded: this file is a
+// client module in the shared bundle, so its font declarations put a preload
+// link on every page in the site for a surface that only renders when the
+// root layout itself has crashed. That was 41KB of Bricolage ahead of the
+// hero on every visit.
+// The weight lists match the root layout's exactly. next/font hashes a file
+// per family and weight set, so asking for a different subset of the same
+// family here produced a second copy of Figtree, 20KB, downloaded alongside
+// the first on every page.
 const bricolage = Bricolage_Grotesque({
   variable: "--font-bricolage",
-  weight: ["700", "800"],
+  weight: ["600", "700", "800"],
   subsets: ["latin"],
+  preload: false,
 });
 const figtree = Figtree({
   variable: "--font-figtree",
-  weight: ["400", "600", "700"],
+  weight: ["400", "500", "600", "700", "800"],
   subsets: ["latin"],
+  preload: false,
 });
 
 /**

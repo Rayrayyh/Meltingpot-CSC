@@ -4,6 +4,7 @@ import { CursorLock } from "@/components/landing/cursor-lock";
 import { FeatureBento } from "@/components/landing/feature-bento";
 import { HeroDashboard } from "@/components/landing/hero-dashboard";
 import { HeroMotion } from "@/components/landing/hero-motion";
+import { RollingText } from "@/components/landing/rolling-text";
 import { NamesOnTheNote } from "@/components/landing/names-on-the-note";
 import { ScrollStopper } from "@/components/landing/scroll-stopper";
 import { SiteFooter } from "@/components/landing/site-footer";
@@ -35,16 +36,18 @@ export function BrandLanding({ signedIn = false }: { signedIn?: boolean }) {
       <section id="top" className="relative overflow-hidden bg-sunken">
         <div className="mx-auto w-full max-w-[1400px] px-4 sm:px-12 pt-8 sm:pt-10 pb-16 md:pb-0 text-center">
           {/* Fluid so the three forced lines never become four or five. */}
-          {/* One mask per line, so each can rise out of its own edge rather
-              than the whole block fading. The three lines were already forced
-              with breaks, so nothing about the wrapping changes. */}
-          <h1 className="font-display text-[32px] sm:text-[clamp(2.1rem,3.4vw,3.4rem)] font-semibold leading-[1.08] tracking-tight text-ink">
+          {/* The letters roll rather than the lines rising, which is the
+              owner's pick (skiper27's behaviour, rebuilt: see
+              rolling-text.tsx for why it is not their code). The line is
+              readable from the first painted frame either way, which is what
+              keeps this text the largest contentful paint. Five pixels up on
+              the owner's instruction, added inside the clamp so the whole
+              curve moves rather than only its ends. */}
+          <h1 className="font-display text-[37px] sm:text-[clamp(calc(2.1rem+5px),calc(3.4vw+5px),calc(3.4rem+5px))] font-semibold leading-[1.08] tracking-tight text-ink">
             {["Everyone takes notes.", "MeltingPot brings", "them together."].map(
               (line) => (
-                <span key={line} className="block overflow-hidden pb-[0.06em]">
-                  <span data-hero-line className="block">
-                    {line}
-                  </span>
+                <span key={line} className="block">
+                  <RollingText text={line} speed={0.045} duration={0.85} />
                 </span>
               ),
             )}

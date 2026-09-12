@@ -21,11 +21,17 @@ export function PotMark(props: {
   const { className, title } = props;
   return (
     <img
-      src="/brand/pot-logo.png"
+      // 192 square, which covers the biggest slot the mark ever fills (the
+      // route loader's size-22, 88px) on a 2x screen with room over. The
+      // 610px master is still in public/brand/pot-logo.png; it was what this
+      // rendered until 2026-09-11, at 165KB for a mark that is usually drawn
+      // at 28px, and React hoists a preload for every eager image, so it was
+      // the first thing every page fetched. The WebP is 15KB.
+      src="/brand/pot-logo.webp"
       alt={title ?? ""}
       aria-hidden={title ? undefined : true}
-      width={610}
-      height={610}
+      width={192}
+      height={192}
       className={className}
       draggable={false}
     />

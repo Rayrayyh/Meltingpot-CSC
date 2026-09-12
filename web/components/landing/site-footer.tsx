@@ -31,6 +31,13 @@ export function SiteFooter() {
                   alt=""
                   width={128}
                   height={128}
+                  // React hoists a <link rel=preload> for every eager image
+                  // it renders on the server, so these four faces, which live
+                  // at the very bottom of every page, were being fetched
+                  // ahead of the hero. Same trap as the 404 artwork in
+                  // melt-frame.tsx; same way out.
+                  loading="lazy"
+                  decoding="async"
                   className="size-8 rounded-lg border border-edge object-cover transition-transform duration-300 group-hover:-translate-y-0.5"
                 />
                 <span className="text-[12px] text-ink transition-colors group-hover:text-primary">

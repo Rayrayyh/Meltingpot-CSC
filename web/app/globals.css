@@ -1366,3 +1366,42 @@ html[data-card-face="sky"] {
     transform: none;
   }
 }
+
+/* The rolling headline (components/landing/rolling-text.tsx). Each letter is
+   a clipped box over a column holding that letter once per phrase; the roll
+   moves the column by exactly one letter. The negative margin pays back the
+   padding that keeps descenders out of the clip, so a rolling line occupies
+   the same height as a plain one and nothing below it moves. */
+.roll-letter {
+  display: inline-block;
+  overflow: hidden;
+  vertical-align: top;
+  /* One line box, plus room under the baseline so descenders are not sheared
+     off by the clip, paid back below so a rolling line still occupies exactly
+     one line and the lines under it do not move. Without an explicit height
+     the box is as tall as the whole column, overflow clips nothing, and every
+     face below the first shows through. */
+  height: calc(1lh + 0.28em);
+  margin-bottom: -0.28em;
+}
+
+.roll-track {
+  display: block;
+  will-change: transform;
+}
+
+.roll-face {
+  height: calc(1lh + 0.28em);
+}
+
+.roll-face {
+  display: block;
+}
+
+/* Faces below the resting one are painted from the attribute, so they never
+   become document text: the page's copy is the headline once, not every
+   letter repeated once per phrase. */
+.roll-face[data-face]::before {
+  content: attr(data-face);
+  white-space: pre;
+}

@@ -19,9 +19,15 @@ const inter = Inter({
   subsets: ["latin"],
 });
 
+// Long-form note bodies, which live behind sign in. Not preloaded: every
+// font declared here gets a preload link on every page by default, and three
+// of these seven are single-surface faces that were competing with the hero
+// for the first bytes of every visit. They still load the moment something
+// actually renders in them.
 const sourceSerif = Source_Serif_4({
   variable: "--font-source-serif",
   subsets: ["latin"],
+  preload: false,
 });
 
 const fraunces = Fraunces({
@@ -34,14 +40,18 @@ const bricolage = Bricolage_Grotesque({
   variable: "--font-bricolage",
   weight: ["600", "700", "800"],
   subsets: ["latin"],
+  preload: false,
 });
 
 const figtree = Figtree({
   variable: "--font-figtree",
   // 800 is section two's bento: the reference sheets set their headlines in a
-  // heavier weight than anything else on the site uses.
+  // heavier weight than anything else on the site uses. Not preloaded: the
+  // bento is below the fold on every screen, so this was competing with the
+  // hero's own two faces for the first connections.
   weight: ["400", "500", "600", "700", "800"],
   subsets: ["latin"],
+  preload: false,
 });
 
 const baloo = Baloo_2({
@@ -55,6 +65,7 @@ const silkscreen = Silkscreen({
   variable: "--font-silkscreen",
   weight: "400",
   subsets: ["latin"],
+  preload: false,
 });
 
 export const metadata: Metadata = {
