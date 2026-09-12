@@ -45,15 +45,15 @@ export default async function HowItWorksPage() {
       <section className="px-6 sm:px-10 pt-14 sm:pt-20 pb-16 sm:pb-24">
         <div className="mx-auto w-full max-w-5xl space-y-5">
           <p className="text-[12px] font-semibold tracking-[0.14em] uppercase text-clay">
-            The melt, start to finish
+            Start to finish
           </p>
           <h1 className="font-display text-4xl sm:text-6xl font-semibold tracking-tight leading-[1.05] text-ink">
             How it works
           </h1>
           <p className="max-w-2xl text-lg sm:text-xl text-ink-muted leading-relaxed">
-            You type what you know, as messily as you like. MeltingPot shapes
-            it, you approve it, and your class gets one shared set of notes
-            that people actually keep current.
+            You type what you know, as messily as you like. MeltingPot tidies
+            it up, you check it over, and the class ends up with one set of
+            notes that stays current because people keep adding to it.
           </p>
         </div>
       </section>
@@ -62,7 +62,7 @@ export default async function HowItWorksPage() {
         <Reveal className="mx-auto w-full max-w-5xl space-y-14">
           <div className="max-w-lg space-y-3">
             <p className="text-[12px] font-semibold tracking-[0.14em] uppercase text-clay">
-              Three steps, no friction
+              Getting started
             </p>
             <h2 className="font-display text-3xl sm:text-4xl font-semibold tracking-tight text-ink">
               As easy as typing what you know.
@@ -191,19 +191,20 @@ export default async function HowItWorksPage() {
             <div className="space-y-4">
               <ChalkboardTeacher className="size-7 text-primary" weight="duotone" aria-hidden />
               <p className="text-sm text-ink-muted leading-relaxed">
-                Whoever runs the Pot can read what the class has answered,
-                grouped by the note each question came from, and get back the
-                two to four topics worth revisiting with one concrete thing to
+                Whoever runs the Pot can see what the class has answered,
+                grouped by the note each question came from, and gets back a
+                short list of topics worth going over again with something to
                 try for each.
               </p>
             </div>
             <div className="space-y-4">
               <Sparkle className="size-7 text-primary" weight="duotone" aria-hidden />
               <p className="text-sm text-ink-muted leading-relaxed">
-                The counting is the database&apos;s work and the reading is the
-                model&apos;s, so no figure is ever invented. It stays quiet
-                until enough people have practiced to mean anything, and it is
-                about the material: no student is named, counted, or compared.
+                The counting is done by the database and only the reading is
+                done by the model, so none of the numbers are made up. It stays
+                quiet until enough people have practiced for it to mean
+                anything, and it talks about the material rather than the
+                class. No student is named, counted, or compared.
               </p>
             </div>
           </div>
@@ -214,7 +215,7 @@ export default async function HowItWorksPage() {
         <Reveal className="mx-auto w-full max-w-5xl space-y-14">
           <div className="max-w-lg space-y-3">
             <p className="text-[12px] font-semibold tracking-[0.14em] uppercase text-clay">
-              Built on trust
+              What it will not do
             </p>
             <h2 className="font-display text-3xl sm:text-4xl font-semibold tracking-tight text-ink">
               Your words stay yours.

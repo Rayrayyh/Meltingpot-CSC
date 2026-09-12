@@ -30,13 +30,13 @@ const INSIDE = [
     id: "shared-notes",
     icon: Notebook,
     title: "Shared notes, in sections",
-    body: "Everything the class has approved, organized into the sections your course actually follows, with every original one tap away.",
+    body: "Everything the class has approved, filed under the sections your course uses, with every original one tap away.",
   },
   {
     id: "study",
     icon: Cards,
     title: "Flashcards and practice tests",
-    body: "Built from the shared notes, not from thin air. One deck for the whole class, and tests you set up before you sit them.",
+    body: "Made out of the notes your class already shared, so the questions are about your course. One deck for everyone, and tests you set up before you sit them.",
   },
   {
     id: "search",
@@ -53,8 +53,8 @@ const INSIDE = [
   {
     id: "calendar",
     icon: CalendarStar,
-    title: "A calendar that is a planner and a record",
-    body: "What the class shared, day by day, beside what is due from the courses a Pot is linked to. Cut where you are, not in UTC.",
+    title: "A calendar for what happened and what is coming",
+    body: "What the class shared, day by day, next to anything due from a course the Pot is linked to. Days are cut in your own time zone.",
   },
 ];
 
@@ -85,13 +85,13 @@ export default async function ClassesPage() {
         <div className="mx-auto w-full max-w-6xl grid lg:grid-cols-[1fr_minmax(0,26rem)] gap-14 lg:gap-24 items-center">
           <div className="space-y-7">
             <h2 className="font-display text-3xl sm:text-4xl font-semibold tracking-tight leading-[1.08] text-ink">
-              Thirty half-finished notebooks become one worth studying from.
+              Half-finished notebooks add up to one worth studying from.
             </h2>
             <p className="text-lg text-ink-muted leading-relaxed max-w-xl">
               Everyone remembers a different half of the lecture. When each
-              person types their half and the class approves what is shared,
-              the Pot ends up more complete than any one notebook could be,
-              and checked by people rather than guesswork.
+              person types up their half and the class signs off on what gets
+              shared, the Pot holds more than any single notebook would, and
+              someone has read every line of it.
             </p>
             <ul className="flex flex-wrap gap-x-8 gap-y-3 pt-1 text-[13px] text-ink-muted">
               <li className="flex items-center gap-2">
@@ -160,7 +160,7 @@ export default async function ClassesPage() {
         <Reveal className="mx-auto w-full max-w-5xl space-y-12">
           <div className="max-w-xl space-y-3">
             <p className="text-[12px] font-semibold tracking-[0.14em] uppercase text-clay">
-              Two roles, no hierarchy theater
+              Who does what
             </p>
             <h2 className="font-display text-3xl sm:text-4xl font-semibold tracking-tight text-ink">
               Members write. Maintainers keep it right.
@@ -172,8 +172,8 @@ export default async function ClassesPage() {
               <h3 className="text-lg font-semibold text-ink">Members</h3>
               <p className="text-sm text-ink-muted leading-relaxed">
                 Everyone who joins. They write notes, share what they approve,
-                suggest corrections, and study from the vault. Their drafts
-                stay theirs until the moment they say otherwise.
+                suggest corrections, and study from the vault. A draft stays
+                private until they say otherwise.
               </p>
             </div>
             <div className="bg-paper border border-edge rounded-(--radius-card) p-8 space-y-4">
