@@ -32,8 +32,8 @@ gsap.registerPlugin(useGSAP, ScrollTrigger);
  */
 export function RollingText({
   text,
-  speed = 0.05,
-  duration = 0.9,
+  speed = 0.055,
+  duration = 1.15,
   loop = false,
   hold = 2.2,
   className,
@@ -42,7 +42,7 @@ export function RollingText({
   text: string | string[];
   /** Seconds between one letter starting and the next. */
   speed?: number;
-  /** How long a single letter takes to turn over. */
+  /** How long a single letter takes to turn over and settle. */
   duration?: number;
   /** Keep cycling rather than rolling once when the line is reached. */
   loop?: boolean;
@@ -74,7 +74,12 @@ export function RollingText({
           return gsap.to(tracks, {
             yPercent: -step * state.index,
             duration,
-            ease: "power3.inOut",
+            // Measured off skiper-ui's own landing on 2026-09-12: their
+            // columns do not run a symmetric curve, they leave quickly and
+            // settle asymptotically, still closing the last hundredth of an
+            // em a second later. That long soft tail is the whole difference
+            // between a letter flipping and a letter coming to rest.
+            ease: "expo.out",
             // The middle letter goes first and the turn spreads outwards,
             // which is what makes it read as one motion and not a wave.
             stagger: { each: speed, from: "center" },

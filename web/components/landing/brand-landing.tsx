@@ -47,7 +47,7 @@ export function BrandLanding({ signedIn = false }: { signedIn?: boolean }) {
             {["Everyone takes notes.", "MeltingPot brings", "them together."].map(
               (line) => (
                 <span key={line} className="block">
-                  <RollingText text={line} speed={0.045} duration={0.85} />
+                  <RollingText text={line} />
                 </span>
               ),
             )}

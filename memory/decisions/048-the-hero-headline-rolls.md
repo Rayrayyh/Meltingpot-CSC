@@ -59,3 +59,25 @@ Measured on the production build, same machine, before and after:
 The three fonts still preloaded are the three the hero is set in. Source Serif
 still loads, because the melt section's note bodies are genuinely set in it,
 but it no longer competes for the first connections.
+
+## Retuned against their own landing (2026-09-12)
+
+The owner asked for the roll slower, smoother and more premium, and pointed at
+the cycling headline on skiper-ui.com's home page rather than the component
+page. That one is public, so its behaviour could be measured instead of
+guessed. Loading it needed `memory/lessons/016`: headless Chromium reaches an
+external site through the agent proxy only with the post-quantum TLS features
+off and the version capped at 1.2.
+
+Their markup is the same shape as this component: one column per letter,
+`flex flex-col`, faces at `height: 1.2em`, rolled by a `translateY` in em.
+What is worth taking is the motion. Sampling nineteen of their columns at 40ms
+showed no symmetric curve: a column leaves quickly and then settles
+asymptotically, still closing the last hundredth of an em a second after it
+looks finished (-5.98198em to -6em over 1252ms). That long soft tail is the
+difference between a letter flipping and a letter coming to rest.
+
+So the ease is `expo.out` rather than `power3.inOut`, the turn is 1.15s rather
+than 0.85s, and the stagger is 0.055s rather than 0.045s. Traced on our own
+page, the headline now rolls from 1.2s to 2.6s after paint: 1.4s of visible
+motion, centre outwards, ending on the same asymptote.
