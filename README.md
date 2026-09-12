@@ -94,7 +94,7 @@ Account settings: theme, and two-step sign in for the person who runs the Pot:
 
 Everything here was designed and written from scratch, starting 17 August 2026. The repo is its own receipt: `docs/PLAN.md` holds the step by step execution plan with per step status, `docs/BUILDLOG.md` records what was built, found, and fixed in order, and `memory/` captures each architectural decision and hard won lesson at the moment it happened. The commit history walks through the whole build, day by day.
 
-Entered in the [Prometheus August AI Challenge](https://august-ai-challenge-31059.devpost.com/). The project is open source under the MIT license (see `LICENSE`), hosted live at the URL above, and the two minute demo video is on the Devpost submission.
+Entered in the [CSC Back-to-School Hackathon](https://csc-back-to-school.devpost.com/). The project is open source under the MIT license (see `LICENSE`), hosted live at the URL above, and the two minute demo video is on the Devpost submission.
 
 ## Under the hood
 

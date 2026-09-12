@@ -136,9 +136,9 @@ test.describe("account and landing for signed-in people", () => {
 
   test("the footer credits the challenge the project was entered in", async ({ page }) => {
     await page.goto("/");
-    const credit = page.getByRole("link", { name: /Prometheus August AI Challenge/ });
+    const credit = page.getByRole("link", { name: /CSC Back-to-School Hackathon/ });
     await expect(credit).toBeVisible();
     await expect(credit).toHaveAttribute("href", /devpost\.com/);
-    await expect(page.getByText("Built for the Prometheus August AI Challenge")).toBeVisible();
+    await expect(page.getByText("Built for the CSC Back-to-School Hackathon")).toBeVisible();
   });
 });
