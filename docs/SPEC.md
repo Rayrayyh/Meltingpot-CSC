@@ -212,6 +212,8 @@ Feel: calm, modern, academic, collaborative, human, fast.
 
 Use: Inter typography, Lucide-style icons, white, gray, and black, simple borders, minimal shadows, rounded cards, clear spacing, strong information hierarchy.
 
+> Superseded: the icons are Phosphor throughout (`memory/decisions/010`). The line stays because this spec is a record of what was asked for, not a description of what shipped.
+
 Functional color only for success, warnings, errors, additions, removals, and pending review. Do not establish a permanent brand color system yet.
 
 Avoid: gradients, glowing AI effects, purple AI branding, dense control panels, developer terminology, childish gamification, social-media styling, large chatbot interfaces.
@@ -220,7 +222,7 @@ Do not use emojis. Do not use em dashes.
 
 ### Front-End Design Direction
 
-Warm, academic feel. Off-white paper-like background, white surfaces, dark charcoal text, deep forest green for primary actions, small clay accents for contribution-related moments. Persistent left navigation, spacious central content area, optional contextual side panels. Inter for interface elements, optionally Source Serif 4 for long-form shared notes. Flat cards with subtle borders, restrained shadows, rounded corners, generous whitespace, strong hierarchy. AI appears through simple progress states and organized previews. The final interface should feel like a calm digital study room combined with a serious collaborative productivity tool.
+Warm, academic feel. Off-white paper-like background, white surfaces, dark charcoal text, deep forest green for primary actions, small clay accents for contribution-related moments. *(Superseded 2026-08-19: the owner replaced the forest-green palette with brand orange; see `memory/decisions/010`.)* Persistent left navigation, spacious central content area, optional contextual side panels. Inter for interface elements, optionally Source Serif 4 for long-form shared notes. Flat cards with subtle borders, restrained shadows, rounded corners, generous whitespace, strong hierarchy. AI appears through simple progress states and organized previews. The final interface should feel like a calm digital study room combined with a serious collaborative productivity tool.
 
 ## Copy Direction
 

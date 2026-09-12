@@ -58,7 +58,7 @@ export default async function HowItWorksPage() {
         </div>
       </section>
 
-      <section className="px-6 sm:px-10 py-20 sm:py-28 bg-surface border-y border-edge">
+      <section id="writing" className="scroll-mt-24 px-6 sm:px-10 py-20 sm:py-28 bg-surface border-y border-edge">
         <Reveal className="mx-auto w-full max-w-5xl space-y-14">
           <div className="max-w-lg space-y-3">
             <p className="text-[12px] font-semibold tracking-[0.14em] uppercase text-clay">
@@ -85,7 +85,7 @@ export default async function HowItWorksPage() {
         </Reveal>
       </section>
 
-      <section className="px-6 sm:px-10 py-20 sm:py-28">
+      <section id="organizing" className="scroll-mt-24 px-6 sm:px-10 py-20 sm:py-28">
         <Reveal className="mx-auto w-full max-w-5xl space-y-12">
           <div className="max-w-xl space-y-3">
             <p className="text-[12px] font-semibold tracking-[0.14em] uppercase text-clay">
@@ -144,7 +144,7 @@ export default async function HowItWorksPage() {
         </Reveal>
       </section>
 
-      <section className="px-6 sm:px-10 py-20 sm:py-28 bg-surface border-y border-edge">
+      <section id="corrections" className="scroll-mt-24 px-6 sm:px-10 py-20 sm:py-28 bg-surface border-y border-edge">
         <Reveal className="mx-auto w-full max-w-5xl space-y-12">
           <div className="max-w-xl space-y-3">
             <p className="text-[12px] font-semibold tracking-[0.14em] uppercase text-clay">
@@ -177,7 +177,7 @@ export default async function HowItWorksPage() {
 
       {/* The teacher's half. Everything above this point is written for the
           student; a class has someone running it, and they get one screen. */}
-      <section className="px-6 sm:px-10 py-20 sm:py-28">
+      <section id="reteach" className="scroll-mt-24 px-6 sm:px-10 py-20 sm:py-28">
         <Reveal className="mx-auto w-full max-w-5xl space-y-8">
           <div className="max-w-xl space-y-3">
             <p className="text-[12px] font-semibold tracking-[0.14em] uppercase text-clay">
@@ -210,7 +210,7 @@ export default async function HowItWorksPage() {
         </Reveal>
       </section>
 
-      <section className="px-6 sm:px-10 py-20 sm:py-28 bg-surface border-y border-edge">
+      <section id="principles" className="scroll-mt-24 px-6 sm:px-10 py-20 sm:py-28 bg-surface border-y border-edge">
         <Reveal className="mx-auto w-full max-w-5xl space-y-14">
           <div className="max-w-lg space-y-3">
             <p className="text-[12px] font-semibold tracking-[0.14em] uppercase text-clay">

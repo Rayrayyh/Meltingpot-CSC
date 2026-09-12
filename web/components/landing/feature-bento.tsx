@@ -37,6 +37,11 @@ import { cn } from "@/lib/cn";
  * class-wide total on the page, which the private-record rule would otherwise
  * refuse; `memory/decisions/046` records both as the owner's call.
  *
+ * Every tile links at the section of a public page that describes that one
+ * feature, rather than all eight at the top of three pages: a reader who
+ * clicks Calendar should land on the calendar, not on a page that happens to
+ * mention it somewhere.
+ *
  * Everything inside a tile below the heading and its line of copy is drawn
  * chrome and is aria-hidden, the convention HeroDashboard already set, so a
  * screen reader gets eight headings and eight sentences rather than a
@@ -224,7 +229,7 @@ function ContributionsTile() {
       lip
       pad={24}
       delay={0}
-      href="/contributions"
+      href="/contributions#how"
       cta="See contributions"
     >
       <div className="flex items-center justify-between" style={{ gap: u(8) }}>
@@ -407,7 +412,7 @@ function HistoryTile() {
           />
         </div>
         <Link
-          href="/how-it-works"
+          href="/classes#history"
           className="group/roll bento-float inline-flex shrink-0 items-center rounded-full bg-white font-medium transition-transform duration-300 hover:-translate-y-0.5"
           style={{
             gap: u(10),
@@ -519,7 +524,7 @@ function CalendarTile() {
       area="[grid-column:3] [grid-row:1/span_2]"
       skin="bento-calendar"
       delay={0.12}
-      href="/how-it-works"
+      href="/classes#calendar"
       cta="See the calendar"
     >
       <div className="flex items-start" style={{ gap: u(12) }}>
@@ -633,7 +638,7 @@ function CollaborationTile() {
     <Tile
       skin="bento-collab"
       delay={0.06}
-      href="/classes"
+      href="/classes#roles"
       cta="See a class"
     >
       <div className="flex items-start justify-between" style={{ gap: u(10) }}>
@@ -735,7 +740,7 @@ function NotesTile() {
             bodySize={15}
           />
         </div>
-        <ArrowButton href="/how-it-works" label="See how shared notes work" size={44} />
+        <ArrowButton href="/classes#shared-notes" label="See how shared notes work" size={44} />
       </div>
 
       <div aria-hidden className="relative mt-auto" style={{ paddingTop: u(10) }}>
@@ -840,7 +845,7 @@ function ToolsTile() {
             bodySize={16}
           />
         </div>
-        <ArrowButton href="/how-it-works" label="See how study tools work" size={46} />
+        <ArrowButton href="/classes#study" label="See how study tools work" size={46} />
       </div>
 
       <div
@@ -912,7 +917,7 @@ function AiTile() {
           />
         </div>
         <Link
-          href="/how-it-works"
+          href="/how-it-works#organizing"
           className="group/roll inline-flex shrink-0 items-center rounded-full font-medium text-white transition-transform duration-300 hover:-translate-y-0.5"
           style={{
             gap: u(10),
@@ -993,7 +998,7 @@ function SearchTile() {
       skin="bento-search"
       lip
       delay={0.18}
-      href="/classes"
+      href="/classes#search"
       cta="Explore classes"
     >
       <div className="flex items-start" style={{ gap: u(12) }}>

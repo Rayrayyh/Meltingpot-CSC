@@ -3,7 +3,6 @@ import type { Json } from "@/lib/database.types";
 import { normalizeStudyResult, studySchemas, type StudyKind } from "@/lib/mix/contracts";
 import {
   FAST_MODEL,
-  REASONING_MODEL,
   MixError,
   generateStructured,
   mixingConfigured,
@@ -46,7 +45,22 @@ const NO_STORE = { "Cache-Control": "no-store, no-cache, must-revalidate" };
  */
 export const maxDuration = 26;
 
+/**
+ * When the model call must be finished by, measured from the start of the
+ * request rather than from the start of the call.
+ *
+ * The mixing budget in lib/mix/server.ts counts from the moment mixing begins,
+ * which is several seconds after the request arrives: reading the session,
+ * checking membership and loading the notes all happen first. 24 seconds of
+ * mixing on top of that overran the 26 above, so the platform severed the call
+ * and the caller got a gateway error instead of the sentence this route means
+ * to send. Deadlining from the request start keeps the giving up inside this
+ * code, which is what the comment above always claimed.
+ */
+const MIX_DEADLINE_MS = 22_000;
+
 export async function POST(request: Request) {
+  const startedAt = Date.now();
   const supabase = await supabaseServer();
   const user = await getAuthUser();
   if (!user) return NextResponse.json({ error: "not_authenticated" }, { status: 401 });
@@ -202,10 +216,18 @@ export async function POST(request: Request) {
     : kind === "flashcards"
       ? "Create 12-20 useful recall flashcards. Avoid duplicates and trivia."
       : `Create a ${options.questionCount}-question multiple-choice practice test. Use exactly four plausible choices per question and explain the correct answer. ${difficultyBrief(options.difficulty)}`;
-  const model = kind === "practice" ? REASONING_MODEL : FAST_MODEL;
+  // Study material is written by the fast model throughout. The reasoning
+  // model cannot write a five question test inside the 26 second ceiling at
+  // any Pot size this class actually has: measured on the live site, every
+  // run died at about 25.5 seconds and only a three note Pot finished. The
+  // reasoning tier is reserved for the teaching readout, which is the one
+  // call with no rule-based fallback and the one that must never invent a
+  // reading.
+  const model = FAST_MODEL;
   try {
     const generated = await generateStructured<unknown>({
       model,
+      deadlineAt: startedAt + MIX_DEADLINE_MS,
       instruction: [
         task,
         "Use only the supplied class notes. Do not add outside facts.",

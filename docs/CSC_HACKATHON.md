@@ -150,8 +150,13 @@ It therefore **does not contain** four commits made in `Rayrayyh/Melting-Pot` on
    deadlined from the start of the request so a timeout returns the app's own message rather
    than a gateway error.
 
-Number 4 is a real bug fix and this repository still has the bug. Decide deliberately whether
-to port these across rather than discovering the gap later.
+There are in fact **five**, not four: this list missed `68c4998`, which is also a real bug fix.
+
+Settled 2026-09-12. The two bug fixes and the document corrections are ported; the class's own
+names were already here; the README and screenshots are deliberately not copied, because this
+README was rewritten for this hackathon and the screenshots want re-shooting rather than
+importing. `memory/decisions/049` records what came across and why, and which of the four
+repositories sharing this name holds the originals.
 
 Also still present here, and deleted from the other repository: `404 Page.dc.html`, two
 ChatGPT PNGs, `Meltingpot Palette.pdf`, and `Prometheus August AI Challenge.txt`. That last

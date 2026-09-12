@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import {
+  CalendarStar,
   Cards,
   ClockCounterClockwise,
   Crown,
@@ -20,26 +21,40 @@ export const metadata: Metadata = {
     "A Pot is one class's shared space. Join with a six-character code, see the vault before you sign up, and study from what your class builds together.",
 };
 
+// Each card carries an id, because section two's bento links a tile straight
+// at the card that describes it: eight tiles used to resolve to three pages
+// and land at the top of each, which told the reader nothing about the
+// feature they had just clicked.
 const INSIDE = [
   {
+    id: "shared-notes",
     icon: Notebook,
     title: "Shared notes, in sections",
     body: "Everything the class has approved, organized into the sections your course actually follows, with every original one tap away.",
   },
   {
+    id: "study",
     icon: Cards,
     title: "Flashcards and practice tests",
     body: "Built from the shared notes, not from thin air. One deck for the whole class, and tests you set up before you sit them.",
   },
   {
+    id: "search",
     icon: MagnifyingGlass,
     title: "Search that reaches everything",
     body: "Titles, summaries, note bodies, sections, contributors, and attachments, across every class you belong to.",
   },
   {
+    id: "history",
     icon: ClockCounterClockwise,
     title: "History with names on it",
     body: "Every version of every note stays readable, and everyone who touched it stays credited.",
+  },
+  {
+    id: "calendar",
+    icon: CalendarStar,
+    title: "A calendar that is a planner and a record",
+    body: "What the class shared, day by day, beside what is due from the courses a Pot is linked to. Cut where you are, not in UTC.",
   },
 ];
 
@@ -126,7 +141,8 @@ export default async function ClassesPage() {
             {INSIDE.map((item) => (
               <div
                 key={item.title}
-                className="bg-surface border border-edge rounded-(--radius-card) p-8 space-y-4 shadow-(--shadow-card)"
+                id={item.id}
+                className="scroll-mt-24 bg-surface border border-edge rounded-(--radius-card) p-8 space-y-4 shadow-(--shadow-card)"
               >
                 <item.icon className="size-7 text-primary" weight="duotone" aria-hidden />
                 <h3 className="text-lg font-semibold text-ink">{item.title}</h3>
@@ -137,7 +153,10 @@ export default async function ClassesPage() {
         </Reveal>
       </section>
 
-      <section className="px-6 sm:px-10 py-20 sm:py-28 bg-surface border-y border-edge">
+      <section
+        id="roles"
+        className="scroll-mt-24 px-6 sm:px-10 py-20 sm:py-28 bg-surface border-y border-edge"
+      >
         <Reveal className="mx-auto w-full max-w-5xl space-y-12">
           <div className="max-w-xl space-y-3">
             <p className="text-[12px] font-semibold tracking-[0.14em] uppercase text-clay">

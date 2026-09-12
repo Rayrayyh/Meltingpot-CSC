@@ -18,7 +18,7 @@ The four historical vision PDFs and the pasted rules text were removed from the 
 
 ## Stack
 
-Next.js (App Router, TypeScript, Tailwind) in `web/`, Supabase (Postgres + Auth + Storage) with RLS enabled on every table, Netlify for hosting, Framer Motion (+ GSAP, with `@gsap/react`'s `useGSAP`, where a timeline helps) for restrained animation; every GSAP timeline sits inside `gsap.matchMedia("(prefers-reduced-motion: no-preference)")` so the preference gets the static page rather than a faster one (`memory/decisions/047`). The AI organizer is a deterministic provider behind an interface (`memory/decisions/003-ai-organizer.md`); no live model calls in the MVP.
+Next.js (App Router, TypeScript, Tailwind) in `web/`, Supabase (Postgres + Auth + Storage) with RLS enabled on every table, Netlify for hosting, Framer Motion (+ GSAP, with `@gsap/react`'s `useGSAP`, where a timeline helps) for restrained animation; every GSAP timeline sits inside `gsap.matchMedia("(prefers-reduced-motion: no-preference)")` so the preference gets the static page rather than a faster one (`memory/decisions/047`). The AI runs on Google's Gemini API through `web/lib/mix/server.ts`, called only from authenticated server routes, with schema-constrained output and a hand-written normalizer per capability. The deterministic organizer (`memory/decisions/003-ai-organizer.md`) remains as the fallback when no key is configured, and the interface always names which one did the work (`memory/decisions/017-mixing-not-a-model-name.md`). The claim that there were no live model calls stopped being true on 2026-08-31 and survived in this file until 2026-09-12; the submission's AI-use disclosure is written from here, so it has to be right.
 
 ## Commands
 
