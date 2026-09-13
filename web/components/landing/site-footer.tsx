@@ -2,6 +2,7 @@ import Link from "next/link";
 import { GithubLogo } from "@phosphor-icons/react/dist/ssr";
 import { Wordmark } from "@/components/shell/wordmark";
 import { MAKERS, REPO_URL } from "@/components/landing/site-content";
+import { GoesOutComesInUnderline } from "@/components/ui/goes-out-comes-in-underline";
 
 /**
  * The public pages' shared footer: the three people who made it first, then
@@ -40,9 +41,9 @@ export function SiteFooter() {
                   decoding="async"
                   className="size-8 rounded-lg border border-edge object-cover transition-transform duration-300 group-hover:-translate-y-0.5"
                 />
-                <span className="text-[12px] text-ink transition-colors group-hover:text-primary">
+                <GoesOutComesInUnderline className="text-[12px] text-ink transition-colors group-hover:text-primary">
                   {maker.name}
-                </span>
+                </GoesOutComesInUnderline>
               </a>
             </li>
           ))}
@@ -112,10 +113,10 @@ export function SiteFooter() {
         <p>MeltingPot, 2026. Made by students, for students.</p>
         <nav className="flex items-center gap-6">
           <Link href="/terms" className="hover:text-primary transition-colors">
-            Terms of service
+            <GoesOutComesInUnderline>Terms of service</GoesOutComesInUnderline>
           </Link>
           <Link href="/privacy" className="hover:text-primary transition-colors">
-            Privacy policy
+            <GoesOutComesInUnderline>Privacy policy</GoesOutComesInUnderline>
           </Link>
         </nav>
       </div>
@@ -144,9 +145,9 @@ function Credit({
       className="group inline-flex flex-col items-center gap-2.5"
     >
       <span className="flex h-14 items-end">{mark}</span>
-      <span className="text-center text-sm font-semibold tracking-tight text-ink transition-colors group-hover:text-primary">
+      <GoesOutComesInUnderline className="text-center text-sm font-semibold tracking-tight text-ink transition-colors group-hover:text-primary">
         {label}
-      </span>
+      </GoesOutComesInUnderline>
     </a>
   );
 }

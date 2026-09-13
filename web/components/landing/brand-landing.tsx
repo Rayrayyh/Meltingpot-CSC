@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { ArrowRight } from "@phosphor-icons/react/dist/ssr";
-import { CursorLock } from "@/components/landing/cursor-lock";
 import { FeatureBento } from "@/components/landing/feature-bento";
 import { HeroDashboard } from "@/components/landing/hero-dashboard";
 import { HeroMotion } from "@/components/landing/hero-motion";
@@ -24,7 +23,6 @@ import { RollText } from "@/components/ui/roll-text";
 export function BrandLanding({ signedIn = false }: { signedIn?: boolean }) {
   return (
     <div className="flex flex-col">
-      <CursorLock />
       <HeroMotion />
       {/* Same ground as the hero, so the top of the page is one surface
           rather than a paper band over a sunken one. */}
