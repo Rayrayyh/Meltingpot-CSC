@@ -53,6 +53,16 @@ export type AuthErrorCode =
   | "invalid_display_name"
   | "rate_limited"
   | "invalid_code"
+  /** Too many wrong passwords; the provider paused the account for a while. */
+  | "account_locked"
+  /** The password is correct or well formed but has appeared in a breach. */
+  | "password_compromised"
+  /**
+   * The provider wants the person to prove themselves again before a
+   * sensitive change (Clerk does this ten minutes after sign in). The seam
+   * methods that can raise it take the password or code that clears it.
+   */
+  | "reverification_required"
   | "not_configured"
   | "unknown";
 
@@ -104,15 +114,20 @@ export interface ClientAuthProvider {
   /**
    * Set a new password and end every other session. A password change is
    * often the answer to somebody else having the old one, so the sessions
-   * that old password opened must not survive it.
+   * that old password opened must not survive it. Clerk asks for the current
+   * password as well; Supabase does not, and ignores it. `code` clears a
+   * reverification_required refusal for an account with a second factor.
    */
-  changePassword(input: { password: string }): Promise<void>;
+  changePassword(input: { password: string; currentPassword?: string; code?: string }): Promise<void>;
 
   /** Finish a sign in that stopped for a code. Throws AuthError. */
   verifySecondFactor(input: { factorId: string; code: string }): Promise<void>;
 
-  /** Start setup, returning something to scan. Clears abandoned attempts first. */
-  beginSecondFactorSetup(): Promise<SecondFactorSetup>;
+  /**
+   * Start setup, returning something to scan. Clears abandoned attempts first.
+   * `password` clears a reverification_required refusal.
+   */
+  beginSecondFactorSetup(input?: { password?: string }): Promise<SecondFactorSetup>;
 
   /** Confirm setup with a code from the app. Throws AuthError. */
   completeSecondFactorSetup(input: { factorId: string; code: string }): Promise<void>;
@@ -120,6 +135,6 @@ export interface ClientAuthProvider {
   /** Abandon a setup that was never confirmed. */
   cancelSecondFactorSetup(input: { factorId: string }): Promise<void>;
 
-  /** Turn an active second factor off. */
-  removeSecondFactor(input: { factorId: string }): Promise<void>;
+  /** Turn an active second factor off. `code` clears a reverification_required refusal. */
+  removeSecondFactor(input: { factorId: string; code?: string }): Promise<void>;
 }

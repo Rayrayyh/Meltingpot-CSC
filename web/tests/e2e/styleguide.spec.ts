@@ -19,8 +19,11 @@ for (const theme of themes) {
   });
 }
 
-test("landing shows the class code hero", async ({ page }) => {
-  await page.goto("/");
+// The landing's own inline code field went with section two on 2026-09-10;
+// /join and its JoinCard are the shipped entry now. JoinCard holds its button
+// closed until the code is the full six characters.
+test("the join page holds its button until the code is complete", async ({ page }) => {
+  await page.goto("/join");
   await expect(page.getByLabel("Enter class code")).toBeVisible();
   await expect(page.getByRole("button", { name: "Join Pot" })).toBeDisabled();
   await page.getByLabel("Enter class code").fill("d2z7gg");

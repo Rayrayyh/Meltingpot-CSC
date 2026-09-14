@@ -221,12 +221,12 @@ export function standingLines(s: Standing): { lead: string; detail: string } {
       detail: `One more counted day moves you ahead of them.`,
     };
   }
+  // Last place is the one standing with nobody behind, and the rule still
+  // holds: say the step that puts them ahead, never who is in front of them.
   const gap = s.gap ?? 1;
+  const step = gap <= 1 ? "One more counted day" : `${gap} more counted days`;
   return {
-    lead:
-      gap <= 1
-        ? `One more counted day moves you up in ${s.title}.`
-        : `${gap} more counted days move you up in ${s.title}.`,
-    detail: `Everyone else has counted more days this month. The next step up is ${gap <= 1 ? "one day" : `${gap} days`} away.`,
+    lead: `${step} ${gap <= 1 ? "moves" : "move"} you ahead of a classmate in ${s.title}.`,
+    detail: `Counted ${window}. Every day you share, study, or review counts.`,
   };
 }

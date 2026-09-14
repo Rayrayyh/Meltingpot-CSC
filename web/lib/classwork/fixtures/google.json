@@ -1,0 +1,103 @@
+{
+  "courses": {
+    "student": {
+      "courses": [
+        { "id": "c-bio", "name": "Biology 101", "section": "Period 2", "alternateLink": "https://classroom.google.com/c/bio", "courseState": "ACTIVE" },
+        { "id": "c-hist", "name": "World History", "alternateLink": "https://classroom.google.com/c/hist", "courseState": "ACTIVE" }
+      ]
+    },
+    "teacher": {
+      "courses": [
+        { "id": "c-bio", "name": "Biology 101", "section": "Period 2", "alternateLink": "https://classroom.google.com/c/bio", "courseState": "ACTIVE" }
+      ]
+    }
+  },
+  "courseWork": {
+    "page1": {
+      "courseWork": [
+        {
+          "id": "cw-1",
+          "title": "Cell division lab report",
+          "description": "Write up the mitosis lab. Include your drawings.",
+          "state": "PUBLISHED",
+          "alternateLink": "https://classroom.google.com/c/bio/a/cw-1",
+          "creationTime": "2026-09-01T15:00:00Z",
+          "updateTime": "2026-09-02T09:30:00Z",
+          "dueDate": { "year": 2026, "month": 9, "day": 12 },
+          "dueTime": { "hours": 6, "minutes": 59 },
+          "workType": "ASSIGNMENT",
+          "materials": [
+            { "driveFile": { "driveFile": { "id": "d1", "title": "Lab handout.pdf", "alternateLink": "https://drive.google.com/file/d/d1/view" }, "shareMode": "VIEW" } },
+            { "link": { "url": "https://example.org/mitosis", "title": "Mitosis explainer" } }
+          ]
+        },
+        {
+          "id": "cw-2",
+          "title": "Quick check: phases of mitosis",
+          "state": "PUBLISHED",
+          "alternateLink": "https://classroom.google.com/c/bio/a/cw-2",
+          "creationTime": "2026-09-03T15:00:00Z",
+          "updateTime": "2026-09-03T15:00:00Z",
+          "dueDate": { "year": 2026, "month": 9, "day": 8 },
+          "workType": "MULTIPLE_CHOICE_QUESTION",
+          "materials": [
+            { "youtubeVideo": { "id": "y1", "title": "Mitosis in 3 minutes", "alternateLink": "https://www.youtube.com/watch?v=y1" } }
+          ]
+        }
+      ],
+      "nextPageToken": "cw-page-2"
+    },
+    "page2": {
+      "courseWork": [
+        {
+          "id": "cw-3",
+          "title": "Reading: chapter 10",
+          "state": "PUBLISHED",
+          "alternateLink": "https://classroom.google.com/c/bio/a/cw-3",
+          "creationTime": "2026-08-28T15:00:00Z",
+          "updateTime": "2026-08-28T15:00:00Z",
+          "workType": "ASSIGNMENT"
+        }
+      ]
+    }
+  },
+  "courseWorkMaterials": {
+    "courseWorkMaterial": [
+      {
+        "id": "m-1",
+        "title": "Syllabus and lab safety",
+        "description": "Read before the first lab.",
+        "alternateLink": "https://classroom.google.com/c/bio/m/m-1",
+        "creationTime": "2026-08-20T15:00:00Z",
+        "updateTime": "2026-08-20T15:00:00Z",
+        "materials": [
+          { "form": { "formUrl": "https://docs.google.com/forms/d/f1/viewform", "title": "Safety quiz" } }
+        ]
+      }
+    ]
+  },
+  "announcements": {
+    "announcements": [
+      {
+        "id": "an-1",
+        "text": "Lab moved to Thursday.\nBring goggles.",
+        "alternateLink": "https://classroom.google.com/c/bio/p/an-1",
+        "creationTime": "2026-09-04T15:00:00Z",
+        "updateTime": "2026-09-04T15:00:00Z",
+        "materials": []
+      }
+    ]
+  },
+  "token": {
+    "exchange": {
+      "access_token": "at-1",
+      "refresh_token": "rt-1",
+      "expires_in": 3599,
+      "scope": "openid email https://www.googleapis.com/auth/classroom.courses.readonly",
+      "token_type": "Bearer",
+      "id_token": "eyJhbGciOiJSUzI1NiJ9.eyJzdWIiOiIxMDI0IiwiZW1haWwiOiJhdmFAZXhhbXBsZS5vcmcifQ.sig"
+    },
+    "refresh": { "access_token": "at-2", "expires_in": 3599, "scope": "", "token_type": "Bearer" },
+    "invalidGrant": { "error": "invalid_grant", "error_description": "Token has been expired or revoked." }
+  }
+}

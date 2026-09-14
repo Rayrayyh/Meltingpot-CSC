@@ -8,7 +8,9 @@ import { CopyButton } from "@/components/ui/copy-button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { MetricCard } from "@/components/ui/metric-card";
 import { SectionPill } from "@/components/ui/pills";
+import { ClassworkStrip } from "@/components/pot/classwork-strip";
 import { contributorActivity } from "@/lib/contributors";
+import type { DueEntry } from "@/lib/data/classwork";
 import type { FeedNote, PotContext } from "@/lib/data/pot";
 import { relativeTime } from "@/lib/time";
 
@@ -16,10 +18,13 @@ export function PotFeed({
   pot,
   notes,
   activeSectionId,
+  classwork,
 }: {
   pot: PotContext;
   notes: FeedNote[];
   activeSectionId?: string;
+  /** Present only when the Pot has a linked course. */
+  classwork?: { items: DueEntry[]; now: number; zone: string };
 }) {
   const activeSection = activeSectionId
     ? pot.sections.find((s) => s.id === activeSectionId)
@@ -56,13 +61,16 @@ export function PotFeed({
               accessory={<CopyButton value={pot.classCode} label="Copy" />}
             />
           </div>
+          {classwork ? (
+            <ClassworkStrip potId={pot.id} items={classwork.items} now={classwork.now} zone={classwork.zone} />
+          ) : null}
           <section aria-labelledby="study-pot-heading" className="space-y-3">
             <div>
               <h2 id="study-pot-heading" className="text-[13px] font-medium text-ink-muted">Study this Pot</h2>
               <p className="mt-0.5 text-[12px] text-ink-faint">Browse the source notes or generate material from the full class vault.</p>
             </div>
             <div className="grid gap-3 sm:grid-cols-2">
-              <StudyTile href="#raw-notes" title="Raw Notes" description="Shared notes from everyone." icon={<FileText />} />
+              <StudyTile href="#raw-notes" title="Raw notes" description="Shared notes from everyone." icon={<FileText />} />
               <StudyTile href={`/p/${pot.id}/study/summary`} title="Summary" description="Build a fresh study guide." icon={<Sparkle />} />
               <StudyTile href={`/p/${pot.id}/study/flashcards`} title="Flashcards" description="Generate recall cards from the Pot." icon={<Cards />} />
               <StudyTile href={`/p/${pot.id}/study/practice`} title="Practice" description="Set the length and difficulty, then sit it." icon={<Brain />} />

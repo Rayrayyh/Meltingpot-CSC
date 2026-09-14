@@ -8,7 +8,7 @@ The subject is a shared class vault: students pour rough knowledge in, the class
 
 ## Pinned by SPEC (not negotiable)
 
-Warm off-white paper, white surfaces, charcoal ink, deep forest green primary, small clay accents, functional color only with text labels, Inter UI type, Source Serif 4 for long-form note bodies, flat cards, subtle borders, restrained shadows, rounded corners, no gradients, no purple AI branding, no glowing effects, no chatbot UI, sentence case, no emojis, no em dashes. The skill flags warm-cream-plus-serif as a common AI default; here it is the brief's explicit direction, so it stays, and distinctiveness is earned elsewhere.
+Warm off-white paper, white surfaces, charcoal ink, deep forest green primary *(superseded 2026-08-19 by brand orange, `memory/decisions/010`)*, small clay accents, functional color only with text labels, Inter UI type, Source Serif 4 for long-form note bodies, flat cards, subtle borders, restrained shadows, rounded corners, no gradients, no purple AI branding, no glowing effects, no chatbot UI, sentence case, no emojis, no em dashes. The skill flags warm-cream-plus-serif as a common AI default; here it is the brief's explicit direction, so it stays, and distinctiveness is earned elsewhere.
 
 ## Where the distinctiveness lives
 

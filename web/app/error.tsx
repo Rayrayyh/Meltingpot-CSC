@@ -1,24 +1,49 @@
 "use client";
 
-import { Warning } from "@phosphor-icons/react";
-import { Button } from "@/components/ui/button";
+import Link from "next/link";
+import { useEffect } from "react";
+import { MeltFrame } from "@/components/errors/melt-frame";
 
-export default function ErrorPage({ reset }: { error: Error; reset: () => void }) {
+/**
+ * The boundary for anything a page throws, on the same design as the 404 so
+ * a broken page and a missing one read as one product. Production hides the
+ * error's message from the browser; the digest is what the server log can
+ * be searched for, so it is printed to the console for whoever is looking.
+ */
+export default function ErrorPage({
+  error,
+  reset,
+}: {
+  error: Error & { digest?: string };
+  reset: () => void;
+}) {
+  useEffect(() => {
+    console.error("[page]", error.digest ?? error.message);
+  }, [error]);
+
   return (
-    <div className="flex flex-1 flex-col items-center justify-center px-6 py-24 gap-5 text-center">
-      <Warning className="size-10 text-warning" aria-hidden />
-      <div className="space-y-1.5">
-        <h1 className="text-xl font-semibold tracking-tight">Something went wrong</h1>
-        <p className="text-sm text-ink-muted max-w-sm">
-          Nothing was lost. Reload to pick up where you left off.
-        </p>
-      </div>
-      <div className="flex gap-2.5">
-        <Button variant="secondary" href="/home">
-          Go home
-        </Button>
-        <Button onClick={reset}>Try again</Button>
-      </div>
-    </div>
+    <MeltFrame
+      digits={["5", "0"]}
+      title="Something boiled over."
+      body={
+        <>
+          Nothing was lost. Try again, or head back and pick up where you
+          left off.
+          {error.digest ? (
+            <span style={{ display: "block", marginTop: 10, fontSize: 14, color: "#8A7561" }}>
+              Reference {error.digest}
+            </span>
+          ) : null}
+        </>
+      }
+      idPrefix="mp-pot-error"
+    >
+      <button type="button" onClick={reset} className="mp-404-cta">
+        Try again
+      </button>
+      <Link href="/" className="mp-404-cta mp-404-cta-quiet">
+        Go to homepage
+      </Link>
+    </MeltFrame>
   );
 }

@@ -1,23 +1,24 @@
 # MeltingPot
 
-meltingpot.io is a responsive desktop-first web app where students in a class collaboratively build a shared vault of knowledge. A class space is a Pot. Students join with a six-character class code, write completely unformatted notes, an organizer structures them, and the student approves before anything is shared. Corrections to shared notes go through maintainer review. Entered in the Prometheus August AI Challenge, which asks for an educational tool where AI/ML is core to how people learn, teach, or absorb information, and requires an open-source repo (MIT license present), a hosted live URL, and a demo video.
+meltingpot.io is a responsive desktop-first web app where students in a class collaboratively build a shared vault of knowledge. A class space is a Pot. Students join with a six-character class code, write completely unformatted notes, an organizer structures them, and the student approves before anything is shared. Corrections to shared notes go through maintainer review. Entered in the CSC Back-to-School Hackathon, which asks for something that "helps students, teachers, or schools solve a real school-life problem". It was built for, and won, the Pixel Forge hackathon, and was then entered in the Prometheus August AI Challenge; `docs/CSC_HACKATHON.md` holds the current entry's rules and `memory/decisions/021` records the earlier move.
 
-**Submission deadline: Monday 2026-08-31, 11:45 AM Pacific** (18:45 UTC), per the owner on 2026-08-30; this supersedes the Saturday 11:45pm wall recorded earlier. Scope decisions bend toward shipping before it.
+**Submission deadline: 2026-10-05, 12:00am PDT.** Far enough out that nothing needs rushing, which is a different footing from the previous two entries. Eligibility is ages 13 to 18 and students only, which is pass or fail before any judging.
 
-The judging rubric is 100 points in four equal parts: Educational Impact, Creative Use of AI/ML (their words: "AI is core to the functionality, not just an afterthought"), Technical Execution (codebase, UI, UX), and Pitch & Demo. The demo video is capped at two minutes and anything longer is not watched. `memory/decisions/021` records how this project came to be entered here.
+Judging is five criteria with **no published point values**: Learning, Design, Creativity, Functionality, and Impact. Do not assume a 100 point scale; the previous entry's four-by-25 rubric does not apply here. A 1 to 2 minute demo video is optional but encouraged. The submission also requires an AI-use disclosure explaining how AI was used, which `memory/decisions/` and `docs/BUILDLOG.md` already hold the raw material for. Full rules in `docs/CSC_HACKATHON.md`.
 
 ## Read these first
 
-1. `docs/SPEC.md` - the authoritative product spec. It wins every conflict.
-2. `docs/PLAN.md` - the step-by-step execution plan with per-step verification and status. Keep its status column current as steps land.
-3. `memory/` - the knowledge base: `decisions/` (what was chosen and why) and `lessons/` (what was learned the hard way). Follow `memory/README.md` rules: one note per file, one-line summary at top, update instead of duplicating, delete wrong notes.
-4. `docs/reference/REFERENCE_CAPTIONS.md` + the 16 PNGs - UX structure references. Captions say per image what to use and ignore.
+1. `docs/CSC_HACKATHON.md` - the current hackathon's rules, criteria and deadline, and what this repository is missing.
+2. `docs/SPEC.md` - the authoritative product spec. It wins every conflict.
+3. `docs/PLAN.md` - the step-by-step execution plan with per-step verification and status. Keep its status column current as steps land.
+4. `memory/` - the knowledge base: `decisions/` (what was chosen and why) and `lessons/` (what was learned the hard way). Follow `memory/README.md` rules: one note per file, one-line summary at top, update instead of duplicating, delete wrong notes.
+5. `docs/reference/REFERENCE_CAPTIONS.md` + the 16 PNGs - UX structure references. Captions say per image what to use and ignore.
 
 The four historical vision PDFs and the pasted rules text were removed from the repo root before submission; `memory/decisions/001-source-of-truth.md` records why they were never the source of truth.
 
 ## Stack
 
-Next.js (App Router, TypeScript, Tailwind) in `web/`, Supabase (Postgres + Auth + Storage) with RLS enabled on every table, Netlify for hosting, Framer Motion (+ GSAP where a timeline helps) for restrained animation. The AI organizer is a deterministic provider behind an interface (`memory/decisions/003-ai-organizer.md`); no live model calls in the MVP.
+Next.js (App Router, TypeScript, Tailwind) in `web/`, Supabase (Postgres + Auth + Storage) with RLS enabled on every table, Netlify for hosting, Framer Motion (+ GSAP, with `@gsap/react`'s `useGSAP`, where a timeline helps) for restrained animation; every GSAP timeline sits inside `gsap.matchMedia("(prefers-reduced-motion: no-preference)")` so the preference gets the static page rather than a faster one (`memory/decisions/047`). The AI runs on Google's Gemini API through `web/lib/mix/server.ts`, called only from authenticated server routes, with schema-constrained output and a hand-written normalizer per capability. The deterministic organizer (`memory/decisions/003-ai-organizer.md`) remains as the fallback when no key is configured, and the interface always names which one did the work (`memory/decisions/017-mixing-not-a-model-name.md`). The claim that there were no live model calls stopped being true on 2026-08-31 and survived in this file until 2026-09-12; the submission's AI-use disclosure is written from here, so it has to be right.
 
 ## Commands
 
@@ -33,29 +34,82 @@ Next is v16: `proxy.ts` instead of `middleware.ts`, `params`/`searchParams` are 
 
 Screen recordings and demo videos shared with the owner are always mp4 (H.264, yuv420p), never webm (owner's standing instruction). Convert with ffmpeg before sending.
 
-Deploys go to https://meltingpot-prometheus.netlify.app only (owner's standing instruction, 2026-08-29). Never deploy to meltingpotworks.netlify.app or meltingpot-io.netlify.app; those are earlier sites. Deploy the committed tree from a detached worktree via the Netlify MCP zip deploy with web/ as the package root, so uncommitted work never ships.
+Deploys go to the Netlify site meltingpot-csc only (site id f8138e4f-b2cf-4351-b930-ec14bbb74668; owner's instruction for this entry, 2026-09-05, superseding the 2026-08-29 rule), A second site `meltingpot-trial` (id 4da1c84d-f691-4921-8b4b-6ff4db81b91c) was created on 2026-09-08 for a Clerk trial the owner then skipped; it was never deployed and must not be. It stays as it is: the owner decided on 2026-09-08 that an empty site costs nothing and there is no reason to delete it. Since 2026-09-08 that site is served at https://meltingpots.xyz, the owner's domain on Netlify DNS; the proxy sends every request on the meltingpot-csc.netlify.app alias to the domain (308), since a Clerk session only lives on the domain. The hourly cron in the database (0058) and the classwork redirect URIs name the domain, not the netlify.app address. Never deploy to meltingpot-prometheus, meltingpotworks or meltingpot-io; those are earlier entries' sites. Deploy the committed tree from a detached worktree via the Netlify MCP zip deploy with web/ as the package root, so uncommitted work never ships. Deploy only when the owner asks.
 
 Database changes go through Supabase MCP migrations (`apply_migration`), one migration per schema change, mirrored into `supabase/migrations/` in the repo.
 
 ## Product rules that are easy to violate
 
-- No login wall before showing the Pot: code -> Pot preview -> auth -> membership finalized.
+- No login wall before showing the Pot: code -> Pot preview -> auth -> membership finalized. Since 2026-09-11 the one place a code is typed is `/join`, which is why it is not in `proxy.ts`'s protected list: gating it would put the sign in first. The landing's own field went with the bento (`memory/decisions/046`).
 - Never publish anything automatically. The contributor approves contributions; a maintainer approves corrections.
 - Always store and show both raw and organized content. The original is never deleted or overwritten.
 - Pot titles may duplicate; Pot IDs and class codes are unique; never use titles as identifiers.
 - No Git terminology, no schools/organizations, no likes or leaderboards, no purple AI branding, no gradients, no chatbot UI.
+- The owner lifted two of those for one block on 2026-09-10. Section two's bento is a reproduction of their reference sheets, so it carries gradients and a drawn class contribution total. It is an illustration, and the exception stops at its edge: nothing else gains a gradient and no real screen compares people. `memory/decisions/046` records it, so it does not need relitigating.
 - Two of these rules were lifted by the owner on 2026-08-19 and 2026-08-20. Flashcards and practice tests are real features now, built from shared notes. A private record of one person's own days exists (a day counts for a share, a study run, a correction accepted or reviewed, or a resource attached), and it is quiet by decision 030: nothing opens on its own, and its one celebration (decision 032, the stirring pot card) fires only on a completion screen, on the first action that counts that day, and a quiet stretch shows the run they already managed rather than a zero. On 2026-09-02 the owner also lifted the comparison rule (decision 031): a person sees where they stand in each class, rank and the share of classmates they are ahead of, always said as what they are ahead of and never as what they are behind. It is theirs alone: no named list, and nobody sees anyone else's standing or counts. The interface never says streak. Nothing else keeps score.
-- Copy style: sentence case, natural language ("Share with class", "Send to maintainer"). No emojis. No em dashes, in UI copy and in this repo's docs alike.
+- Copy style: sentence case, natural language ("Share with class", "Send to maintainer"). No emojis. No em dashes, in UI copy and in this repo's docs alike. Write the way a student would say it out loud. The owner asked for this again on 2026-09-12 and `memory/decisions/050` lists what was cut: startup phrasing ("no friction", "hierarchy theater"), metaphors reached for twice ("you hold the pen"), numbers invented for effect ("thirty half-finished notebooks", "two to four topics"), "actually" as an intensifier, the not-X-but-Y contrast ("not from thin air"), flourish absolutes ("forever", "permanently"), and internal words on a page for strangers ("UTC", "the melt").
 - Everything a person reads must sound human, not AI generated (owner's standing instruction, 2026-08-30). That covers the README, docs, scripts, demo narration and website text. Write it in the owner's own plain voice and typography: short natural sentences, contractions are fine, no em dashes (use a comma or a period, at most one dash where a person would really put one). Skip the usual AI tells: "seamless", "dive in", "empower", "elevate", tidy three-part parallel clauses, bullet essays. Read it back; if it sounds like a model wrote it, rewrite it until it sounds like the owner did.
+
+## Sidebar, caret and card motion (2026-09-05 round)
+
+- The sidebar is arrangeable per person from Settings: link order, hidden links, and class order. The collapsed My Pots icon navigates by `web/lib/pot-destination.ts` (one class, else the arranged first slot, else a favourite, else last opened). Favourites are the star on a class row. State lives in `sidebar_preferences` and `pot_preferences`, owner-only rows by design (`memory/decisions/033`); never move it onto memberships or profiles.
+- Every single-line field draws the gliding caret; textareas keep the native caret in the brand colour, on purpose (`memory/decisions/034`).
+- The notification card collapses on opacity alone and lets the rail reflow it, measured off kolejain.com (`docs/KOLEJAIN_NOTIFICATION_MOTION.md`). The nav scroller draws no bar but still scrolls.
+- The note view toggle reads Original then Organized, opens on Organized, and uses `components/ui/pill-tabs.tsx` for the sliding pill.
+- Classwork from Canvas and Google Classroom is built (decision 038, `docs/CLASSWORK.md`, checklist in `docs/CLASSWORK_VERIFICATION.md`). It is read-only import: an imported item is never a note and never counts for anyone until a person starts a note from it and shares it; refresh tokens live in Vault behind a server key and never reach a browser; the three `lms_*` tables are read-only from the client and written only by the definer functions in migrations 0050 to 0052. Locally and in e2e both providers run against `web/tests/stub-lms/server.mjs`; the live Google and Canvas walks wait on the owner's Cloud project, the school's developer key, the Netlify variables and a deploy. Standing state on 2026-09-05: the owner has set the model key on meltingpot-csc and will do the Google Classroom setup later, following `docs/CLASSWORK.md` (Cloud project and OAuth client, rotate the two Vault secrets, six Netlify variables). Netlify functions read variables at deploy time, so redeploy once they land, then walk `docs/CLASSWORK_VERIFICATION.md` phase 1 on the live site.
+- Identity (decision 041, `docs/CLERK.md`): in SQL ask `public.current_uid()`, never `auth.uid()`; migrations 0054 and 0056 rewrote every policy (storage included) and definer function to it so a Clerk subject can be a person. The Clerk halves of the seam (`web/lib/auth/clerk-client.ts`, `clerk-server.ts`), the token plumbing in `web/lib/supabase`, the proxy branch and the policy additions are built and inert; `NEXT_PUBLIC_AUTH_PROVIDER=clerk` plus the two Clerk keys switch them on. The live site runs Supabase Auth, and Clerk's production instance needs a domain the netlify.app subdomain cannot carry, so the switch is the owner's call after 5 October.
+- `docs/OWNER_SETUP.md` is the one list of everything the owner has to set up across every feature (domain, Clerk, Google Classroom, Canvas, classwork secrets), with who does what and its state. Keep it current at every exchange; when the owner asks what is left, answer from it.
+- The owner is on Clerk's student plan (GitHub Student Developer Pack, noted 2026-09-08): Clerk's Pro plan at no cost for the length of their student status, on one workspace, with the GitHub account kept connected. It covers what the product needs in production (the authenticator app second factor, the custom domain, branding removal, 50,000 monthly retained users, social connections); SMS is the one thing it excludes and it is metered anyway, and the product has no screen for it. When the student status ends the workspace drops to Hobby, at which point production MFA and the domain need paying for.
+- Owner's standing instruction, 2026-09-06: go through the Clerk setup first, Google Classroom after. The walk-through is step by step with the owner at the dashboards; `docs/CLERK.md` opens with a "Where this stands" checklist that records which step is done, what the owner sent back (publishable key, Clerk domain), and what comes next. Keep that checklist current at every exchange so a fresh session picks up mid walk-through. The Clerk connector in claude.ai (tools `clerk_sdk_snippet`, `list_clerk_sdk_snippets`) serves SDK snippets only; it cannot create the application or change dashboard settings, so those remain the owner's. Secret keys go into Netlify and `.env.local` by the owner's hand, never into a commit or a doc; the publishable key may be written anywhere.
 
 ## Design tokens (digest)
 
-Cream paper background (#faf4e6), warm white surfaces, near-black ink, brand orange primary actions (#ab5a14 light, #f19a44 dark), deeper orange accents. Dark is the default theme for everyone who has not chosen one (owner's call, 2026-08-30, superseding the earlier light default), stamped before first paint; the landing header carries a one tap light/dark icon, settings holds the three way picker, and both write the same stored choice so a preference set on the landing carries into the dashboard (`memory/decisions/020`). The brand mark is an orange pot with a lowercase m knockout and liquid blobs (web/components/brand/pot-mark.tsx, web/app/icon.svg); the gradient inside those SVGs is the one sanctioned gradient use. The mark carries no tile or background: the mouth and the m are masked holes, so it sits on any surface. Icons come from two sources, because a tab and a home screen want different artwork: web/app/icon.png is the tileless mark and feeds favicon.ico, and web/public/brand/app-icon-tile.png is the square cream tile and feeds apple-icon.png. After editing either, run `node scripts/build-icons.mjs` from `web/`. Avatars are a person icon in one of six decorative `--avatar-N` tints hashed from the display name, deliberately separate from the functional colors. Inter for UI, Fraunces for display headlines, Baloo 2 for the lowercase wordmark, Source Serif 4 for long-form note bodies. Phosphor icons. Flat cards, subtle borders, restrained shadows, rounded corners, pill buttons, generous whitespace. Functional color only for success, warning, error, additions, removals, pending review. Honor prefers-reduced-motion. The owner replaced the original forest-green palette on 2026-08-19; see memory/decisions/010.
+Cream paper background (#faf4e6), warm white surfaces, near-black ink, brand orange primary actions (#ab5a14 light, #f19a44 dark), deeper orange accents. Light is the default theme for everyone who has not chosen one (owner's call, 2026-09-08, reversing the dark default of 2026-08-30), stamped before first paint; the landing header carries a one tap light/dark icon, settings holds the three way picker, and both write the same stored choice so a preference set on the landing carries into the dashboard (`memory/decisions/020`). The brand mark is an orange pot with a lowercase m knockout and liquid blobs (web/components/brand/pot-mark.tsx, web/app/icon.png); the gradient inside those SVGs is the one sanctioned gradient use. The mark carries no tile or background: the mouth and the m are masked holes, so it sits on any surface. Icons come from two sources, because a tab and a home screen want different artwork: web/app/icon.png is the tileless mark and feeds favicon.ico, and web/public/brand/app-icon-tile.png is the square cream tile and feeds apple-icon.png. After editing either, run `node scripts/build-icons.mjs` from `web/`. Avatars are a person icon in one of six decorative `--avatar-N` tints hashed from the display name, deliberately separate from the functional colors. Inter for UI, Fraunces for display headlines, Baloo 2 for the lowercase wordmark, Source Serif 4 for long-form note bodies. Phosphor icons. Flat cards, subtle borders, restrained shadows, rounded corners, pill buttons, generous whitespace. Functional color only for success, warning, error, additions, removals, pending review. Honor prefers-reduced-motion. The owner replaced the original forest-green palette on 2026-08-19; see memory/decisions/010.
 
 ## Working agreements
 
-- Follow `docs/PLAN.md` step order; each step ends with lint + typecheck + build green, a commit, and a push to `claude/prometheus-august-challenge`.
-- All work stays on `claude/prometheus-august-challenge` until the project is finished. Do not merge it into `main`, do not open follow-up pull requests to move it there, and do not ask again each round: the owner merges when they decide the project is done. `main` being behind is expected, not a problem to solve.
+- Each change ends with lint + typecheck + build green before a commit, and a push to `claude/csc-back-to-school`.
+- Work stays on `claude/csc-back-to-school`. Do not merge it into `main` and do not open a pull request without being asked: the owner decides when it moves. `main` being behind is expected, not a problem to solve.
+- **Hosting: `meltingpot-csc` on Netlify, not `meltingpot-prometheus`.** That older deploy belongs to the previous entry and is no longer the target. The deploy shape is unchanged: `web/` is the package root and `@netlify/plugin-nextjs` must be declared explicitly, or every route 404s.
+- This repository was copied from the older one at `f2cab37` and is missing four fixes made there on 2026-09-04, one of which is a real bug. `docs/CSC_HACKATHON.md` lists them.
 - Do not schedule recurring pull request check-ins or any other self-firing routine. Report on a PR when the owner asks, or when a GitHub event actually needs a decision.
 - When something breaks, check `memory/lessons/` first, and record any new lesson worth keeping.
 - Log every architectural or scope decision in `memory/decisions/` at the moment it is made.
+
+## Session stats, before the context goes
+
+The context window is compacted by the harness, and everything not written down
+goes with it. By 2026-09-09 that had happened seventeen times, and the running
+account of the project had to be rebuilt from the raw transcript
+(`docs/reference/session-logbook/`). Claude Code's own `/insights` reads only
+the current window, so after a compaction it reports one afternoon as the whole
+project: it gave 9 messages and 1 commit for a session that was 341 messages and
+229 commits.
+
+Do not try to catch the moment before a compaction. There is no reliable signal:
+compaction is performed by the harness and is not announced to the model in
+advance, so an instruction to "stop just before 950k tokens" cannot be followed
+and will silently do nothing. Snapshot regularly instead, which survives either
+way.
+
+Run `node scripts/session-stats.mjs` from the repo root and commit the refreshed
+`docs/SESSION_STATS.md`:
+
+- at the end of any exchange that produced commits;
+- before anything that will eat a lot of context: a full bug pass, a workflow
+  fan-out, a long end to end run, a large file read;
+- whenever the conversation has been running long and the last snapshot in
+  `docs/SESSION_STATS.md` is stale.
+
+It records span, messages typed, assistant turns, tool calls and their mix, tool
+error rate, compactions so far, output tokens, and the code totals: lines
+standing, files, migrations, commits, and lines added and removed across all
+commits. It costs one command.
+
+Two counting traps, both already fallen into once. Tool results, command
+invocations, system reminders and task notifications all arrive in the `user`
+role, and counting them as messages inflates the total by about a third; the
+script filters them, so do not hand-count from the transcript instead. And the
+harness's own `files_modified` counter watches Edit and Write only, so in auto
+mode, where edits go through Bash heredocs and `sed`, it reads zero on a day
+that rewrote half the docs. Never quote it.

@@ -1,8 +1,12 @@
 # Checklist: all 60 rules against the landing and the dashboard
 
-Audited 2026-08-24 against `docs/UI_RULES.md`. Every row was checked by reading
-the code or the rendered page, not assumed. Seven failed. All seven are fixed;
-each says what changed and where.
+**This is a record of one audit, not a current score.** Audited 2026-08-24
+against `docs/UI_RULES.md`: every row was checked by reading the code or the
+rendered page, not assumed, seven failed, and all seven were fixed. Everything
+that landed after that date, which by 2026-09-12 includes the brand rework,
+the classwork feature, section two's bento and the landing's motion layer, has
+never been run against this list. Read the rows as what they measured on the
+day, and re-audit before quoting a number.
 
 Legend: **Pass** already held. **Fixed** failed the audit and was corrected in
 this pass. **N/A** does not apply to this product.

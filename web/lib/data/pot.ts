@@ -18,6 +18,8 @@ export type PotContext = {
   joinOpen: boolean;
   /** Who may spend a generation. Reading what exists is never restricted. */
   studyGeneration: PotStudyGeneration;
+  /** Courses linked to this Pot. Above zero, the Classwork tab exists. */
+  classworkLinkCount: number;
 };
 
 /**
@@ -48,7 +50,7 @@ export const getPotContext = cache(async function getPotContext(
   ]);
   if (!pot || !membership) return null;
 
-  const [sections, memberCount, noteCount, openProposals] = await Promise.all([
+  const [sections, memberCount, noteCount, openProposals, classworkLinks] = await Promise.all([
     supabase
       .from("sections")
       .select("id, title")
@@ -66,6 +68,12 @@ export const getPotContext = cache(async function getPotContext(
     // Pot-wide pending count via a security-definer function so members and
     // maintainers see the same number (RLS would show a member only theirs).
     supabase.rpc("open_correction_count", { p_pot_id: potId }),
+    // A head count under a column grant still works: any readable column
+    // satisfies it (0049).
+    supabase
+      .from("lms_course_links")
+      .select("id", { count: "exact", head: true })
+      .eq("pot_id", potId),
   ]);
 
   return {
@@ -81,6 +89,7 @@ export const getPotContext = cache(async function getPotContext(
     archived: pot.archived_at !== null,
     joinOpen: pot.join_open,
     studyGeneration: pot.study_generation,
+    classworkLinkCount: classworkLinks.count ?? 0,
   };
 });
 

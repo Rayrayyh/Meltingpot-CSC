@@ -71,6 +71,12 @@ const CLOSED = [
   "study_responses",
   "note_flashcards",
   "admin_events",
+  "lms_connections",
+  "lms_course_links",
+  "lms_items",
+  "pot_preferences",
+  "sidebar_preferences",
+  "rate_limits",
 ] as const;
 
 online("an anonymous client", () => {
@@ -82,7 +88,9 @@ online("an anonymous client", () => {
     it(`reads no rows from ${table}`, async () => {
       const { data, error } = await anon!.from(table).select("*").limit(5);
       // Either the policy returns nothing or the request is refused. Both are
-      // closed; a row coming back is not.
+      // closed; a row coming back is not. A table PostgREST has never heard
+      // of (PGRST205) is a typo in this list, not a closed table.
+      expect(error?.code).not.toBe("PGRST205");
       expect(error ? [] : (data ?? [])).toHaveLength(0);
     });
   }

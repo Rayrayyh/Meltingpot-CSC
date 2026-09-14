@@ -5,10 +5,8 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardSection } from "@/components/ui/card";
 import { CLASS_CODE_LENGTH, ClassCodeInput } from "@/components/ui/class-code-input";
+import { INVALID_CODE_MESSAGE } from "@/lib/join-messages";
 import { supabaseBrowser } from "@/lib/supabase/client";
-
-export const INVALID_CODE_MESSAGE =
-  "We couldn't find that Pot. Check the code and try again.";
 
 /**
  * The class-code hero. Validates the code in place: an invalid code never

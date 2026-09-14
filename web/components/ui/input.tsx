@@ -27,6 +27,13 @@ export function Input({ className, ...rest }: ComponentProps<"input">) {
  * as the floor and `max-h` as the ceiling. Without it a two-row box clips its
  * third line mid-glyph on a narrow screen, and `resize-none` leaves no handle
  * to recover it. Browsers without `field-sizing` fall back to plain `rows`.
+ *
+ * The caret here is the browser's own, coloured to match the drawn one, and
+ * that is a decision rather than an omission (memory/decisions/033). A drawn
+ * caret on a wrapping field has to guess which of two lines a caret at a soft
+ * wrap belongs to, and the browser does not expose its answer, so it would sit
+ * a whole line away from the real one about half the time someone pressed End.
+ * A caret that is sometimes a line wrong is worse than one that never glides.
  */
 export function TextArea({
   className,
@@ -37,7 +44,7 @@ export function TextArea({
     <textarea
       className={cn(
         controlBase,
-        "p-3.5 text-sm leading-relaxed resize-none",
+        "p-3.5 text-sm leading-relaxed resize-none caret-primary",
         autoGrow && "field-sizing-content max-h-64 overflow-y-auto",
         className,
       )}

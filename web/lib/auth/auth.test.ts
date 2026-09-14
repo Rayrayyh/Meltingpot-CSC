@@ -1,24 +1,28 @@
 import { describe, expect, it } from "vitest";
 import { AuthError } from "@/lib/auth/types";
-import { clerkClientAuth, clerkServerAuth } from "@/lib/auth/clerk";
+import { clerkClientAuth } from "@/lib/auth/clerk-client";
+import { clerkServerAuth } from "@/lib/auth/clerk-server";
 
 /**
- * The seam's contract, independent of any provider: the Clerk slot has to be
- * present, complete, and honest about being unimplemented. If someone adds a
- * method to the interface and forgets the Clerk side, this fails.
+ * The seam's contract, independent of any provider: the Clerk half has to be
+ * present and complete. If someone adds a method to the interface and forgets
+ * the Clerk side, the type check fails before this does; this guards the
+ * runtime shape, and the one thing the browser half promises without Clerk
+ * loaded, which is to say so rather than hang.
  */
 describe("auth provider seam", () => {
-  it("names both halves of the Clerk slot", () => {
+  it("names both halves of the Clerk provider", () => {
     expect(clerkServerAuth.name).toBe("clerk");
     expect(clerkClientAuth.name).toBe("clerk");
   });
 
-  const serverMethods = ["getUser", "getVerifiedSecondFactorId"] as const;
+  const serverMethods = ["getUser", "getVerifiedSecondFactorId", "getAssuranceLevel"] as const;
   const clientMethods = [
     "getUserId",
     "register",
     "signIn",
     "signOut",
+    "changePassword",
     "verifySecondFactor",
     "beginSecondFactorSetup",
     "completeSecondFactorSetup",
@@ -26,18 +30,18 @@ describe("auth provider seam", () => {
     "removeSecondFactor",
   ] as const;
 
-  it.each(serverMethods)("clerk server %s reports not_configured", async (method) => {
-    await expect(clerkServerAuth[method]()).rejects.toMatchObject({
+  it("implements every method on both halves", () => {
+    for (const method of serverMethods) expect(typeof clerkServerAuth[method]).toBe("function");
+    for (const method of clientMethods) expect(typeof clerkClientAuth[method]).toBe("function");
+  });
+
+  it("browser half refuses outside a browser, with the seam's own error", async () => {
+    // Vitest runs in Node: no window, so no Clerk. The answer is an AuthError
+    // naming the configuration, not a hang waiting for a script that never loads.
+    await expect(clerkClientAuth.signOut()).rejects.toMatchObject({
       name: "AuthError",
       code: "not_configured",
     });
-  });
-
-  it.each(clientMethods)("clerk client %s reports not_configured", async (method) => {
-    // Every method rejects the same way, so a half-finished swap fails loudly
-    // rather than silently signing nobody in.
-    await expect(
-      (clerkClientAuth[method] as () => Promise<unknown>)(),
-    ).rejects.toBeInstanceOf(AuthError);
+    await expect(clerkClientAuth.signOut()).rejects.toBeInstanceOf(AuthError);
   });
 });

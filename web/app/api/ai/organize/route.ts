@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { blocksToBodyText } from "@/lib/organizer/edit";
 import { deterministicOrganizer, FORCE_FAILURE_TOKEN } from "@/lib/organizer/deterministic";
+import { getAuthUser } from "@/lib/auth/server";
 import { supabaseServer } from "@/lib/supabase/server";
 import {
   attachmentAnalysisSchema,
@@ -54,7 +55,7 @@ export const maxDuration = 26;
 
 export async function POST(request: Request) {
   const supabase = await supabaseServer();
-  const { data: { user } } = await supabase.auth.getUser();
+  const user = await getAuthUser();
   if (!user) return NextResponse.json({ error: "not_authenticated" }, { status: 401 });
 
   const body = await request.json().catch(() => null) as Record<string, unknown> | null;
@@ -135,11 +136,11 @@ export async function POST(request: Request) {
         { analysis: AttachmentAnalysis } | { warning: string } | null
       > => {
         const visionRate = await supabase.rpc("consume_ai_generation", { p_kind: "vision" });
-        if (visionRate.error) return null;
+        if (visionRate.error) return { warning: "one image could not be read just now" };
         const { data: file } = await supabase.storage
           .from("attachments")
           .download(attachment.storage_path as string);
-        if (!file) return null;
+        if (!file) return { warning: "one image could not be opened" };
         if (file.size > MAX_IMAGE_BYTES) {
           // Saying so beats a caption that silently never appears.
           return { warning: "one image was too large to read" };
@@ -262,5 +263,8 @@ function safeMixMessage(error: unknown) {
   if (!(error instanceof MixError)) return "The AI response could not be processed.";
   if (error.status === 401 || error.status === 403) return "The mixing key was rejected.";
   if (error.status === 429) return "Mixing is temporarily rate limited.";
-  return error.message.slice(0, 240);
+  if (error.status === 504) return "Organizing took too long. Try again in a moment.";
+  // The provider's wording goes to the server log, not to the writer.
+  console.error("[organize]", error.message);
+  return "The organizer could not reach the model just now.";
 }

@@ -132,7 +132,7 @@ export default async function MyContributionsPage({
     },
     {
       label: "Corrections accepted",
-      detail: "Merged into shared notes",
+      detail: "Now part of shared notes",
       value: String(year.totals.accepted),
     },
     {

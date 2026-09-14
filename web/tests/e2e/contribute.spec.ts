@@ -3,9 +3,23 @@ import { expect, test, type Page } from "@playwright/test";
 async function loginAs(page: Page, email: string) {
   await page.goto("/login");
   await page.getByLabel("Email").fill(email);
-  await page.getByLabel("Password").fill("MeltingPot-dev1");
+  await page.getByLabel("Password", { exact: true }).fill("MeltingPot-dev1");
   await page.getByRole("button", { name: "Sign in", exact: true }).click();
   await expect(page).toHaveURL(/\/home/, { timeout: 15_000 });
+}
+
+/**
+ * The first counted act of a day opens the record card over the completion
+ * screen (decision 032). It is dismissed the way a person would, so the link
+ * under it is reachable; on a day that already counted there is nothing to do.
+ */
+async function dismissRecordCard(page: Page) {
+  const record = page.getByRole("dialog", { name: "Your record" });
+  await record.waitFor({ state: "visible", timeout: 2_000 }).catch(() => null);
+  if (await record.isVisible().catch(() => false)) {
+    await page.keyboard.press("Escape");
+    await expect(record).toHaveCount(0);
+  }
 }
 
 async function openComposer(page: Page) {
@@ -62,6 +76,7 @@ test.describe("contribution loop", () => {
     });
     await expect(page.getByText("credited to you")).toBeVisible();
 
+    await dismissRecordCard(page);
     await page.getByRole("link", { name: "View in class notes" }).click();
     await expect(
       page.getByRole("heading", { name: "Enzymes and activation energy" }),
@@ -94,6 +109,10 @@ test.describe("contribution loop", () => {
     const draft = page.getByText(new RegExp(marker));
     await expect(draft).toBeVisible();
     await draft.click();
+    // The composer route compiles on first visit; the value is asserted once
+    // the composer itself has rendered.
+    await expect(page).toHaveURL(/\/contribute\/[0-9a-f-]+$/, { timeout: 15_000 });
+    await expect(page.getByRole("heading", { name: "Write anything" })).toBeVisible({ timeout: 15_000 });
     await expect(page.getByLabel("Your contribution")).toHaveValue(
       new RegExp(marker),
       { timeout: 10_000 },
@@ -177,6 +196,7 @@ test.describe("contribution loop", () => {
     await expect(page.getByRole("heading", { name: "Shared with the class" })).toBeVisible({
       timeout: 15_000,
     });
+    await dismissRecordCard(page);
     await page.getByRole("link", { name: "View in class notes" }).click();
     await expect(page.getByText("Attachments")).toBeVisible();
     await expect(page.getByText(/khanacademy\.org/)).toBeVisible();
@@ -215,6 +235,7 @@ test.describe("contribution loop", () => {
     await expect(page.getByRole("heading", { name: "Shared with the class" })).toBeVisible({
       timeout: 15_000,
     });
+    await dismissRecordCard(page);
     await page.getByRole("link", { name: "View in class notes" }).click();
     await expect(page.getByText("Attachments")).toBeVisible();
     const attachmentLink = page.getByRole("link", { name: /ملاحظات الخلية\.png/ });

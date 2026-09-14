@@ -3,7 +3,7 @@ import { expect, test, type Page } from "@playwright/test";
 async function loginAs(page: Page, email: string) {
   await page.goto("/login");
   await page.getByLabel("Email").fill(email);
-  await page.getByLabel("Password").fill("MeltingPot-dev1");
+  await page.getByLabel("Password", { exact: true }).fill("MeltingPot-dev1");
   await page.getByRole("button", { name: "Sign in", exact: true }).click();
   await expect(page).toHaveURL(/\/home/, { timeout: 15_000 });
 }
@@ -18,10 +18,12 @@ test.describe("account and landing for signed-in people", () => {
     await expect(account).toBeVisible();
     await expect(page.getByText("maya@meltingpot.dev").first()).toBeVisible();
 
-    // The top bar keeps the mark and search only.
+    // The top bar keeps the mark only; search lives in the nav now.
     const topBar = page.locator("header").first();
     await expect(topBar.getByRole("button", { name: "Account menu" })).toHaveCount(0);
-    await expect(topBar.getByLabel("Search")).toBeVisible();
+    await expect(
+      page.getByRole("navigation", { name: "Main" }).getByRole("link", { name: /Search/ }).first(),
+    ).toBeVisible();
 
     // Theme switching moved out of the bar and into settings.
     await expect(page.getByRole("button", { name: /Switch to (light|dark) theme/ })).toHaveCount(0);
@@ -29,7 +31,7 @@ test.describe("account and landing for signed-in people", () => {
     await account.click();
     await expect(page.getByRole("button", { name: "My contributions" })).toBeVisible();
     await expect(page.getByRole("button", { name: "About MeltingPot" })).toBeVisible();
-    await expect(page.getByRole("button", { name: "Log out" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Sign out" })).toBeVisible();
 
     await page.getByRole("button", { name: "Settings" }).click();
     await expect(page).toHaveURL(/\/me\/settings/);
@@ -40,23 +42,23 @@ test.describe("account and landing for signed-in people", () => {
     await page.goto("/me/settings");
 
     const root = page.locator("html");
-    // Dark is what someone who has never chosen gets, and it is stamped on the
-    // document rather than left to the device. The browser here runs in the
-    // default light scheme, so the attribute is what proves it: a page
-    // following the device would carry no data-theme at all.
-    await expect(page.getByRole("radio", { name: "Dark" })).toHaveAttribute(
+    // Light is what someone who has never chosen gets (decision 020), and it
+    // is stamped on the document rather than left to the device: a page
+    // following the device would carry no data-theme at all, so the attribute
+    // is what proves the default was applied.
+    await expect(page.getByRole("radio", { name: "Light" })).toHaveAttribute(
       "aria-checked",
       "true",
     );
-    await expect(root).toHaveAttribute("data-theme", "dark");
-
-    await page.getByRole("radio", { name: "Light" }).click();
     await expect(root).toHaveAttribute("data-theme", "light");
+
+    await page.getByRole("radio", { name: "Dark" }).click();
+    await expect(root).toHaveAttribute("data-theme", "dark");
 
     // The choice survives a reload, applied before paint.
     await page.reload();
-    await expect(root).toHaveAttribute("data-theme", "light");
-    await expect(page.getByRole("radio", { name: "Light" })).toHaveAttribute(
+    await expect(root).toHaveAttribute("data-theme", "dark");
+    await expect(page.getByRole("radio", { name: "Dark" })).toHaveAttribute(
       "aria-checked",
       "true",
     );
@@ -71,16 +73,16 @@ test.describe("account and landing for signed-in people", () => {
   test("one tap on the landing header flips the theme", async ({ page }) => {
     await page.goto("/");
     const root = page.locator("html");
-    await expect(root).toHaveAttribute("data-theme", "dark");
+    await expect(root).toHaveAttribute("data-theme", "light");
 
     // The icon says where the tap leads, not where you already are.
-    await page.getByRole("button", { name: "Switch to light theme" }).click();
-    await expect(root).toHaveAttribute("data-theme", "light");
-
-    await page.reload();
-    await expect(root).toHaveAttribute("data-theme", "light");
     await page.getByRole("button", { name: "Switch to dark theme" }).click();
     await expect(root).toHaveAttribute("data-theme", "dark");
+
+    await page.reload();
+    await expect(root).toHaveAttribute("data-theme", "dark");
+    await page.getByRole("button", { name: "Switch to light theme" }).click();
+    await expect(root).toHaveAttribute("data-theme", "light");
   });
 
   test("two-step sign in is offered to the person who runs the Pot", async ({ page }) => {
@@ -106,7 +108,7 @@ test.describe("account and landing for signed-in people", () => {
 
     await page.goto("/");
     await expect(
-      page.getByRole("heading", { name: "Everyone takes notes. Meltingpot brings them together." }),
+      page.getByRole("heading", { name: "Everyone takes notes. MeltingPot brings them together." }),
     ).toBeVisible();
 
     // No sign-in or sign-up prompts for someone already signed in.
@@ -134,9 +136,9 @@ test.describe("account and landing for signed-in people", () => {
 
   test("the footer credits the challenge the project was entered in", async ({ page }) => {
     await page.goto("/");
-    const credit = page.getByRole("link", { name: /Prometheus August AI Challenge/ });
+    const credit = page.getByRole("link", { name: /CSC Back-to-School Hackathon/ });
     await expect(credit).toBeVisible();
     await expect(credit).toHaveAttribute("href", /devpost\.com/);
-    await expect(page.getByText("Built for the Prometheus August AI Challenge")).toBeVisible();
+    await expect(page.getByText("Built for the CSC Back-to-School Hackathon")).toBeVisible();
   });
 });

@@ -5,7 +5,7 @@ async function loginAs(browser: Browser, email: string): Promise<Page> {
   const page = await context.newPage();
   await page.goto("/login");
   await page.getByLabel("Email").fill(email);
-  await page.getByLabel("Password").fill("MeltingPot-dev1");
+  await page.getByLabel("Password", { exact: true }).fill("MeltingPot-dev1");
   await page.getByRole("button", { name: "Sign in", exact: true }).click();
   await expect(page).toHaveURL(/\/home/, { timeout: 15_000 });
   return page;
@@ -24,9 +24,10 @@ test.describe("correction loop", () => {
     const priya = await loginAs(browser, "priya@meltingpot.dev");
     await openNote(priya, "The scientific method, laws, and theories");
     await priya.getByRole("link", { name: "Suggest correction" }).click();
+    // A first visit compiles the route; the same grace the URL waits get.
     await expect(
       priya.getByRole("heading", { name: "Suggest a correction" }),
-    ).toBeVisible();
+    ).toBeVisible({ timeout: 15_000 });
 
     await priya
       .getByRole("button", { name: /A law describes what happens under given conditions\./ })
@@ -42,11 +43,11 @@ test.describe("correction loop", () => {
     await priya
       .getByLabel("Supporting source (optional)")
       .fill("Lecture 1 slides, slide 9");
-    await priya.getByText("A maintainer approves changes").isVisible();
+    await expect(priya.getByText("A maintainer approves changes")).toBeVisible();
     await priya.getByRole("button", { name: "Continue", exact: true }).click();
 
     // Before and after with the difference made explicit.
-    await expect(priya.getByRole("heading", { name: "Show the change" })).toBeVisible();
+    await expect(priya.getByRole("heading", { name: "Show the change" })).toBeVisible({ timeout: 15_000 });
     await expect(priya.getByText("Before", { exact: true })).toBeVisible();
     await expect(priya.getByText("After", { exact: true })).toBeVisible();
     await expect(priya.getByText(/This correction adds \d+ word/).first()).toBeVisible();
@@ -57,8 +58,10 @@ test.describe("correction loop", () => {
 
     // Maya reviews from her dashboard queue and accepts.
     const maya = await loginAs(browser, "maya@meltingpot.dev");
+    // The notification card and the queue both link the proposal; the queue
+    // row is the one whose href reviews it.
     await maya
-      .getByRole("link", { name: /The scientific method, laws, and theories.*Priya Patel/s })
+      .locator('a[href*="/review/"]', { hasText: "The scientific method, laws, and theories" })
       .first()
       .click();
     await expect(maya).toHaveURL(/\/review\//, { timeout: 15_000 });
@@ -103,7 +106,7 @@ test.describe("correction loop", () => {
     // Maya asks for a revision with required feedback.
     const maya = await loginAs(browser, "maya@meltingpot.dev");
     await maya
-      .getByRole("link", { name: /Organelles and what they do.*Omar Haddad/s })
+      .locator('a[href*="/review/"]', { hasText: "Organelles and what they do" })
       .first()
       .click();
     await expect(maya).toHaveURL(/\/review\//, { timeout: 15_000 });
@@ -136,9 +139,10 @@ test.describe("correction loop", () => {
     // Maya declines with a reason; everything stays visible.
     await maya.goto("/home");
     await maya
-      .getByRole("link", { name: /Organelles and what they do.*Omar Haddad/s })
+      .locator('a[href*="/review/"]', { hasText: "Organelles and what they do" })
       .first()
       .click();
+    await expect(maya).toHaveURL(/\/review\//, { timeout: 15_000 });
     await maya.getByRole("button", { name: "Decline", exact: true }).click();
     await maya
       .getByLabel("Why are you declining?")

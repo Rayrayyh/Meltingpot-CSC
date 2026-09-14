@@ -69,8 +69,11 @@ export default async function globalSetup() {
     const potId = await lookupSeedPot(origin, anonKey);
     if (!potId) {
       throw new Error(
-        `e2e reseed refused (${reseedResponse.status}) and the seed is absent. ` +
-          "Run select public.dev_seed(); as service_role, then run the suite.",
+        `e2e reseed refused (${reseedResponse.status}) and 5R22AX does not ` +
+          "answer. Either the seed is absent, or an earlier run regenerated " +
+          "the class code and the seed is there under a code nobody knows. " +
+          "Either way: run select public.dev_seed(); as service_role, then " +
+          "run the suite.",
       );
     }
     const dirty = await seedLooksUsed(origin, anonKey, access_token, potId);
@@ -93,7 +96,7 @@ async function lookupSeedPot(
   const response = await fetch(`${origin}/rest/v1/rpc/lookup_pot_by_code`, {
     method: "POST",
     headers: { apikey: anonKey, "Content-Type": "application/json" },
-    body: JSON.stringify({ p_code: "BIO101" }),
+    body: JSON.stringify({ p_code: "5R22AX" }),
   });
   if (!response.ok) return null;
   const body = (await response.text()).trim();
@@ -105,6 +108,9 @@ async function lookupSeedPot(
     return "present";
   }
 }
+
+/** Shared notes dev_seed writes into Biology 101 (0006 onwards). */
+const SEED_SHARED_NOTES = 6;
 
 /**
  * Names what an earlier run left behind, or null when the seed is untouched.
@@ -139,6 +145,26 @@ async function seedLooksUsed(
     const rows = (await decided.json()) as unknown[];
     // The seed itself ships exactly one accepted proposal.
     if (rows.length > 1) return `${rows.length} proposal(s) already decided`;
+  }
+  // Shares accumulate across runs and recordings, and a Pot with more notes
+  // than the seed wrote changes what the feed and study specs see first.
+  const shared = await fetch(
+    `${origin}/rest/v1/shared_notes?select=id&pot_id=eq.${potId}`,
+    { headers },
+  );
+  if (shared.ok) {
+    const rows = (await shared.json()) as unknown[];
+    if (rows.length !== SEED_SHARED_NOTES) {
+      return `${rows.length} shared note(s) where the seed writes ${SEED_SHARED_NOTES}`;
+    }
+  }
+  const pending = await fetch(
+    `${origin}/rest/v1/revision_proposals?select=id&pot_id=eq.${potId}&status=eq.pending`,
+    { headers },
+  );
+  if (pending.ok) {
+    const rows = (await pending.json()) as unknown[];
+    if (rows.length !== 1) return `${rows.length} pending proposal(s) where the seed writes 1`;
   }
   return null;
 }

@@ -3,7 +3,7 @@ import { expect, test, type Page } from "@playwright/test";
 async function loginAs(page: Page, email: string) {
   await page.goto("/login");
   await page.getByLabel("Email").fill(email);
-  await page.getByLabel("Password").fill("MeltingPot-dev1");
+  await page.getByLabel("Password", { exact: true }).fill("MeltingPot-dev1");
   await page.getByRole("button", { name: "Sign in", exact: true }).click();
   await expect(page).toHaveURL(/\/home/, { timeout: 15_000 });
 }
@@ -17,7 +17,7 @@ test("version history shows the full attribution trail and readable versions", a
   await page.getByRole("link", { name: "Mitosis vs meiosis" }).first().click();
   await page.getByRole("link", { name: "History" }).click();
 
-  await expect(page.getByRole("heading", { name: "Version history" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Version history" })).toBeVisible({ timeout: 15_000 });
 
   // The corrected version is current, with dual credit and the reviewer.
   await expect(page.getByRole("button", { name: /Version 2/ })).toBeVisible();

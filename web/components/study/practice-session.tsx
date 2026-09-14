@@ -51,6 +51,27 @@ function ProgressBar({ value, total }: { value: number; total: number }) {
  * marking afterwards shows the right answer next to what was chosen and says
  * which note it came from, so a wrong answer sends you back to the source.
  */
+/**
+ * What to say when a hand-in fails. The database names its refusals; the
+ * rest is the network, and only that one is fixed by trying again.
+ */
+function handInFailure(caught: unknown): string {
+  const message = caught instanceof Error ? caught.message : "";
+  if (message.includes("set_replaced")) {
+    return "This test was rebuilt while you were taking it, so these answers cannot be marked against it. Open the new version to try it.";
+  }
+  if (message.includes("set_not_found")) {
+    return "A maintainer took this test out of the Pot, so it cannot be handed in.";
+  }
+  if (message.includes("rate_limited")) {
+    return "You have handed in a lot of tests this hour. Wait a little and try again; your answers are still here.";
+  }
+  if (message.includes("not_pot_member")) {
+    return "You are no longer in this Pot, so this test cannot be handed in.";
+  }
+  return "This test could not be handed in. Check your connection and try again; your answers are still here.";
+}
+
 export function PracticeSession({
   title,
   questions,
@@ -92,8 +113,8 @@ export function PracticeSession({
       const marked = await mark(session.order, session.answers);
       setMarking(marked);
       dispatch({ type: "submit" });
-    } catch {
-      setHandInError("This test could not be handed in. Check your connection and try again; your answers are still here.");
+    } catch (caught) {
+      setHandInError(handInFailure(caught));
     } finally {
       setHandingIn(false);
     }

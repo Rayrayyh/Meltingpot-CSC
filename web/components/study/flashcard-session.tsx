@@ -68,7 +68,7 @@ function CardFace({
       // attribute is a plain statement about which side is turned away.
       aria-hidden={hidden || undefined}
       className={cn(
-        "absolute inset-0 flex flex-col items-center justify-center gap-3 overflow-y-auto rounded-(--radius-card) border border-edge bg-surface px-8 py-10 text-center [backface-visibility:hidden]",
+        "mp-flashcard-face absolute inset-0 flex flex-col items-center justify-center gap-3 overflow-y-auto rounded-(--radius-card) border border-edge px-8 py-10 text-center [backface-visibility:hidden]",
         back && "[transform:rotateX(180deg)]",
       )}
     >
@@ -107,6 +107,9 @@ export function FlashcardSession({
 
   const tags = deckTags(cards);
   const progress = flashcardProgress(session);
+  // What "study the rest" will actually deal: every card not yet marked
+  // known, which mid round includes the ones skipped past or not reached.
+  const notYetKnown = session.order.filter((card) => session.verdicts[card] !== "known").length;
   const recordedRound = useRef(false);
   useEffect(() => {
     if (!session.finished) {
@@ -306,7 +309,7 @@ export function FlashcardSession({
                 size="sm"
                 onClick={() => dispatch({ type: "studyLearning" })}
               >
-                Study the {progress.learning} still learning
+                Study the {notYetKnown} not yet known
               </Button>
             ) : null}
           </div>

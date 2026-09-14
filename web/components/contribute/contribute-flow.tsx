@@ -62,6 +62,18 @@ export type InitialContribution = {
   organized?: StoredOrganized | null;
 };
 
+/**
+ * A note started from classwork (decision 038). The item's own words become
+ * the raw text, its links become attachments through the ordinary insert,
+ * and the contribution remembers where it came from. Nothing else about the
+ * flow changes: organize, review and share run exactly as for any note.
+ */
+export type ContributePrefill = {
+  itemId: string;
+  rawText: string;
+  links: Array<{ title: string; url: string }>;
+};
+
 type EditableOrganized = {
   title: string;
   summary: string;
@@ -88,12 +100,14 @@ export function ContributeFlow({
   sections,
   viewerName,
   initial,
+  prefill,
 }: {
   potId: string;
   potTitle: string;
   sections: SectionOption[];
   viewerName?: string;
   initial?: InitialContribution;
+  prefill?: ContributePrefill;
 }) {
   const router = useRouter();
   // A draft resumed after it reached review rehydrates its organized result
@@ -111,7 +125,19 @@ export function ContributeFlow({
     : null;
   const [step, setStep] = useState<Step>(initialOrganized ? "review" : "write");
   const [contributionId, setContributionId] = useState<string | null>(initial?.id ?? null);
-  const [rawText, setRawText] = useState(initial?.rawText ?? "");
+  const [rawText, setRawText] = useState(initial?.rawText ?? prefill?.rawText ?? "");
+  // The prefill's links are attached once, after the row exists. Until then
+  // they are shown as pending chips, so the composer looks the same before and
+  // after the first keystroke, and one can be dropped before it is written.
+  const prefillAttached = useRef(false);
+  const [pendingLinks, setPendingLinks] = useState(prefill?.links ?? []);
+  // Nothing is written until the person does something: a prefilled composer
+  // closed unread must not leave a draft and its links behind. A resumed
+  // draft is already theirs.
+  const dirty = useRef(Boolean(initial));
+  // One organize at a time; a second press while the first is in flight
+  // would race it for the same row and the same step.
+  const organizing = useRef(false);
   const [saved, setSaved] = useState<"idle" | "saving" | "saved" | "error">(
     initial ? "saved" : "idle",
   );
@@ -147,6 +173,15 @@ export function ContributeFlow({
   const cancelOrganize = useRef(false);
   const organizeAbort = useRef<AbortController | null>(null);
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // The raw text as last typed and whether a write for it is still waiting
+  // on the 700 ms debounce, so leaving the page can issue that write instead
+  // of dropping it. Refs, because the flush runs from an unmount cleanup and
+  // from Cancel, neither of which should re-run on every keystroke.
+  const latestRaw = useRef(rawText);
+  const rawPending = useRef(false);
+  // Cleared on unmount so a create that lands after leaving cannot rewrite
+  // the address bar of whatever page the reader is on by then.
+  const mounted = useRef(true);
   // The organizer's own last output, so "Organize again" can tell an
   // untouched result from one the contributor has since rewritten. A resumed
   // draft starts null: its stored version may already carry edits made in an
@@ -167,14 +202,24 @@ export function ContributeFlow({
       if (!userId) return null;
       const { data } = await supabase
         .from("contributions")
-        .insert({ pot_id: potId, author_id: userId, raw_text: rawText })
+        .insert({
+          pot_id: potId,
+          author_id: userId,
+          // The column's own limit; a prefill can arrive longer than it.
+          raw_text: rawText.slice(0, 20000),
+          // Provenance only; the policy checks the item is one the author can
+          // see in this Pot or in their own private list (0049).
+          source_lms_item_id: prefill?.itemId ?? null,
+        })
         .select("id")
         .single();
       if (data) {
         setContributionId(data.id);
         // Without this the composer URL still has no id, so a refresh opens
         // a blank flow and the next keystroke starts a second draft.
-        window.history.replaceState(null, "", `/p/${potId}/contribute/${data.id}`);
+        if (mounted.current) {
+          window.history.replaceState(null, "", `/p/${potId}/contribute/${data.id}`);
+        }
       }
       return data?.id ?? null;
     })();
@@ -187,14 +232,17 @@ export function ContributeFlow({
       setErrorNote("Your note couldn't be saved. Check your connection and try again.");
     }
     return id;
-  }, [contributionId, potId, rawText, supabase]);
+  }, [contributionId, potId, rawText, supabase, prefill?.itemId]);
 
   // Autosave the raw text from the first meaningful keystroke. The "saving"
   // indicator flips in the change handler; this effect only schedules writes.
   useEffect(() => {
     if (rawText.trim().length === 0) return;
+    if (!dirty.current) return;
     if (saveTimer.current) clearTimeout(saveTimer.current);
+    rawPending.current = true;
     saveTimer.current = setTimeout(async () => {
+      rawPending.current = false;
       const id = await ensureContribution();
       if (!id) return;
       // .select proves the write landed: an RLS-blocked or signed-out
@@ -215,8 +263,33 @@ export function ContributeFlow({
     };
   }, [rawText, ensureContribution, supabase]);
 
+  // Issues the write the debounce is still holding, with the newest text.
+  // Called on Cancel and when the composer unmounts, so the last few hundred
+  // milliseconds of typing survive the sidebar as well as the Continue button.
+  const flushRaw = useCallback(async () => {
+    if (!rawPending.current) return;
+    rawPending.current = false;
+    if (saveTimer.current) clearTimeout(saveTimer.current);
+    const text = latestRaw.current;
+    if (text.trim().length === 0) return;
+    const id = await ensureContribution();
+    if (!id) return;
+    await supabase.from("contributions").update({ raw_text: text }).eq("id", id);
+  }, [ensureContribution, supabase]);
+  const flushRawRef = useRef(flushRaw);
+  flushRawRef.current = flushRaw;
+  useEffect(() => {
+    mounted.current = true;
+    return () => {
+      mounted.current = false;
+      void flushRawRef.current();
+    };
+  }, []);
+
   function handleRawTextChange(next: string) {
+    dirty.current = true;
     const trimmed = next.slice(0, 20000);
+    latestRaw.current = trimmed;
     setRawText(trimmed);
     // Autosave only fires for non-empty text; clearing to whitespace must
     // not leave the indicator stuck on "Saving" for a write that never runs.
@@ -294,30 +367,64 @@ export function ContributeFlow({
       });
   }, [initial?.id, supabase]);
 
-  async function attachLink(url: string) {
-    const id = await ensureContribution();
-    if (!id || !url.trim()) return;
-    let name = url.trim();
-    try {
-      name = new URL(url).hostname + new URL(url).pathname;
-    } catch {
-      // Keep the raw text as the display name.
+  // A note started from classwork carries the item's links in as ordinary
+  // attachments, once, as soon as something the person did has created the
+  // row: a keystroke, Continue, or an attachment. The guard also covers
+  // React running effects twice in development.
+  useEffect(() => {
+    if (pendingLinks.length === 0 || !contributionId || prefillAttached.current) return;
+    prefillAttached.current = true;
+    (async () => {
+      for (const link of pendingLinks) {
+        // The chip comes off the pending list as the row goes in, so the
+        // list never shows the same link twice.
+        setPendingLinks((prev) => prev.filter((p) => p.url !== link.url));
+        await attachLink(link.url, link.title);
+      }
+    })();
+    // attachLink is recreated each render; the ref makes this run once.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [contributionId, pendingLinks]);
+
+  async function attachLink(url: string, label?: string) {
+    // Check the link before anything is written, so an empty or malformed
+    // one never creates a draft row on its own.
+    const trimmedUrl = url.trim();
+    if (!trimmedUrl) return;
+    let name = label?.trim() || trimmedUrl;
+    if (!label?.trim()) {
+      try {
+        const parsed = new URL(trimmedUrl);
+        name = parsed.hostname + parsed.pathname;
+      } catch {
+        // Keep the raw text as the display name.
+      }
     }
+    const id = await ensureContribution();
+    if (!id) return;
     const userId = await getClientAuth().getUserId();
     if (!userId) return;
-    const { data } = await supabase
+    dirty.current = true;
+    const { data, error } = await supabase
       .from("attachments")
       .insert({
         pot_id: potId,
         contribution_id: id,
         name: name.slice(0, 300),
         kind: "link",
-        url: url.trim(),
+        url: trimmedUrl,
         created_by: userId,
       })
       .select("id, name, kind")
       .single();
     if (data) setAttachments((prev) => [...prev, data]);
+    else if (error) {
+      setErrorNote(
+        /url|check|invalid/i.test(error.message)
+          ? "That link couldn't be attached. It needs to start with http:// or https://."
+          : "That link couldn't be attached. Check your connection and try again.",
+      );
+    }
   }
 
   async function attachFile(file: File) {
@@ -326,6 +433,7 @@ export function ContributeFlow({
     const userId = await getClientAuth().getUserId();
     if (!userId) return;
     setErrorNote(null);
+    dirty.current = true;
     // Storage keys must stay ASCII-safe (unicode file names are rejected by
     // the storage API); the original name lives on the attachments row and
     // comes back as the download filename.
@@ -367,7 +475,17 @@ export function ContributeFlow({
 
   async function removeAttachment(id: string) {
     const target = attachments.find((a) => a.id === id);
-    await supabase.from("attachments").delete().eq("id", id);
+    // .select proves the delete landed: a refused one returns zero rows
+    // without an error, and the chip must not vanish for a row still there.
+    const { data, error } = await supabase
+      .from("attachments")
+      .delete()
+      .eq("id", id)
+      .select("id");
+    if (error || !data || data.length === 0) {
+      setErrorNote("That attachment couldn't be removed. Try again.");
+      return;
+    }
     // Detaching an uploaded file also removes the object, so nothing
     // orphans in storage. Best effort; the row is the source of truth.
     if (target?.storage_path) {
@@ -377,6 +495,10 @@ export function ContributeFlow({
   }
 
   async function runOrganize(chosen: string | null) {
+    if (organizing.current) return;
+    organizing.current = true;
+    dirty.current = true;
+    try {
     const id = await ensureContribution();
     if (!id) return;
     await flushOrganized();
@@ -486,6 +608,9 @@ export function ContributeFlow({
       setErrorNote(error instanceof Error ? error.message : "The AI organizer couldn't finish this note.");
       setStep("failed");
     }
+    } finally {
+      organizing.current = false;
+    }
   }
 
   function currentBlocks(): NoteBlock[] {
@@ -536,7 +661,7 @@ export function ContributeFlow({
         setStep("shared");
         setBusy(false);
         releaseDraftUrl();
-        router.refresh();
+        if (!initial) router.refresh();
         return;
       }
       setErrorNote("This note is already in the class feed.");
@@ -560,13 +685,16 @@ export function ContributeFlow({
     setSharedNoteId(data);
     // Asked after the share has landed and before the screen paints, so the
     // sentence arrives with the screen rather than reflowing it.
-    const check = await checkRecord().catch(() => null);
+    const check = await checkRecord({ contributionId }).catch(() => null);
     setRecord(check);
     setCelebrating(Boolean(check?.countedNow));
     setStep("shared");
     setBusy(false);
     releaseDraftUrl();
-    router.refresh();
+    // A resumed draft is still at its own URL, and that URL now sends anyone
+    // who loads it to the note. Refreshing here would carry the student off
+    // this screen; the feed picks the note up on the next navigation.
+    if (!initial) router.refresh();
   }
 
   const sectionTitle = (id: string | null | undefined) =>
@@ -660,10 +788,24 @@ export function ContributeFlow({
                 </Button>
               </form>
             ) : null}
-            {attachments.length > 0 ? (
+            {attachments.length > 0 || pendingLinks.length > 0 ? (
               <AttachmentChips
-                attachments={attachments}
-                onRemove={(id) => void removeAttachment(id)}
+                attachments={[
+                  ...attachments,
+                  ...pendingLinks.map((link, index) => ({
+                    id: `pending:${index}`,
+                    name: link.title || link.url,
+                    kind: "link",
+                  })),
+                ]}
+                onRemove={(id) => {
+                  if (id.startsWith("pending:")) {
+                    const index = Number(id.slice("pending:".length));
+                    setPendingLinks((prev) => prev.filter((_, i) => i !== index));
+                    return;
+                  }
+                  void removeAttachment(id);
+                }}
               />
             ) : null}
             {errorNote ? <p className="text-[13px] text-danger">{errorNote}</p> : null}
@@ -673,7 +815,13 @@ export function ContributeFlow({
           icon={<Eye />}
           message="Original text will always be preserved."
         >
-          <Button variant="quiet" href={`/p/${potId}`}>
+          <Button
+            variant="quiet"
+            onClick={async () => {
+              await flushRaw();
+              router.push(`/p/${potId}`);
+            }}
+          >
             Cancel
           </Button>
           <Button
@@ -1039,6 +1187,7 @@ export function ContributeFlow({
           <Button
             variant="quiet"
             onClick={async () => {
+              await flushRaw();
               await flushOrganized();
               router.push(`/p/${potId}`);
             }}

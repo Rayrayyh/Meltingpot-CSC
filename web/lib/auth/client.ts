@@ -1,6 +1,6 @@
 "use client";
 
-import { clerkClientAuth } from "@/lib/auth/clerk";
+import { clerkClientAuth } from "@/lib/auth/clerk-client";
 import { supabaseClientAuth } from "@/lib/auth/supabase-client";
 import type { ClientAuthProvider } from "@/lib/auth/types";
 

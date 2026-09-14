@@ -16,10 +16,13 @@ export function PotTabs({
   potId,
   role,
   openReviewCount,
+  classworkLinkCount = 0,
 }: {
   potId: string;
   role: "member" | "maintainer" | "owner";
   openReviewCount: number;
+  /** Above zero, the Pot has a linked course and the Classwork tab exists. */
+  classworkLinkCount?: number;
 }) {
   const pathname = usePathname();
   const base = `/p/${potId}`;
@@ -27,6 +30,11 @@ export function PotTabs({
 
   const tabs = [
     { href: base, label: "Feed", match: (p: string) => p === base || p.startsWith(`${base}/n/`) || p.startsWith(`${base}/s/`) },
+    // Quiet until a course is linked, the way Admin is quiet for members: a
+    // Pot with no link looks exactly as it did before classwork existed.
+    ...(classworkLinkCount > 0
+      ? [{ href: `${base}/classwork`, label: "Classwork", match: (p: string) => p.startsWith(`${base}/classwork`) }]
+      : []),
     { href: `${base}/study/summary`, label: "Study", match: (p: string) => p.startsWith(`${base}/study`) },
     { href: `${base}/members`, label: "Members", match: (p: string) => p.startsWith(`${base}/members`) },
     ...(isMaintainer
@@ -37,7 +45,7 @@ export function PotTabs({
 
   return (
     <nav aria-label="This Pot" className="border-b border-edge">
-      <div className="mx-auto flex w-full max-w-5xl gap-1 overflow-x-auto px-6">
+      <div className="mx-auto flex w-full max-w-5xl gap-1 overflow-x-auto overflow-y-hidden px-6">
         {tabs.map((tab) => {
           const active = tab.match(pathname);
           return (

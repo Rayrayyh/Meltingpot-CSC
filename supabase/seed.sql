@@ -17,7 +17,7 @@ declare
   v_prop uuid;
 begin
   -- Wipe previous seed data (children cascade from the pot).
-  delete from public.pots where class_code = 'BIO101';
+  delete from public.pots where class_code = '5R22AX';
   delete from auth.users where email in (
     'maya@meltingpot.dev', 'ava@meltingpot.dev',
     'omar@meltingpot.dev', 'priya@meltingpot.dev'
@@ -34,7 +34,7 @@ begin
   values (
     'Biology 101',
     'Everything our class knows about intro biology, gathered in one place. Rough notes welcome.',
-    'BIO101',
+    '5R22AX',
     v_maya
   )
   returning id into v_pot;

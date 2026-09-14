@@ -212,6 +212,8 @@ Feel: calm, modern, academic, collaborative, human, fast.
 
 Use: Inter typography, Lucide-style icons, white, gray, and black, simple borders, minimal shadows, rounded cards, clear spacing, strong information hierarchy.
 
+> Superseded: the icons are Phosphor throughout (`memory/decisions/010`). The line stays because this spec is a record of what was asked for, not a description of what shipped.
+
 Functional color only for success, warnings, errors, additions, removals, and pending review. Do not establish a permanent brand color system yet.
 
 Avoid: gradients, glowing AI effects, purple AI branding, dense control panels, developer terminology, childish gamification, social-media styling, large chatbot interfaces.
@@ -220,7 +222,7 @@ Do not use emojis. Do not use em dashes.
 
 ### Front-End Design Direction
 
-Warm, academic feel. Off-white paper-like background, white surfaces, dark charcoal text, deep forest green for primary actions, small clay accents for contribution-related moments. Persistent left navigation, spacious central content area, optional contextual side panels. Inter for interface elements, optionally Source Serif 4 for long-form shared notes. Flat cards with subtle borders, restrained shadows, rounded corners, generous whitespace, strong hierarchy. AI appears through simple progress states and organized previews. The final interface should feel like a calm digital study room combined with a serious collaborative productivity tool.
+Warm, academic feel. Off-white paper-like background, white surfaces, dark charcoal text, deep forest green for primary actions, small clay accents for contribution-related moments. *(Superseded 2026-08-19: the owner replaced the forest-green palette with brand orange; see `memory/decisions/010`.)* Persistent left navigation, spacious central content area, optional contextual side panels. Inter for interface elements, optionally Source Serif 4 for long-form shared notes. Flat cards with subtle borders, restrained shadows, rounded corners, generous whitespace, strong hierarchy. AI appears through simple progress states and organized previews. The final interface should feel like a calm digital study room combined with a serious collaborative productivity tool.
 
 ## Copy Direction
 
@@ -232,7 +234,7 @@ Avoid: Generate AI content, Create pull request, Merge changes, Fork note, Execu
 
 Google Classroom or Canvas integration (add only the framework hook, not functionality), school and organization systems, formal module and lesson hierarchy, calendars and assignments, personal forks or branches, full AI study assistant (framework wiring only, API key later), Catch me up, missing-material analysis, flashcards and quizzes (placeholders only if needed), comments and reactions, contribution graphs, ranks and streaks, advanced contributor profiles, recaps and certificates, school administration, advanced analytics, adaptive learning.
 
-Lifted since, by the owner: flashcards and practice tests (2026-08-19 and 2026-08-20); a private record of one person's own days, quiet by decision 030; and on 2026-09-02 the twelve month contribution stream on the Contributions page and a personal standing in each class, said only as what the person is ahead of, with no leaderboard and no names (decision 031).
+Lifted since, by the owner: flashcards and practice tests (2026-08-19 and 2026-08-20); a private record of one person's own days, quiet by decision 030; and on 2026-09-02 the twelve month contribution stream on the Contributions page and a personal standing in each class, said only as what the person is ahead of, with no leaderboard and no names (decision 031). On 2026-09-05 the owner lifted Canvas and Google Classroom import, read-only, and with it calendars and assignments as they arrive from a linked course: due dates and classwork beside the notes, nothing written back, nothing imported ever a note until a person makes one from it (decision 038).
 
 Do not place unfinished future features in the main navigation.
 

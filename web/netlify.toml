@@ -23,3 +23,29 @@
     Cross-Origin-Resource-Policy = "same-origin"
     Cross-Origin-Embedder-Policy = "credentialless"
     X-XSS-Protection = "1; mode=block"
+
+# The public brand images are meant to be embedded in someone else's page: a
+# social card is only useful there, and the blanket same-origin rule above
+# blocked any client that hotlinks the card rather than re-hosting it. These
+# four are public, static and carry nothing to leak. Documents and
+# attachments keep same-origin, which is where that header does real work.
+# A more specific rule wins over /* for the same header name.
+[[headers]]
+  for = "/opengraph-image.png"
+  [headers.values]
+    Cross-Origin-Resource-Policy = "cross-origin"
+
+[[headers]]
+  for = "/icon.png"
+  [headers.values]
+    Cross-Origin-Resource-Policy = "cross-origin"
+
+[[headers]]
+  for = "/apple-icon.png"
+  [headers.values]
+    Cross-Origin-Resource-Policy = "cross-origin"
+
+[[headers]]
+  for = "/favicon.ico"
+  [headers.values]
+    Cross-Origin-Resource-Policy = "cross-origin"

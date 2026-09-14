@@ -1,8 +1,9 @@
 /**
  * The five signup password rules, in the order the checklist shows them.
- * The server enforces exactly this list in register_student (migrations
- * 0041 and 0042), so a password that ticks every box here cannot bounce
- * there. Change one side and the other has to move with it.
+ * The server enforces exactly this list in sign_up_student and again in
+ * register_student (migrations 0041, 0042 and 0053), so a password that ticks
+ * every box here cannot bounce there. Change one side and the other has to
+ * move with it.
  */
 export type PasswordRule = {
   id: "length" | "upper" | "lower" | "digit" | "symbol";

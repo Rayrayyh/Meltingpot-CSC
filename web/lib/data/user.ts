@@ -29,6 +29,10 @@ export type UserPot = {
   id: string;
   title: string;
   role: PotRole;
+  /** Their arranged slot, or null for a class they have never moved. */
+  position: number | null;
+  favoritedAt: string | null;
+  lastViewedAt: string | null;
 };
 
 export async function getUserPots(): Promise<UserPot[]> {
@@ -37,14 +41,46 @@ export async function getUserPots(): Promise<UserPot[]> {
   const supabase = await supabaseServer();
   // RLS lets members read the whole roster of their pots, so the query must
   // still filter to the caller's own membership rows (see memory/lessons/005).
-  const { data } = await supabase
-    .from("memberships")
-    .select("role, pots(id, title, archived_at)")
-    .eq("user_id", user.id)
-    .order("created_at", { ascending: true });
-  return (data ?? [])
+  //
+  // Preferences come from a second query rather than an embed. They live in
+  // their own table precisely so no other member can read them, which means
+  // there is no foreign key from memberships to follow, and two small reads of
+  // a handful of rows each are cheaper to understand than a join that has to
+  // explain itself.
+  const [{ data }, { data: prefs }] = await Promise.all([
+    supabase
+      .from("memberships")
+      .select("role, pots(id, title, archived_at)")
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: true }),
+    supabase
+      .from("pot_preferences")
+      .select("pot_id, position, favorited_at, last_viewed_at")
+      .eq("user_id", user.id),
+  ]);
+  const byPot = new Map((prefs ?? []).map((p) => [p.pot_id, p]));
+  const pots = (data ?? [])
     .filter((m) => m.pots && !m.pots.archived_at)
-    .map((m) => ({ id: m.pots!.id, title: m.pots!.title, role: m.role }));
+    .map((m) => {
+      const pref = byPot.get(m.pots!.id);
+      return {
+        id: m.pots!.id,
+        title: m.pots!.title,
+        role: m.role,
+        position: pref?.position ?? null,
+        favoritedAt: pref?.favorited_at ?? null,
+        lastViewedAt: pref?.last_viewed_at ?? null,
+      };
+    });
+  // Arranged classes lead, in the order they were arranged. Everything else
+  // keeps join order behind them, so setting an order for two of nine classes
+  // does not shuffle the other seven.
+  return pots.sort((a, b) => {
+    if (a.position === null && b.position === null) return 0;
+    if (a.position === null) return 1;
+    if (b.position === null) return -1;
+    return a.position - b.position;
+  });
 }
 
 /**

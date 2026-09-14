@@ -26,11 +26,23 @@ const MESSAGES: Record<string, string> = {
   rate_limited: "Too many attempts from this network. Wait a few minutes and try again.",
   invalid_code:
     "That code did not match. Codes change every 30 seconds, so try the current one.",
+  account_locked: "Too many wrong attempts. This account is paused for about an hour. Try again after that.",
+  password_compromised: "This password has appeared in a data breach. Choose a different one.",
   not_configured: "Sign in is not available in this build.",
 };
 
-function friendlyError(error: unknown): string {
+function friendlyError(error: unknown, mode: "login" | "signup"): string {
   const code = error instanceof AuthError ? error.code : "unknown";
+  // The sentence on screen is for the person; the message on the error is
+  // for whoever has to work out why the door would not open. A stop the
+  // form has no words for, and a build that says it is not configured, both
+  // keep their diagnostic in the console rather than losing it.
+  if (!(code in MESSAGES) || code === "not_configured") console.error("[auth]", error);
+  if (code === "not_configured") {
+    return mode === "signup"
+      ? "Creating an account is not available on this site right now."
+      : "Sign in is not available on this site right now.";
+  }
   return MESSAGES[code] ?? "Something went wrong. Try again.";
 }
 
@@ -49,6 +61,10 @@ export function AuthForm({
   const [displayName, setDisplayName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  // Sign up asks for the password twice. The field hides what is typed, so
+  // a slip goes unnoticed until the next sign in fails; typing it again is
+  // the one check that catches it.
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   // Set once a password is accepted but the account also asks for a code.
@@ -94,6 +110,10 @@ export function AuthForm({
       setError("Your password doesn't meet every rule in the list yet.");
       return;
     }
+    if (mode === "signup" && confirmPassword !== password) {
+      setError("Those passwords don't match. Type the same password in both fields.");
+      return;
+    }
     setBusy(true);
     setError(null);
     const auth = getClientAuth();
@@ -114,7 +134,7 @@ export function AuthForm({
         return;
       }
     } catch (err) {
-      setError(friendlyError(err));
+      setError(friendlyError(err, mode));
       setBusy(false);
       return;
     }
@@ -141,7 +161,7 @@ export function AuthForm({
         code: secondStepCode.trim(),
       });
     } catch (err) {
-      setError(friendlyError(err));
+      setError(friendlyError(err, mode));
       setBusy(false);
       return;
     }
@@ -287,6 +307,20 @@ export function AuthForm({
             </Field>
             {mode === "signup" ? <PasswordChecklist password={password} /> : null}
           </div>
+          {mode === "signup" ? (
+            <Field label="Confirm password">
+              {(props) => (
+                <PasswordInput
+                  {...props}
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  autoComplete="new-password"
+                  required
+                  minLength={8}
+                />
+              )}
+            </Field>
+          ) : null}
           {error ? (
             <p role="alert" className="text-[13px] text-danger">
               {error}

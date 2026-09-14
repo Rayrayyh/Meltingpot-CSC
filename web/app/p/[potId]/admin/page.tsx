@@ -18,7 +18,7 @@ export const metadata = { title: "Admin" };
 
 const TABS = [
   { key: "review", label: "Review" },
-  { key: "contributions", label: "Contributions" },
+  { key: "contributions", label: "Shared notes" },
   { key: "history", label: "History" },
   { key: "study", label: "Study" },
   { key: "removed", label: "Removed" },
@@ -294,8 +294,8 @@ export default async function AdminPage({
                   <Card>
                     <EmptyState
                       icon={<Notebook />}
-                      title="Nothing written yet"
-                      body="Contributions appear here as soon as anyone starts one, draft or shared."
+                      title="Nothing shared yet"
+                      body="Shared notes appear here as soon as anyone shares one. Drafts stay private to their writers."
                       action={
                         pot.archived ? undefined : (
                           <Button href={`/p/${pot.id}/contribute`}>Add contribution</Button>

@@ -3,7 +3,6 @@ import type { Json } from "@/lib/database.types";
 import { normalizeStudyResult, studySchemas, type StudyKind } from "@/lib/mix/contracts";
 import {
   FAST_MODEL,
-  REASONING_MODEL,
   MixError,
   generateStructured,
   mixingConfigured,
@@ -14,7 +13,18 @@ import {
   normalizePracticeOptions,
   practiceOptionsKey,
 } from "@/lib/study/practice-options";
+import { getAuthUser } from "@/lib/auth/server";
 import { supabaseServer } from "@/lib/supabase/server";
+
+/** True when a normalised result has nothing to study in it. */
+function studyResultIsEmpty(kind: StudyKind, result: unknown): boolean {
+  const item = result as Record<string, unknown>;
+  if (kind === "flashcards") return !Array.isArray(item.cards) || item.cards.length === 0;
+  if (kind === "practice") return !Array.isArray(item.questions) || item.questions.length === 0;
+  const overview = typeof item.overview === "string" ? item.overview.trim() : "";
+  const topics = Array.isArray(item.keyTopics) ? item.keyTopics : [];
+  return overview.length === 0 && topics.length === 0;
+}
 
 const KINDS = new Set<StudyKind>(["summary", "flashcards", "practice"]);
 
@@ -35,9 +45,24 @@ const NO_STORE = { "Cache-Control": "no-store, no-cache, must-revalidate" };
  */
 export const maxDuration = 26;
 
+/**
+ * When the model call must be finished by, measured from the start of the
+ * request rather than from the start of the call.
+ *
+ * The mixing budget in lib/mix/server.ts counts from the moment mixing begins,
+ * which is several seconds after the request arrives: reading the session,
+ * checking membership and loading the notes all happen first. 24 seconds of
+ * mixing on top of that overran the 26 above, so the platform severed the call
+ * and the caller got a gateway error instead of the sentence this route means
+ * to send. Deadlining from the request start keeps the giving up inside this
+ * code, which is what the comment above always claimed.
+ */
+const MIX_DEADLINE_MS = 22_000;
+
 export async function POST(request: Request) {
+  const startedAt = Date.now();
   const supabase = await supabaseServer();
-  const { data: { user } } = await supabase.auth.getUser();
+  const user = await getAuthUser();
   if (!user) return NextResponse.json({ error: "not_authenticated" }, { status: 401 });
 
   const body = await request.json().catch(() => null) as Record<string, unknown> | null;
@@ -89,7 +114,7 @@ export async function POST(request: Request) {
   if (!force) {
     const { data: stored } = await supabase
       .from("study_sets")
-      .select("id, payload, model, created_at, secured")
+      .select("id, payload, model, created_at, secured, generation, options")
       .eq("pot_id", potId)
       .eq("kind", kind)
       .eq("source_fingerprint", fingerprint)
@@ -105,6 +130,10 @@ export async function POST(request: Request) {
           generatedAt: stored.created_at,
           studySetId: stored.id,
           secured: stored.secured === true,
+          generation: stored.generation,
+          // The settings this set was actually built for, which are not
+          // always the ones on the form now.
+          options: stored.options,
         },
         { headers: NO_STORE },
       );
@@ -122,6 +151,26 @@ export async function POST(request: Request) {
       { error: "generation_closed" },
       { status: 403, headers: NO_STORE },
     );
+  }
+
+  // A maintainer took the set for this material down (0053). For anyone
+  // else, building it again would spend a generation, call the model and
+  // hand back the full test, answer key included, because the save is then
+  // refused. Asked here, before any of that, through a definer function:
+  // members cannot see removed rows themselves.
+  const moderates = membership.role === "maintainer" || membership.role === "owner";
+  if (!moderates) {
+    const { data: removed } = await supabase.rpc("study_set_removed_for", {
+      p_pot_id: potId,
+      p_kind: kind,
+      p_fingerprint: fingerprint,
+    });
+    if (removed === true) {
+      return NextResponse.json(
+        { error: "study_set_removed" },
+        { status: 409, headers: NO_STORE },
+      );
+    }
   }
 
   // Only now, with a real generation ahead, do the key and the quota matter.
@@ -167,10 +216,18 @@ export async function POST(request: Request) {
     : kind === "flashcards"
       ? "Create 12-20 useful recall flashcards. Avoid duplicates and trivia."
       : `Create a ${options.questionCount}-question multiple-choice practice test. Use exactly four plausible choices per question and explain the correct answer. ${difficultyBrief(options.difficulty)}`;
-  const model = kind === "practice" ? REASONING_MODEL : FAST_MODEL;
+  // Study material is written by the fast model throughout. The reasoning
+  // model cannot write a five question test inside the 26 second ceiling at
+  // any Pot size this class actually has: measured on the live site, every
+  // run died at about 25.5 seconds and only a three note Pot finished. The
+  // reasoning tier is reserved for the teaching readout, which is the one
+  // call with no rule-based fallback and the one that must never invent a
+  // reading.
+  const model = FAST_MODEL;
   try {
     const generated = await generateStructured<unknown>({
       model,
+      deadlineAt: startedAt + MIX_DEADLINE_MS,
       instruction: [
         task,
         "Use only the supplied class notes. Do not add outside facts.",
@@ -195,6 +252,11 @@ export async function POST(request: Request) {
       schema: studySchemas[kind],
     });
     const result = normalizeStudyResult(kind, generated, options.questionCount);
+    // A set with nothing in it is a failed build, not a set. Stored, it would
+    // have been served to the whole class as the set for this material.
+    if (studyResultIsEmpty(kind, result)) {
+      throw new MixError("The mixer returned an empty set", 502);
+    }
 
     // A practice test is split before anything leaves this function. The
     // member payload keeps questions and choices; the answers and their
@@ -243,6 +305,22 @@ export async function POST(request: Request) {
       p_keys: keys,
     });
     const stored = Boolean(saved.data);
+    // Which build of the row this is (0057). A practice hand-in names it, so
+    // a rebuild in the meantime cannot be marked against the wrong keys.
+    let generation: number | null = null;
+    if (stored && kind === "practice") {
+      const { data: row } = await supabase
+        .from("study_sets")
+        .select("generation")
+        .eq("id", saved.data as string)
+        .maybeSingle();
+      generation = row?.generation ?? null;
+    }
+    // A maintainer took this material down (0053). The person still gets
+    // what they waited for, but nothing is stored and the browser is not
+    // asked to try storing it again, which would meet the same refusal.
+    const removed = saved.error?.message.includes("study_set_removed") ?? false;
+    if (saved.error && !removed) console.error("[study] save failed:", saved.error.message);
     return NextResponse.json(
       {
         result: kind === "practice" && stored ? memberPayload : result,
@@ -251,18 +329,29 @@ export async function POST(request: Request) {
         generatedAt: new Date().toISOString(),
         studySetId: saved.data ?? null,
         secured: kind === "practice" && stored,
+        generation,
+        options: options as unknown as Json,
+        removed,
         // Returned so the browser can save this set itself when the server
         // save failed. For a practice test that fallback stores the full
         // payload unsecured, which is exactly what the degraded set is.
-        fingerprint: stored ? null : fingerprint,
+        fingerprint: stored || removed ? null : fingerprint,
       },
       { headers: NO_STORE },
     );
   } catch (error) {
     const status = error instanceof MixError ? error.status ?? 502 : 502;
-    const detail = error instanceof MixError && (status === 401 || status === 403)
-      ? "The mixing key was rejected."
-      : error instanceof Error ? error.message.slice(0, 240) : "Study material could not be generated.";
+    // The provider's own text is for the server log. The class reads a
+    // sentence in the app's vocabulary, whatever the model said.
+    if (error instanceof Error) console.error("[study]", error.message);
+    const detail =
+      error instanceof MixError && (status === 401 || status === 403)
+        ? "The mixing key was rejected."
+        : error instanceof MixError && status === 429
+          ? "Mixing is temporarily rate limited."
+          : error instanceof MixError && status === 504
+            ? "Building this took too long. Try again in a moment."
+            : "Study material could not be generated.";
     return NextResponse.json({ error: "generation_failed", detail }, { status, headers: NO_STORE });
   }
 }

@@ -18,3 +18,15 @@ meltingpot-io and meltingpotworks are earlier sites and must not receive deploys
 The mechanics in this note (web/ as package root, Netlify MCP zip deploy, the
 Next runtime plugin in netlify.toml) still apply unchanged. CLAUDE.md carries
 the rule; this note carries the history.
+
+## Superseded again (2026-09-05)
+
+The CSC entry deploys to https://meltingpot-csc.netlify.app (site id
+f8138e4f-b2cf-4351-b930-ec14bbb74668, same team, same Supabase project) and
+nowhere else; meltingpot-prometheus joins the earlier sites that must not
+receive deploys. Mechanics unchanged: the committed tree from a detached
+worktree, web/ as the package root, the Netlify MCP zip upload, the Next
+runtime plugin in netlify.toml. The one operational note from the first deploy
+of this round: the sandbox's permission classifier refuses the upload command
+when the one time proxy URL is pasted inline, and accepts it read from a file;
+the owner approved the run. CLAUDE.md carries the rule.

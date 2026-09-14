@@ -1,6 +1,8 @@
+import { ClassworkCard } from "@/components/pot/classwork-card";
 import { SectionsPanel } from "@/components/pot/sections-panel";
 import { SettingsPanel } from "@/components/pot/settings-panel";
 import { PotShell } from "@/components/shell/pot-shell";
+import { classworkOffered, getConnections, getVisibleLinks } from "@/lib/data/classwork";
 import { requireUser } from "@/lib/data/user";
 import { supabaseServer } from "@/lib/supabase/server";
 
@@ -8,7 +10,8 @@ export default async function SettingsPage({ params }: PageProps<"/p/[potId]/set
   const { potId } = await params;
   const user = await requireUser();
   const supabase = await supabaseServer();
-  const [{ data: pot }, { data: sectionRows }] = await Promise.all([
+  const offered = classworkOffered();
+  const [{ data: pot }, { data: sectionRows }, links, connections] = await Promise.all([
     supabase.from("pots").select("owner_id").eq("id", potId).maybeSingle(),
     supabase
       .from("sections")
@@ -16,6 +19,10 @@ export default async function SettingsPage({ params }: PageProps<"/p/[potId]/set
       .eq("pot_id", potId)
       .order("position", { ascending: true })
       .order("title", { ascending: true }),
+    getVisibleLinks({ potId }),
+    // The viewer's own connections, which is what they can link from. Read
+    // only for a site that offers classwork; elsewhere the card stays away.
+    offered ? getConnections() : Promise.resolve([]),
   ]);
 
   return (
@@ -38,6 +45,16 @@ export default async function SettingsPage({ params }: PageProps<"/p/[potId]/set
                 // place to look for anything taken out rather than two.
                 <SectionsPanel potId={potContext.id} sections={sectionRows ?? []} />
               ) : undefined
+            }
+            classworkSlot={
+              <ClassworkCard
+                potId={potContext.id}
+                role={potContext.role}
+                links={links}
+                connections={potContext.role === "member" ? [] : connections}
+                viewerId={user.id}
+                offered={offered}
+              />
             }
           />
         </div>

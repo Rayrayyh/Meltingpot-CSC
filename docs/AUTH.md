@@ -1,9 +1,16 @@
 # Authentication
 
 MeltingPot signs people in with an email and a password, and offers a second
-step with an authenticator app to anyone who runs a Pot. Supabase Auth does the
-work today. Clerk is the intended replacement, and the code is arranged so that
-swap is an implementation, not an excavation.
+step with an authenticator app to anyone who runs a Pot. On meltingpots.xyz
+Clerk does the work, since 2026-09-08; Supabase Auth does it for local runs and
+the Playwright suite. Both sit behind the same seam, which is why the switch
+was a variable and a migration rather than an excavation. Browser sign up
+through Supabase Auth is closed entirely as of 0060: `sign_up_student` is
+service_role only, because an account minted from the anon key was a foothold
+for guessing class codes, and Clerk owns sign up on the live site. A local run
+signs in as one of the seeded people instead; two of them, `newcomer@` and
+`joiner@meltingpot.dev`, belong to no Pot on purpose, which is the state the
+create-a-Pot and join-with-a-code specs need.
 
 ## The seam
 
@@ -13,9 +20,10 @@ described in the product's own words rather than any one vendor's:
 | File | What it is |
 |---|---|
 | `types.ts` | The contract: `AuthUser`, `SignInOutcome`, `AuthError`, and the two provider interfaces |
-| `supabase-server.ts` | Reading identity from the request. The live implementation |
-| `supabase-client.ts` | Session lifecycle in the browser. The live implementation |
-| `clerk.ts` | The framework slot. Present, complete, and deliberately unimplemented |
+| `supabase-server.ts` | Reading identity from the request, under Supabase Auth: local runs and the test suite |
+| `supabase-client.ts` | Session lifecycle in the browser, under Supabase Auth |
+| `clerk-server.ts`, `clerk-client.ts` | Clerk behind the same seam, built 2026-09-05 and live on meltingpots.xyz since 2026-09-08. `docs/CLERK.md` records the switch |
+| `provider.ts` | The one place that reads `NEXT_PUBLIC_AUTH_PROVIDER` |
 | `server.ts` | Server entry point: `getAuthUser`, `requireAuthUser`, `getVerifiedSecondFactorId` |
 | `client.ts` | Browser entry point: `getClientAuth()` |
 
@@ -28,7 +36,7 @@ Selection is one environment variable, matching the organizer seam:
 
 ```
 NEXT_PUBLIC_AUTH_PROVIDER=        # unset or "supabase" (default)
-NEXT_PUBLIC_AUTH_PROVIDER=clerk   # selects the slot in lib/auth/clerk.ts
+NEXT_PUBLIC_AUTH_PROVIDER=clerk   # selects lib/auth/clerk-*.ts; needs the Clerk keys, see docs/CLERK.md
 ```
 
 ## Using it
@@ -61,43 +69,26 @@ text. `auth-form.tsx` maps codes to sentences in one place.
 
 ## Rules
 
-- **No component calls `supabase.auth.*` directly.** One exception, marked in
-  the file: `proxy.ts`, where route gating is bound up with the Supabase cookie
-  refresh. Clerk replaces that whole file with `clerkMiddleware()`.
+- **No component or route calls `supabase.auth.*` directly.** One exception,
+  marked in the file: the Supabase branch of `proxy.ts`, where route gating is
+  bound up with the Supabase cookie refresh. The Clerk branch of the same file
+  is `clerkMiddleware()`. Under Clerk, supabase-js refuses its own `auth.*`
+  methods, so the seam is the only way to ask who is signed in.
 - **New auth needs go through `types.ts` first.** Adding a method there makes
-  the Clerk slot fail to compile until it is filled in, which is the point.
-- **The Clerk slot throws `AuthError("not_configured")`, never returns null.**
-  A half-finished swap fails loudly instead of quietly signing nobody in. A
-  unit test asserts every method behaves that way.
+  both providers fail to compile until it is filled in, which is the point.
+- **In Postgres, ask `public.current_uid()`, never `auth.uid()`.** Migration
+  0054 rewrote every policy and definer function in the public schema to it, and
+  0056 the six storage policies 0054's loop had not looked at, so a Clerk
+  subject can be a person; a new migration that says `auth.uid()` works for
+  Supabase sessions and silently fails for Clerk ones.
 
 ## Swapping in Clerk
 
-1. `pnpm add @clerk/nextjs`, wrap the root layout in `<ClerkProvider>`.
-2. Implement `clerkServerAuth` and `clerkClientAuth` against Clerk's SDK. The
-   method names map onto Clerk's own ideas without contortion: `signIn` to
-   `signIn.create`, `register` to `signUp.create`, the second factor to Clerk's
-   TOTP strategy.
-3. Replace the session refresh in `proxy.ts` with `clerkMiddleware()`.
-4. **Give Postgres a way to trust a Clerk token.** This is the real work, and
-   it is worth understanding before starting. Every row level security policy
-   in this project is written against `auth.uid()`, and every privileged
-   operation runs through a security-definer function that re-validates the
-   caller. None of that works if Postgres cannot identify a Clerk user. Two
-   routes:
-   - Supabase third-party auth, which accepts Clerk JWTs and keeps `auth.uid()`
-     meaningful. Least disruptive.
-   - Mint a Supabase session after Clerk signs someone in. Needs a server-side
-     bridge holding a service-role key, which this deployment deliberately does
-     not have anywhere.
-
-   Either way, `public.profiles` rows still have to appear on first sign in.
-   The `handle_new_user` trigger does that for the current provider and reads
-   `full_name` and `name` as well as `display_name`, so it already handles the
-   shape a third-party provider sends.
-5. Set `NEXT_PUBLIC_AUTH_PROVIDER=clerk`.
-
-Steps 1 to 3 and 5 are an afternoon. Step 4 decides how long the whole thing
-takes, so cost it first.
+Built on 2026-09-05 as far as the code and the database go (decision 041).
+What remains is the Clerk application, Supabase's third-party auth setting, the
+two keys and a redeploy, listed step by step in `docs/CLERK.md`. The one thing
+outside anyone's afternoon is a domain: Clerk's production instance needs DNS
+records the netlify.app subdomain cannot carry.
 
 ## What was removed
 

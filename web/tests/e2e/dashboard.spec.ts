@@ -3,7 +3,7 @@ import { expect, test, type Page } from "@playwright/test";
 async function loginAs(page: Page, email: string) {
   await page.goto("/login");
   await page.getByLabel("Email").fill(email);
-  await page.getByLabel("Password").fill("MeltingPot-dev1");
+  await page.getByLabel("Password", { exact: true }).fill("MeltingPot-dev1");
   await page.getByRole("button", { name: "Sign in", exact: true }).click();
   await expect(page).toHaveURL(/\/home/, { timeout: 15_000 });
 }
@@ -33,8 +33,18 @@ test.describe("role-based dashboard", () => {
     await loginAs(page, "ava@meltingpot.dev");
     await page.getByRole("main").getByRole("link", { name: "Biology 101", exact: true }).click();
     await expect(page).toHaveURL(/\/p\//);
+    // The last-seen write is a server action posted from the note page; wait
+    // for it to be answered before leaving, or the dashboard has nothing new.
+    const lastSeen = page.waitForResponse(
+      (r) => r.request().method() === "POST" && /\/n\//.test(r.url()),
+      { timeout: 15_000 },
+    );
     await page.getByText("The cell cycle and its checkpoints").first().click();
     await expect(page).toHaveURL(/\/n\//);
+    await expect(
+      page.getByRole("heading", { name: "The cell cycle and its checkpoints" }),
+    ).toBeVisible({ timeout: 15_000 });
+    await lastSeen.catch(() => null);
 
     await page.goto("/home");
     const continueLink = page.getByRole("link", {
@@ -60,9 +70,9 @@ test.describe("role-based dashboard", () => {
 
     await expect(page.getByText(/1 correction is waiting on you/)).toBeVisible();
     await expect(page.getByText("Waiting on your review")).toBeVisible();
-    const queueItem = page.getByRole("link", {
-      name: /Osmosis and tonicity.*Priya Patel/s,
-    });
+    // The alert line and the queue row both link the proposal; the queue
+    // row is the one whose href reviews it.
+    const queueItem = page.locator('a[href*="/review/"]', { hasText: "Osmosis and tonicity" }).first();
     await expect(queueItem).toBeVisible();
 
     await queueItem.click();
@@ -83,11 +93,14 @@ test.describe("role-based dashboard", () => {
     // the entry came back.
     await expect(page.getByRole("link", { name: /^Admin/ })).toHaveCount(0);
 
-    // And direct navigation is a 404, not a hidden page. The old review URL
-    // redirects into the admin page, which is where the 404 comes from now.
-    const response = await page.goto(`/p/${potId}/admin`);
-    expect(response?.status()).toBe(404);
-    const legacy = await page.goto(`/p/${potId}/review`);
-    expect(legacy?.status()).toBe(404);
+    // And direct navigation lands on the not-found page, never a hidden one.
+    // The route's loading boundary streams a 200 before notFound() runs, so
+    // the page is judged by what renders, not by the status line.
+    await page.goto(`/p/${potId}/admin`);
+    await expect(page.getByRole("heading", { name: /melted away|not found/i })).toBeVisible({ timeout: 15_000 });
+    await expect(page.getByText("Waiting on your review")).toHaveCount(0);
+    // The old review URL redirects into the admin page and meets the same wall.
+    await page.goto(`/p/${potId}/review`);
+    await expect(page.getByRole("heading", { name: /melted away|not found/i })).toBeVisible({ timeout: 15_000 });
   });
 });

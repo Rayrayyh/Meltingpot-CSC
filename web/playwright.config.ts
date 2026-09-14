@@ -21,10 +21,21 @@ export default defineConfig({
       executablePath: process.env.PW_CHROMIUM_PATH ?? "/opt/pw-browsers/chromium",
     },
   },
-  webServer: {
-    command: "pnpm dev --port 3111",
-    url: "http://localhost:3111",
-    reuseExistingServer: true,
-    timeout: 120_000,
-  },
+  webServer: [
+    {
+      command: "pnpm dev --port 3111",
+      url: "http://localhost:3111",
+      reuseExistingServer: true,
+      timeout: 120_000,
+    },
+    // The stand in for Google Classroom and Canvas (docs/CLASSWORK.md). The
+    // dev server reaches it when .env.local sets CLASSWORK_PROVIDER_MODE=stub;
+    // the classwork spec skips itself when that is not the case.
+    {
+      command: "node tests/stub-lms/server.mjs",
+      url: "http://localhost:3112/__control",
+      reuseExistingServer: true,
+      timeout: 15_000,
+    },
+  ],
 });

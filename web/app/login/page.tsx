@@ -3,9 +3,14 @@ import { redirect } from "next/navigation";
 import { AuthForm } from "@/components/auth/auth-form";
 import { Wordmark } from "@/components/shell/wordmark";
 import { normalizeClassCode } from "@/lib/class-code";
+import { signedInDestination } from "@/lib/auth/signed-in-destination";
 import { supabaseServer } from "@/lib/supabase/server";
 
-export const metadata = { title: "Sign in" };
+export const metadata = {
+  title: "Sign in",
+  description: "Sign in to MeltingPot to open your classes.",
+  robots: { index: false, follow: false },
+};
 
 export default async function LoginPage({ searchParams }: PageProps<"/login">) {
   const params = await searchParams;
@@ -18,9 +23,9 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
   // says. Sending it to /home here is exactly how the second factor became
   // skippable: reload the page and the pause was gone.
   if (user && (await secondFactorOutstanding())) redirect("/login/verify");
-  if (user) redirect(code ? `/join/${code}` : "/home");
 
   const supabase = await supabaseServer();
+  if (user) redirect(await signedInDestination(supabase, code, next));
 
   let potTitle: string | undefined;
   if (code.length === 6) {

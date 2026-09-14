@@ -102,6 +102,15 @@ function asList(value: unknown): unknown[] {
  * lives inside jsonb payloads and joined rows, which no single Postgres filter
  * reaches; the row caps below keep that bounded.
  */
+/**
+ * A search term as literal text inside a LIKE pattern. Postgres reads %, _
+ * and the backslash as pattern characters, so a term of "%" used to match
+ * every attachment name in the Pot; PostgREST also treats * as a wildcard.
+ */
+function likeLiteral(term: string): string {
+  return term.replace(/[\\%_]/g, "\\$&").replace(/\*/g, "");
+}
+
 export async function searchAcrossPots({
   query,
   type = "all",
@@ -163,7 +172,7 @@ export async function searchAcrossPots({
         `name, contribution:contributions!attachments_contribution_id_fkey(shared_note_id, status)`,
       )
       .in("pot_id", scopeIds)
-      .ilike("name", `%${term}%`)
+      .ilike("name", `%${likeLiteral(term)}%`)
       .limit(40),
     supabase
       .from("study_sets")
@@ -186,7 +195,7 @@ export async function searchAcrossPots({
       .from("sections")
       .select("id, pot_id, title, created_at")
       .in("pot_id", scopeIds)
-      .ilike("title", `%${term}%`)
+      .ilike("title", `%${likeLiteral(term)}%`)
       .limit(20),
   ]);
 
@@ -269,7 +278,7 @@ export async function searchAcrossPots({
         href: `/p/${set.pot_id}/study/summary`,
         title: matchedTopic ? `Study summary: ${matchedTopic.title}` : "Study summary",
         excerpt,
-        meta: ["Built from the whole Pot"],
+        meta: ["Built from the Pot's newest notes"],
         tags: [],
         timestamp: set.created_at,
         contributionCount: 1,

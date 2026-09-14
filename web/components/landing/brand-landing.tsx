@@ -1,7 +1,9 @@
-import { ArrowDown, ArrowRight } from "@phosphor-icons/react/dist/ssr";
-import { CursorLock } from "@/components/landing/cursor-lock";
+import Link from "next/link";
+import { ArrowRight } from "@phosphor-icons/react/dist/ssr";
+import { FeatureBento } from "@/components/landing/feature-bento";
 import { HeroDashboard } from "@/components/landing/hero-dashboard";
-import { JoinInline } from "@/components/landing/join-inline";
+import { HeroMotion } from "@/components/landing/hero-motion";
+import { RollingText } from "@/components/landing/rolling-text";
 import { NamesOnTheNote } from "@/components/landing/names-on-the-note";
 import { ScrollStopper } from "@/components/landing/scroll-stopper";
 import { SiteFooter } from "@/components/landing/site-footer";
@@ -9,6 +11,7 @@ import { SiteHeader } from "@/components/landing/site-header";
 import { PRINCIPLES, STEPS } from "@/components/landing/site-content";
 import { Button } from "@/components/ui/button";
 import { Reveal } from "@/components/ui/reveal";
+import { Magnetic } from "@/components/ui/magnetic";
 import { RollText } from "@/components/ui/roll-text";
 
 /**
@@ -17,43 +20,52 @@ import { RollText } from "@/components/ui/roll-text";
  * account calls to action turn into a way back to their dashboard rather than
  * asking them to sign in again.
  */
-export function BrandLanding({
-  initialCode,
-  initialError,
-  signedIn = false,
-}: {
-  initialCode?: string;
-  initialError?: string | null;
-  signedIn?: boolean;
-}) {
+export function BrandLanding({ signedIn = false }: { signedIn?: boolean }) {
   return (
     <div className="flex flex-col">
-      <CursorLock />
+      <HeroMotion />
       {/* Same ground as the hero, so the top of the page is one surface
           rather than a paper band over a sunken one. */}
       <div className="bg-sunken">
-        <SiteHeader signedIn={signedIn} getStartedHref="#join" />
+        <SiteHeader signedIn={signedIn} getStartedHref="/join" />
       </div>
 
       <main id="main" className="flex flex-col">
       <section id="top" className="relative overflow-hidden bg-sunken">
         <div className="mx-auto w-full max-w-[1400px] px-4 sm:px-12 pt-8 sm:pt-10 pb-16 md:pb-0 text-center">
           {/* Fluid so the three forced lines never become four or five. */}
-          <h1 className="font-display text-[32px] sm:text-[clamp(2.1rem,3.4vw,3.4rem)] font-semibold leading-[1.08] tracking-tight text-ink">
-            Everyone takes notes.
-            <br />
-            Meltingpot brings
-            <br />
-            them together.
+          {/* The letters roll rather than the lines rising, which is the
+              owner's pick (skiper27's behaviour, rebuilt: see
+              rolling-text.tsx for why it is not their code). The line is
+              readable from the first painted frame either way, which is what
+              keeps this text the largest contentful paint. Five pixels up on
+              the owner's instruction, added inside the clamp so the whole
+              curve moves rather than only its ends. */}
+          <h1 className="font-display text-[37px] sm:text-[clamp(calc(2.1rem+5px),calc(3.4vw+5px),calc(3.4rem+5px))] font-semibold leading-[1.08] tracking-tight text-ink">
+            {["Everyone takes notes.", "MeltingPot brings", "them together."].map(
+              (line) => (
+                <span key={line} className="block">
+                  <RollingText text={line} />
+                </span>
+              ),
+            )}
           </h1>
-          <p className="mx-auto mt-5 max-w-2xl text-lg sm:text-xl text-ink-muted leading-relaxed">
+          <p
+            data-hero-support
+            className="mx-auto mt-5 max-w-2xl text-lg sm:text-xl text-ink-muted leading-relaxed"
+          >
             Turn scattered notes, resources, and explanations into one
             shared course space your whole class can explore.
           </p>
-          <div className="mt-8 flex flex-wrap items-center justify-center gap-8">
-            <Button href={signedIn ? "/home" : "#join"} size="lg" roll>
-              {signedIn ? "Go to dashboard" : "Join a class"}
-            </Button>
+          <div
+            data-hero-support
+            className="mt-8 flex flex-wrap items-center justify-center gap-8"
+          >
+            <Magnetic>
+              <Button href={signedIn ? "/home" : "/join"} size="lg" roll>
+                {signedIn ? "Go to dashboard" : "Join a class"}
+              </Button>
+            </Magnetic>
             <a
               href="#explore"
               className="group/roll inline-flex items-center gap-2 text-[16px] font-medium text-ink hover:text-primary transition-colors"
@@ -78,6 +90,7 @@ export function BrandLanding({
         <div
           aria-hidden
           inert
+          data-hero-shot
           className="pointer-events-none select-none mt-10 hidden h-[586px] justify-start overflow-hidden md:flex min-[1360px]:justify-center"
         >
           {/* The shadow lives here, on an untransformed wrapper, as a filter:
@@ -101,104 +114,34 @@ export function BrandLanding({
           teacher path in 13px fine print and the demo class nowhere. Now the
           codeless majority gets the live demo Pot, code holders get a compact
           entry whose button never plays dead, and teachers get equal billing.
-          The old #spaces id survives for stale links; #join is where the hero
-          and header CTAs land. */}
+          The old #spaces id survives for stale links. The hero and header
+          CTAs point at /join, the page that still owns a code field. */}
       <section
         id="spaces"
-        className="px-6 sm:px-10 py-24 sm:py-28 bg-surface border-y border-edge scroll-mt-8"
+        className="px-6 sm:px-10 py-16 sm:py-20 bg-surface border-y border-edge scroll-mt-8"
       >
-        <div className="mx-auto w-full max-w-6xl">
-          <div className="mx-auto max-w-3xl text-center space-y-6">
-            <p className="text-[12px] font-semibold tracking-[0.14em] uppercase text-clay">
-              How notes reach the class
-            </p>
-            <h2 className="font-display text-4xl sm:text-5xl font-semibold tracking-tight leading-[1.08] text-ink">
-              The part you need is in someone else&apos;s handwriting.
+        {/* Layer-cake scanning only works when a heading summarises what sits
+            under it, and the old one described the problem while the grid
+            below shows eight features. The heading now names the grid, in the
+            product's own earlier words, and the eyebrow is gone: it is a
+            minority pattern and it was saying what the heading already says. */}
+        <div className="mx-auto w-full max-w-[1672px] px-0">
+          <div className="mx-auto max-w-2xl text-center space-y-4">
+            <h2 className="font-display text-3xl sm:text-4xl font-semibold tracking-tight leading-[1.1] text-ink">
+              Everything your class knows, in one Pot.
             </h2>
             <p className="text-lg text-ink-muted leading-relaxed">
-              A classmate&apos;s notebook often holds the note you need, written
-              in a hurry with no other reader in mind. Meltingpot prepares an
-              organized version alongside the original, with uncertain passages
-              marked, and shares it with the class once the writer approves.
+              Shared notes, corrections, study tools and due dates, in one place.
             </p>
           </div>
-
-          <div id="join" className="scroll-mt-24 mt-14 grid gap-6 md:grid-cols-3">
-            <Reveal className="h-full">
-              <div className="flex h-full flex-col rounded-(--radius-card) border border-edge-strong bg-paper p-6">
-                <p className="text-[12px] font-semibold tracking-[0.14em] uppercase text-clay">
-                  No code? Start here
-                </p>
-                <h3 className="mt-3 text-lg font-semibold text-ink">
-                  Peek inside a real class
-                </h3>
-                <p className="mt-2 flex-1 text-sm text-ink-muted leading-relaxed">
-                  Human Biology is our live demo Pot: shared notes, open
-                  corrections, flashcards, the lot. Open it and see the class
-                  before you make any account.
-                </p>
-                <div className="mt-5 space-y-3">
-                  <Button href="/join/HXU863" size="md" className="w-full" roll>
-                    Open the demo Pot
-                  </Button>
-                  <p className="text-center text-[12px] text-ink-faint">
-                    Class code <span className="font-mono tracking-[0.2em]">HXU863</span>
-                  </p>
-                </div>
-              </div>
-            </Reveal>
-            <Reveal delay={0.08} className="h-full">
-              <div className="flex h-full flex-col rounded-(--radius-card) border border-edge bg-surface-raised p-6">
-                <p className="text-[12px] font-semibold tracking-[0.14em] uppercase text-ink-faint">
-                  For students
-                </p>
-                <h3 className="mt-3 text-lg font-semibold text-ink">
-                  I have a class code
-                </h3>
-                <p className="mt-2 text-sm text-ink-muted leading-relaxed">
-                  Enter the 6 characters your class shared. You see the Pot
-                  before you join anything.
-                </p>
-                <div className="mt-5">
-                  <JoinInline initialCode={initialCode} initialError={initialError} />
-                </div>
-              </div>
-            </Reveal>
-            <Reveal delay={0.16} className="h-full">
-              <div className="flex h-full flex-col rounded-(--radius-card) border border-edge bg-surface-raised p-6">
-                <p className="text-[12px] font-semibold tracking-[0.14em] uppercase text-ink-faint">
-                  For teachers
-                </p>
-                <h3 className="mt-3 text-lg font-semibold text-ink">
-                  I run a class
-                </h3>
-                <p className="mt-2 flex-1 text-sm text-ink-muted leading-relaxed">
-                  Create a Pot and share one code. Your class joins in seconds,
-                  and everything they type stays theirs to approve.
-                </p>
-                <div className="mt-5">
-                  <Button
-                    href="/pots/new"
-                    variant="secondary"
-                    size="md"
-                    className="w-full"
-                    roll
-                  >
-                    Create a Pot
-                  </Button>
-                </div>
-              </div>
-            </Reveal>
-          </div>
-
         </div>
-        <a
-          href="#explore"
-          className="group/roll mx-auto mt-14 flex w-fit items-center justify-center gap-2 text-[12px] text-ink-faint transition-colors hover:text-primary"
-        >
-          <ArrowDown className="size-3.5" aria-hidden />
-          <RollText>See how the melt works</RollText>
-        </a>
+
+        {/* The bento is the reference sheet at its own size, 1672 by 941, so
+            it steps outside the section's 1152px container. */}
+        <div className="mt-10">
+          <FeatureBento />
+        </div>
+
       </section>
 
       <div id="explore" className="scroll-mt-8">
@@ -279,12 +222,12 @@ export function BrandLanding({
             >
               Create a Pot
             </Button>
-            <a
-              href="#join"
+            <Link
+              href="/join"
               className="text-[14px] font-medium text-on-primary/90 hover:text-on-primary underline underline-offset-4"
             >
               or enter a class code
-            </a>
+            </Link>
           </div>
         </Reveal>
       </section>

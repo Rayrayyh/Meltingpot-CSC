@@ -2,6 +2,7 @@
 
 import { useId, useState } from "react";
 import type { ComponentProps } from "react";
+import { SmoothCaretInput } from "@/components/ui/smooth-caret";
 import { cn } from "@/lib/cn";
 import { CLASS_CODE_LENGTH, normalizeClassCode } from "@/lib/class-code";
 
@@ -10,6 +11,12 @@ export { CLASS_CODE_LENGTH, normalizeClassCode };
 /**
  * The six-character class code field. Auto-uppercases, strips separators,
  * and never clears itself on errors; the error is rendered below the field.
+ *
+ * It draws its own caret like every other field in the product. This is the
+ * hardest place in the app to do that: the text is centered, so the caret sits
+ * wherever the browser put a run that moves with every character typed, and it
+ * is letter spaced by 0.35em, so a measurement that ignored the spacing would
+ * drift further left with each one.
  */
 export function ClassCodeInput({
   value,
@@ -33,7 +40,7 @@ export function ClassCodeInput({
       <label htmlFor={id} className="block text-[13px] font-medium text-ink">
         {label}
       </label>
-      <input
+      <SmoothCaretInput
         id={id}
         value={value}
         onChange={(e) => onValueChange(normalizeClassCode(e.target.value))}

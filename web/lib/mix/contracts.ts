@@ -114,7 +114,7 @@ export const studySchemas = {
           properties: {
             prompt: { type: "string" },
             choices: { type: "array", items: { type: "string" } },
-            answerIndex: { type: "integer" },
+            answerIndex: { type: "integer", minimum: 0, maximum: 3 },
             explanation: { type: "string" },
             sourceNoteTitle: { type: "string" },
           },
@@ -190,6 +190,18 @@ export function normalizeOrganizedNote(value: unknown, validSectionIds: Set<stri
   };
 }
 
+/**
+ * The source notes are numbered "SOURCE NOTE 1: <title>" in the prompt so a
+ * question can point at one. A model may copy that whole label back into
+ * sourceNoteTitle, and a reader would then see "From SOURCE NOTE 2: Osmosis
+ * and tonicity" under their answer. The label is ours, not the note's, so it
+ * is stripped here rather than hoped away in the prompt: the normalizer is
+ * already the layer that refuses to trust what comes back.
+ */
+function sourceTitle(value: unknown): string {
+  return text(value, 160).replace(/^\s*SOURCE\s+NOTE\s*\d*\s*[:.\-]\s*/i, "").trim();
+}
+
 export function normalizeStudyResult(
   kind: StudyKind,
   value: unknown,
@@ -215,7 +227,7 @@ export function normalizeStudyResult(
       return {
         front: text(row.front, 500),
         back: text(row.back, 900),
-        sourceNoteTitle: text(row.sourceNoteTitle, 160),
+        sourceNoteTitle: sourceTitle(row.sourceNoteTitle),
         // Lower cased and deduplicated so a filter chip matches every card
         // that means the same thing, however the model capitalised it.
         tags: [...new Set(textList(row.tags, 6, 40).map((tag) => tag.toLowerCase()))],
@@ -231,10 +243,16 @@ export function normalizeStudyResult(
       const answerIndex = Math.trunc(Number(row.answerIndex));
       return {
         prompt: text(row.prompt, 900), choices,
-        answerIndex: answerIndex >= 0 && answerIndex < choices.length ? answerIndex : 0,
-        explanation: text(row.explanation, 900), sourceNoteTitle: text(row.sourceNoteTitle, 160),
+        // An answer that names no choice used to become the first one, which
+        // marked the first choice right for a question whose answer nobody
+        // knew. It is a sentinel now, and the filter below drops the question.
+        answerIndex:
+          Number.isInteger(answerIndex) && answerIndex >= 0 && answerIndex < choices.length
+            ? answerIndex
+            : -1,
+        explanation: text(row.explanation, 900), sourceNoteTitle: sourceTitle(row.sourceNoteTitle),
       };
-    }).filter((question) => question.prompt && question.choices.length === 4),
+    }).filter((question) => question.prompt && question.choices.length === 4 && question.answerIndex >= 0),
   };
 }
 

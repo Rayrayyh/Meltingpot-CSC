@@ -7,6 +7,7 @@ import {
   mixingConfigured,
 } from "@/lib/mix/server";
 import { MIN_ANSWERS, MIN_STUDENTS, type TopicEvidence } from "@/lib/teaching/evidence";
+import { getAuthUser } from "@/lib/auth/server";
 import { supabaseServer } from "@/lib/supabase/server";
 
 const NO_STORE = { "Cache-Control": "no-store, no-cache, must-revalidate" };
@@ -30,7 +31,7 @@ export const maxDuration = 26;
  */
 export async function POST(request: Request) {
   const supabase = await supabaseServer();
-  const { data: { user } } = await supabase.auth.getUser();
+  const user = await getAuthUser();
   if (!user) return NextResponse.json({ error: "not_authenticated" }, { status: 401 });
 
   const body = await request.json().catch(() => null) as Record<string, unknown> | null;
@@ -74,7 +75,11 @@ export async function POST(request: Request) {
 
   const rate = await supabase.rpc("consume_ai_generation", { p_kind: "teaching" });
   if (rate.error) {
-    return NextResponse.json({ error: "rate_limited" }, { status: 429, headers: NO_STORE });
+    const limited = rate.error.message.includes("rate_limited");
+    return NextResponse.json(
+      { error: limited ? "rate_limited" : "ai_unavailable" },
+      { status: limited ? 429 : 503, headers: NO_STORE },
+    );
   }
 
   // Sorted by miss rate so the model reads the worst first, and capped so a

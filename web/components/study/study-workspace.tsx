@@ -67,6 +67,26 @@ type Loaded = {
   fingerprint: string | null;
   model: string | null;
   /**
+   * Which build of the stored row this is (0057). Sent with a practice hand-in
+   * so a rebuild in the meantime is refused rather than marked against keys
+   * that belong to different questions. Null when the set is not stored.
+   */
+  generation: number | null;
+  /**
+   * The settings this set was built for, which are not always the settings
+   * on the form: opening something the Pot built last week describes that
+   * test, not the one being configured now. Null when the set predates
+   * settings being stored, and then the line says nothing rather than
+   * something wrong.
+   */
+  setOptions: PracticeOptions | null;
+  /**
+   * True when a maintainer has taken the set for this material down, so this
+   * one was handed over but not stored and never will be. Without it the
+   * header offered a Save button that could not work.
+   */
+  removed: boolean;
+  /**
    * True when this set's answers live on the server, so handing it in records
    * a marked attempt. Sets from before the boundary carry their answers in the
    * payload and stay client-marked practice.
@@ -157,6 +177,9 @@ function message(
     return "You need to be in this Pot to study from it.";
   if (error === "generation_closed") {
     return "This Pot is set so only maintainers build new study material. Anything the class has already built still opens.";
+  }
+  if (error === "study_set_removed") {
+    return "A maintainer took the set for these notes out of the Pot, so it cannot be built again from them. Ask them if you need it back.";
   }
   return detail || "This study set could not be built.";
 }
@@ -250,6 +273,9 @@ export function StudyWorkspace({
         fingerprint?: string | null;
         model?: string | null;
         secured?: boolean;
+        generation?: number | null;
+        options?: unknown;
+        removed?: boolean;
         error?: string;
         detail?: string;
       } | null;
@@ -265,6 +291,9 @@ export function StudyWorkspace({
           fingerprint: payload.fingerprint ?? null,
           model: payload.model ?? null,
           secured: payload.secured === true,
+          generation: typeof payload.generation === "number" ? payload.generation : null,
+          setOptions: payload.options ? normalizePracticeOptions(payload.options) : null,
+          removed: payload.removed === true,
         } satisfies Loaded,
       };
     },
@@ -315,6 +344,17 @@ export function StudyWorkspace({
     try {
       const outcome = await load({ regenerate, options });
       if (!outcome.loaded) {
+        // Only a reply that went missing is worth rescuing. A refusal the
+        // server actually spoke, a rate limit, a Pot that has closed
+        // generation to maintainers, a set a maintainer removed, is news the
+        // reader needs; opening the older set instead swallowed it and left
+        // them wondering why the button did nothing.
+        const lostReply = !outcome.failure || outcome.failure === "generation_failed";
+        if (!lostReply) {
+          setError(message(outcome.failure, outcome.detail));
+          setErrorCode(outcome.failure ?? null);
+          return;
+        }
         // The reply is missing, which is not the same as the work being
         // missing. A generation can finish and be stored and still lose its
         // answer on the way back: the platform cuts a long call off, a phone
@@ -361,7 +401,7 @@ export function StudyWorkspace({
     setErrorCode(null);
     const { data } = await supabaseBrowser()
       .from("study_sets")
-      .select("id, payload, created_at, options, secured")
+      .select("id, payload, created_at, options, secured, generation")
       .eq("id", set.id)
       .is("removed_at", null)
       .maybeSingle();
@@ -379,6 +419,9 @@ export function StudyWorkspace({
       fingerprint: null,
       model: null,
       secured: data.secured === true,
+      generation: data.generation,
+      setOptions: data.options ? normalizePracticeOptions(data.options) : null,
+      removed: false,
     });
     // The settings move to the ones this test was written for, so the line
     // above it describes the test on screen rather than the last thing chosen.
@@ -450,15 +493,20 @@ export function StudyWorkspace({
       if (!opened?.secured || !opened.studySetId) {
         return markLocally(questions, order, answers);
       }
+      const attemptId = crypto.randomUUID();
       const { data, error: rpcError } = await supabaseBrowser().rpc(
         "submit_practice_test",
         {
-          p_attempt_id: crypto.randomUUID(),
+          p_attempt_id: attemptId,
           p_set_id: opened.studySetId,
           p_answers: { order, choices: answers } as unknown as Json,
+          p_generation: opened.generation,
         },
       );
-      if (rpcError || !data) throw new Error("submit_failed");
+      // The database's own word travels up, so the session can say which
+      // failure this is: a rebuilt set, a removed one, a quota, or the network.
+      if (rpcError) throw new Error(rpcError.message);
+      if (!data) throw new Error("submit_failed");
       const returned = data as {
         firstPass?: boolean;
         correct?: number;
@@ -482,7 +530,7 @@ export function StudyWorkspace({
       }
       // Asked after the attempt has landed, so the sentence it earns is true.
       // The hand-in is already recorded; a failed check must not undo that.
-      const check = await checkRecord().catch(() => null);
+      const check = await checkRecord({ attemptId }).catch(() => null);
       const countedNow = Boolean(check?.countedNow);
       if (countedNow) {
         setRecord(check);
@@ -512,15 +560,16 @@ export function StudyWorkspace({
       setCelebrating(false);
       void (async () => {
         try {
+          const attemptId = crypto.randomUUID();
           const { error } = await supabaseBrowser().rpc("record_flashcard_run", {
-            p_attempt_id: crypto.randomUUID(),
+            p_attempt_id: attemptId,
             p_set_id: setId,
             p_known: known,
             p_learning: learning,
           });
           if (error) return;
           // Asked after the run has landed, so the sentence it earns is true.
-          const check = await checkRecord();
+          const check = await checkRecord({ attemptId });
           if (check.countedNow) {
             setRecord(check);
             setCelebrating(true);
@@ -680,7 +729,9 @@ export function StudyWorkspace({
               {opened.cached && opened.generatedAt
                 ? `Built ${relativeTime(opened.generatedAt)} from the notes as they were then. Everyone in the Pot sees this one.`
                 : "Built just now from the notes as they are now."}
-              {` ${describeOptions(options, sectionTitles, kind)}.`}
+              {opened.setOptions
+                ? ` ${describeOptions(opened.setOptions, sectionTitles, kind)}.`
+                : ""}
               {kind === "practice" && opened.secured && opened.studySetId
                 ? " Handed-in results are saved to this Pot, where you and this Pot's maintainers can see them."
                 : kind === "practice"
@@ -707,6 +758,11 @@ export function StudyWorkspace({
                 <span className="inline-flex items-center gap-1.5 rounded-full bg-success-soft px-3 h-8 text-[13px] font-medium text-success">
                   <Check weight="bold" className="size-3.5" aria-hidden />
                   Saved to this Pot
+                </span>
+              ) : opened.removed ? (
+                <span className="text-[12px] text-ink-faint max-w-xs">
+                  A maintainer took this set out of the Pot, so it is not
+                  saved. It is yours to use here.
                 </span>
               ) : (
                 <Button
@@ -749,10 +805,12 @@ export function StudyWorkspace({
               shortcuts are global, and losing a half finished deck to a
               stray S would be the worst thing they could do. */}
           {kind === "flashcards" ? (
-            <div data-no-shortcuts>
+            <div data-no-shortcuts="page">
               <FlashcardSession
-                // A rebuilt deck is a new session, not the old one with new cards.
-                key={opened.studySetId ?? opened.generatedAt ?? "deck"}
+                // A rebuilt deck is a new session, not the old one with new
+                // cards. The store keeps one row per material, so a rebuild
+                // keeps the id; the build time is what tells them apart.
+                key={`${opened.studySetId ?? "new"}:${opened.generatedAt ?? "deck"}`}
                 cards={(opened.result as FlashcardResult).cards}
                 onRegenerate={() => void generate(true)}
                 regenerating={busy}
@@ -762,9 +820,9 @@ export function StudyWorkspace({
             </div>
           ) : null}
           {kind === "practice" ? (
-            <div data-no-shortcuts>
+            <div data-no-shortcuts="page">
               <PracticeSession
-                key={opened.studySetId ?? `${opened.generatedAt}:${optionsKey}`}
+                key={`${opened.studySetId ?? "new"}:${opened.generatedAt ?? "test"}:${optionsKey}`}
                 title={(opened.result as PracticeResult).title}
                 questions={(opened.result as PracticeResult).questions}
                 onRegenerate={() => setSettingUp(true)}

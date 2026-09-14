@@ -82,7 +82,7 @@ talk faster.
 ### Beat 1: the problem (0:00 to 0:12)
 
 **On screen:** the live landing, cold, at the hero. Hold five seconds with no
-scrolling, then one slow scroll to the three doors and stop.
+scrolling, then one slow scroll to section two's bento and stop.
 
 > Every class produces knowledge all day. Almost none of it survives.
 > Good notes nobody else sees. The answer, forty scrolls up in a group chat.
@@ -160,8 +160,9 @@ live URL held still for the last three seconds.
 
 Check each of these in the live site, in this order. Fifteen minutes.
 
-1. Sign out entirely and load the landing. The hero renders, the three doors
-   render, the demo code shows HXU863.
+1. Sign out entirely and load the landing. The hero renders and section two's
+   bento renders. The landing stopped carrying a code field and the demo code
+   on 2026-09-11, so open /join/HXU863 directly, or /join and type it.
 2. Enter HXU863 signed out. The preview appears with no account wall.
 3. Sign in as the student and open Add contribution. The composer loads and
    the organize button is enabled.
@@ -179,7 +180,7 @@ Check each of these in the live site, in this order. Fifteen minutes.
 
 In this order, and no further:
 
-1. The scroll to the three doors in beat 1.
+1. The scroll to the bento in beat 1.
 2. The stirring card in beat 2. It is a flourish, not evidence.
 3. The version history hold in beat 3, down from four seconds to two.
 4. The first sentence of beat 4's narration.

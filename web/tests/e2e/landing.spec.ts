@@ -19,15 +19,33 @@ test.describe("brand landing", () => {
     // Nothing may reintroduce a scroll takeover silently.
     await expect(page.locator("html")).not.toHaveClass(/(^|\s)lenis(\s|$)/);
     await expect(
-      page.getByRole("heading", { name: "Everyone takes notes. Meltingpot brings them together." }),
+      page.getByRole("heading", { name: "Everyone takes notes. MeltingPot brings them together." }),
     ).toBeVisible();
     // The nav offers both paths: sign in and the orange get-started pill.
-    await expect(page.getByRole("link", { name: "Get started" }).first()).toBeVisible();
-    // The join door stays one anchor away, and the code validates in place.
-    await expect(page.getByLabel("Enter class code")).toBeVisible();
+    const getStarted = page.getByRole("link", { name: "Get started" }).first();
+    await expect(getStarted).toBeVisible();
 
+    // Section two is the bento now, so the landing has no code field of its
+    // own. Every way in points at /join, which does, and that is where the
+    // code validates in place.
+    await expect(page.getByLabel("Enter class code")).toHaveCount(0);
+    await expect(getStarted).toHaveAttribute("href", "/join");
+
+    await page.goto("/join");
     await page.getByLabel("Enter class code").fill("zzzzzz");
-    await page.getByRole("button", { name: "See the Pot" }).click();
+    await page.getByRole("button", { name: "Join Pot" }).click();
+    await expect(
+      page.getByText("We couldn't find that Pot. Check the code and try again."),
+    ).toBeVisible();
+    await expect(page.getByLabel("Enter class code")).toHaveValue("ZZZZZZ");
+  });
+
+  // A dead invite link used to report itself under the landing's own code
+  // field. That field went with section two, so the reason now travels to the
+  // page that still has one rather than vanishing.
+  test("a dead invite link lands on /join with the reason", async ({ page }) => {
+    await page.goto("/?code=ZZZZZZ&error=notfound");
+    await expect(page).toHaveURL(/\/join\?/);
     await expect(
       page.getByText("We couldn't find that Pot. Check the code and try again."),
     ).toBeVisible();
@@ -94,12 +112,64 @@ test.describe("brand landing", () => {
     });
   }
 
+  // Section two is a bento of eight tiles (2026-09-10), and each one lifts
+  // into place on its own. A single Reveal around the whole grid never crossed
+  // its own in-view threshold, because the grid is taller than a laptop
+  // viewport, and left all eight at opacity zero, so the resting opacity is
+  // held to a test rather than trusted.
+  test("section two is a bento, and every tile lifts into place", async ({ page }) => {
+    await page.goto("/");
+    const section = page.locator("#spaces");
+    // The eight headings the reference sheets carry, verbatim.
+    const titles = [
+      "Contributions make progress visible.",
+      "Version history",
+      "Calendar",
+      "Collaboration",
+      "Shared notes",
+      "Study tools",
+      "AI summaries",
+      "Search",
+    ];
+    for (const name of titles) {
+      await expect(section.getByRole("heading", { name, exact: true })).toBeVisible();
+    }
+
+    // The middle band nests two tiles inside one grid cell, so the count is
+    // over the tiles themselves rather than the grid's direct children.
+    const tiles = page.getByTestId("feature-bento").locator("[data-bento-tile]");
+    await expect(tiles).toHaveCount(8);
+    // Two stops, because scrollIntoViewIfNeeded jumps: the top row would
+    // never have been on screen if the only stop were the bottom row.
+    for (const name of ["Version history", "Search"]) {
+      await section.getByRole("heading", { name, exact: true }).scrollIntoViewIfNeeded();
+      await settleScroll(page);
+      await page.waitForTimeout(900);
+    }
+    const resting = await tiles.evaluateAll((els) =>
+      els.map((el) => getComputedStyle(el.parentElement as Element).opacity),
+    );
+    expect(resting).toEqual(Array(8).fill("1"));
+
+    // The grid is a reproduction of meltingpot-bento.png, so it keeps that
+    // sheet's 1672 by 941 proportions rather than reflowing to the viewport.
+    const ratio = await page
+      .getByTestId("feature-bento")
+      .evaluate((el) => {
+        const r = el.getBoundingClientRect();
+        return r.width / r.height;
+      });
+    expect(ratio).toBeCloseTo(1672 / 941, 2);
+  });
+
   test("anchors scroll to their sections, including back up past the pin", async ({ page }) => {
     await page.goto("/");
 
     // The nav now navigates to real pages; the landing's own join anchor
     // hangs off the hero call to action instead.
-    await page.getByRole("link", { name: "Classes" }).click();
+    // Exact, because section two's search tile now carries an "Explore
+    // classes" link of its own.
+    await page.getByRole("link", { name: "Classes", exact: true }).click();
     await page.waitForURL("**/classes");
     await expect(
       page.getByRole("heading", { name: "Classes", exact: true }),
@@ -107,32 +177,37 @@ test.describe("brand landing", () => {
     await page.goBack();
     await page.waitForURL("**/");
 
-    // The hero call to action scrolls to the join card.
+    // The hero call to action goes to the join page.
     await page.evaluate(() => window.scrollTo(0, 0));
     await settleScroll(page);
     await page.getByRole("link", { name: "Join a class" }).first().click();
-    await settleScroll(page);
-    await expect(page.getByLabel("Enter class code")).toBeInViewport();
+    await page.waitForURL("**/join");
+    await expect(page.getByLabel("Enter class code")).toBeVisible();
 
-    // Upward, past the pinned melt, from the closing card.
+    // So does the closing band, from the bottom of the page.
+    await page.goBack();
+    await page.waitForURL("**/");
     await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
     await settleScroll(page);
     await page.getByRole("link", { name: "or enter a class code" }).click();
-    await settleScroll(page);
-    await expect(page.getByLabel("Enter class code")).toBeInViewport();
+    await page.waitForURL("**/join");
+    await expect(page.getByLabel("Enter class code")).toBeVisible();
   });
 
-  // Lenis overwrites the browser's own scroll for about 0.9s after a wheel
-  // notch unless it is reconciled. That window swallowing a keypress is a
-  // keyboard accessibility failure, and it is the thing most likely to
-  // silently come back.
+  // A scroll takeover (Lenis, since removed) once overwrote the browser's own
+  // scroll for about 0.9s after a wheel notch and swallowed a keypress inside
+  // that window, a keyboard accessibility failure and the thing most likely to
+  // silently come back. The page scrolls smoothly and the key's own animation
+  // starts after the wheel's, so the position is polled until a page's worth
+  // has been travelled rather than read the moment the wheel scroll settles.
   test("a keypress mid-scroll is not swallowed", async ({ page }) => {
     await page.goto("/");
     await page.mouse.wheel(0, 200);
     await page.waitForTimeout(80);
     await page.keyboard.press("PageDown");
-    await settleScroll(page);
-    expect(await page.evaluate(() => window.scrollY)).toBeGreaterThan(400);
+    await expect
+      .poll(() => page.evaluate(() => window.scrollY), { timeout: 4_000 })
+      .toBeGreaterThan(400);
   });
 
   test("reduced motion gets the finished story with no pin", async ({ browser }) => {

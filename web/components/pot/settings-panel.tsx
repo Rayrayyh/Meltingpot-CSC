@@ -19,10 +19,12 @@ export function SettingsPanel({
   pot,
   isOwner,
   sectionsSlot,
+  classworkSlot,
 }: {
   pot: PotContext;
   isOwner: boolean;
   sectionsSlot?: React.ReactNode;
+  classworkSlot?: React.ReactNode;
 }) {
   const router = useRouter();
   const [title, setTitle] = useState(pot.title);
@@ -55,15 +57,18 @@ export function SettingsPanel({
     if (ruleBusy) return;
     setRuleBusy(true);
     setError(null);
-    const { error: updateError } = await supabase
+    // .select proves the write landed: the update policy is owner-only and a
+    // refused update returns zero rows without an error, which is not "Saved".
+    const { data: updated, error: updateError } = await supabase
       .from("pots")
       .update({
         ...(next.joinOpen === undefined ? {} : { join_open: next.joinOpen }),
         ...(next.studyGeneration === undefined ? {} : { study_generation: next.studyGeneration }),
       })
-      .eq("id", pot.id);
+      .eq("id", pot.id)
+      .select("id");
     setRuleBusy(false);
-    if (updateError) {
+    if (updateError || !updated || updated.length === 0) {
       setError("That setting could not be saved. Try again.");
       // Put the control back where the Pot actually is.
       setJoinOpen(pot.joinOpen);
@@ -78,11 +83,14 @@ export function SettingsPanel({
     if (busy || !title.trim()) return;
     setBusy(true);
     setError(null);
-    const { error: updateError } = await supabase
+    // .select proves the write landed: a refused update returns zero rows
+    // without an error, which is not "Saved".
+    const { data: updated, error: updateError } = await supabase
       .from("pots")
       .update({ title: title.trim(), description: description.trim() || null })
-      .eq("id", pot.id);
-    if (updateError) {
+      .eq("id", pot.id)
+      .select("id");
+    if (updateError || !updated || updated.length === 0) {
       setError("Saving didn't go through. Try again.");
     } else {
       setSavedNote("Saved");
@@ -110,13 +118,14 @@ export function SettingsPanel({
 
   async function archive() {
     setBusy(true);
-    const { error: updateError } = await supabase
+    const { data: archived, error: updateError } = await supabase
       .from("pots")
       .update({ archived_at: new Date().toISOString() })
-      .eq("id", pot.id);
+      .eq("id", pot.id)
+      .select("id");
     setDialog(null);
     setBusy(false);
-    if (!updateError) {
+    if (!updateError && archived && archived.length > 0) {
       router.push("/home");
       router.refresh();
     } else {
@@ -128,12 +137,13 @@ export function SettingsPanel({
     if (busy) return;
     setBusy(true);
     setError(null);
-    const { error: updateError } = await supabase
+    const { data: restored, error: updateError } = await supabase
       .from("pots")
       .update({ archived_at: null })
-      .eq("id", pot.id);
+      .eq("id", pot.id)
+      .select("id");
     setBusy(false);
-    if (updateError) {
+    if (updateError || !restored || restored.length === 0) {
       setError("Unarchiving didn't go through. Try again.");
     } else {
       router.refresh();
@@ -142,10 +152,14 @@ export function SettingsPanel({
 
   async function deletePot() {
     setBusy(true);
-    const { error: deleteError } = await supabase.from("pots").delete().eq("id", pot.id);
+    const { data: deleted, error: deleteError } = await supabase
+      .from("pots")
+      .delete()
+      .eq("id", pot.id)
+      .select("id");
     setDialog(null);
     setBusy(false);
-    if (!deleteError) {
+    if (!deleteError && deleted && deleted.length > 0) {
       router.push("/home");
       router.refresh();
     } else {
@@ -162,14 +176,15 @@ export function SettingsPanel({
       setError("You're signed out. Sign in again to leave this Pot.");
       return;
     }
-    const { error: leaveError } = await supabase
+    const { data: left, error: leaveError } = await supabase
       .from("memberships")
       .delete()
       .eq("pot_id", pot.id)
-      .eq("user_id", userId);
+      .eq("user_id", userId)
+      .select("pot_id");
     setDialog(null);
     setBusy(false);
-    if (!leaveError) {
+    if (!leaveError && left && left.length > 0) {
       router.push("/home");
       router.refresh();
     } else {
@@ -261,6 +276,22 @@ export function SettingsPanel({
         </CardSection>
       </Card>
 
+      {/* The pots update policy is owner-only, so a maintainer's press here
+          would be refused silently. They read the rules; the owner sets them. */}
+      {!isOwner ? (
+        <Card>
+          <CardSection className="space-y-2">
+            <Eyebrow>How this Pot runs</Eyebrow>
+            <p className="text-sm text-ink">
+              Joining is {joinOpen ? "open to anyone with the code" : "closed"}.{" "}
+              {studyGeneration === "members"
+                ? "Anyone in the Pot can build study material."
+                : "Only maintainers build new study material."}
+            </p>
+            <p className="text-[13px] text-ink-muted">Only the owner can change how this Pot runs.</p>
+          </CardSection>
+        </Card>
+      ) : (
       <Card>
         <CardSection className="space-y-5">
           <Eyebrow>How this Pot runs</Eyebrow>
@@ -342,8 +373,11 @@ export function SettingsPanel({
           </div>
         </CardSection>
       </Card>
+      )}
 
       {sectionsSlot}
+
+      {classworkSlot}
 
       <Card className={isOwner ? "border-danger/25" : undefined}>
         <CardSection className={cn("space-y-3", isOwner && "text-danger")}>

@@ -31,6 +31,14 @@ export type ProposalEventKind =
   | "declined"
   | "comment";
 export type AttachmentKind = "image" | "pdf" | "file" | "link";
+export type LmsProvider = "google_classroom" | "canvas";
+export type LmsItemKind =
+  | "assignment"
+  | "quiz"
+  | "discussion"
+  | "announcement"
+  | "material"
+  | "event";
 /** Not a Postgres enum: study_sets.kind is a checked text column. */
 export type StudySetKind = "summary" | "flashcards" | "practice";
 
@@ -108,6 +116,7 @@ export type Database = {
           raw_text: string;
           section_id: string | null;
           shared_note_id: string | null;
+          source_lms_item_id: string | null;
           status: ContributionStatus;
           updated_at: string;
         };
@@ -120,6 +129,7 @@ export type Database = {
           raw_text?: string;
           section_id?: string | null;
           shared_note_id?: string | null;
+          source_lms_item_id?: string | null;
           status?: ContributionStatus;
           updated_at?: string;
         };
@@ -151,6 +161,193 @@ export type Database = {
             columns: ["shared_note_id"];
             isOneToOne: false;
             referencedRelation: "shared_notes";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "contributions_source_lms_item_id_fkey";
+            columns: ["source_lms_item_id"];
+            isOneToOne: false;
+            referencedRelation: "lms_items";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      lms_connections: {
+        Row: {
+          consent_at: string;
+          courses: Json;
+          courses_fetched_at: string | null;
+          created_at: string;
+          external_display: string | null;
+          external_user_id: string;
+          id: string;
+          instance_url: string | null;
+          last_error: string | null;
+          needs_reconnect_at: string | null;
+          provider: LmsProvider;
+          refresh_secret_id: string | null;
+          scopes: string[];
+          updated_at: string;
+          user_id: string;
+        };
+        Insert: {
+          consent_at?: string;
+          courses?: Json;
+          courses_fetched_at?: string | null;
+          created_at?: string;
+          external_display?: string | null;
+          external_user_id: string;
+          id?: string;
+          instance_url?: string | null;
+          last_error?: string | null;
+          needs_reconnect_at?: string | null;
+          provider: LmsProvider;
+          refresh_secret_id?: string | null;
+          scopes?: string[];
+          updated_at?: string;
+          user_id: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["lms_connections"]["Insert"]>;
+        Relationships: [
+          {
+            foreignKeyName: "lms_connections_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      lms_course_links: {
+        Row: {
+          connection_id: string;
+          course_name: string;
+          course_url: string | null;
+          created_at: string;
+          enrollment: string;
+          external_course_id: string;
+          id: string;
+          item_count: number;
+          pot_id: string | null;
+          provider: LmsProvider;
+          sync_cursor: Json;
+          sync_error: string | null;
+          sync_finished_at: string | null;
+          sync_started_at: string | null;
+          sync_status: string;
+          user_id: string;
+        };
+        Insert: {
+          connection_id: string;
+          course_name: string;
+          course_url?: string | null;
+          created_at?: string;
+          enrollment?: string;
+          external_course_id: string;
+          id?: string;
+          item_count?: number;
+          pot_id?: string | null;
+          provider: LmsProvider;
+          sync_cursor?: Json;
+          sync_error?: string | null;
+          sync_finished_at?: string | null;
+          sync_started_at?: string | null;
+          sync_status?: string;
+          user_id: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["lms_course_links"]["Insert"]>;
+        Relationships: [
+          {
+            foreignKeyName: "lms_course_links_connection_id_fkey";
+            columns: ["connection_id"];
+            isOneToOne: false;
+            referencedRelation: "lms_connections";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "lms_course_links_pot_id_fkey";
+            columns: ["pot_id"];
+            isOneToOne: false;
+            referencedRelation: "pots";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "lms_course_links_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      lms_items: {
+        Row: {
+          available_from: string | null;
+          changed_at: string;
+          content_hash: string;
+          description: string;
+          due_all_day: boolean;
+          due_at: string | null;
+          external_id: string;
+          external_updated_at: string | null;
+          first_seen_at: string;
+          id: string;
+          kind: LmsItemKind;
+          last_seen_at: string;
+          link_id: string;
+          materials: Json;
+          posted_at: string | null;
+          pot_id: string | null;
+          provider: LmsProvider;
+          removed_at: string | null;
+          title: string;
+          url: string | null;
+          user_id: string;
+        };
+        Insert: {
+          available_from?: string | null;
+          changed_at?: string;
+          content_hash: string;
+          description?: string;
+          due_all_day?: boolean;
+          due_at?: string | null;
+          external_id: string;
+          external_updated_at?: string | null;
+          first_seen_at?: string;
+          id?: string;
+          kind: LmsItemKind;
+          last_seen_at?: string;
+          link_id: string;
+          materials?: Json;
+          posted_at?: string | null;
+          pot_id?: string | null;
+          provider: LmsProvider;
+          removed_at?: string | null;
+          title: string;
+          url?: string | null;
+          user_id: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["lms_items"]["Insert"]>;
+        Relationships: [
+          {
+            foreignKeyName: "lms_items_link_id_fkey";
+            columns: ["link_id"];
+            isOneToOne: false;
+            referencedRelation: "lms_course_links";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "lms_items_pot_id_fkey";
+            columns: ["pot_id"];
+            isOneToOne: false;
+            referencedRelation: "pots";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "lms_items_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
             referencedColumns: ["id"];
           },
         ];
@@ -266,6 +463,45 @@ export type Database = {
           },
         ];
       };
+      pot_preferences: {
+        Row: {
+          favorited_at: string | null;
+          last_viewed_at: string | null;
+          position: number | null;
+          pot_id: string;
+          user_id: string;
+        };
+        Insert: {
+          favorited_at?: string | null;
+          last_viewed_at?: string | null;
+          position?: number | null;
+          pot_id: string;
+          user_id: string;
+        };
+        Update: {
+          favorited_at?: string | null;
+          last_viewed_at?: string | null;
+          position?: number | null;
+          pot_id?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "pot_preferences_pot_id_fkey";
+            columns: ["pot_id"];
+            isOneToOne: false;
+            referencedRelation: "pots";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "pot_preferences_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       pots: {
         Row: {
           archived_at: string | null;
@@ -305,12 +541,14 @@ export type Database = {
           created_at: string;
           display_name: string;
           avatar_url: string | null;
+          clerk_id: string | null;
           id: string;
         };
         Insert: {
           created_at?: string;
           display_name: string;
           avatar_url?: string | null;
+          clerk_id?: string | null;
           id: string;
         };
         Update: Partial<Database["public"]["Tables"]["profiles"]["Insert"]>;
@@ -519,6 +757,35 @@ export type Database = {
           },
         ];
       };
+      sidebar_preferences: {
+        Row: {
+          nav_hidden: string[];
+          nav_order: string[];
+          updated_at: string;
+          user_id: string;
+        };
+        Insert: {
+          nav_hidden?: string[];
+          nav_order?: string[];
+          updated_at?: string;
+          user_id: string;
+        };
+        Update: {
+          nav_hidden?: string[];
+          nav_order?: string[];
+          updated_at?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "sidebar_preferences_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: true;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       study_attempts: {
         Row: {
           id: string;
@@ -567,6 +834,7 @@ export type Database = {
           options: Json | null;
           generated_by: string;
           secured: boolean;
+          generation: number;
           created_at: string;
           removed_at: string | null;
           removed_by: string | null;
@@ -582,6 +850,7 @@ export type Database = {
           options?: Json | null;
           generated_by: string;
           secured?: boolean;
+          generation?: number;
           removed_at?: string | null;
           removed_by?: string | null;
           removed_reason?: string | null;
@@ -664,6 +933,11 @@ export type Database = {
         Args: { p_kind: string };
         Returns: undefined;
       };
+      current_uid: { Args: never; Returns: string | null };
+      ensure_profile: {
+        Args: { p_display_name: string };
+        Returns: string;
+      };
       create_pot: {
         Args: { p_description?: string; p_title: string };
         Returns: Json;
@@ -694,6 +968,10 @@ export type Database = {
       register_student: {
         Args: { p_display_name: string; p_email: string; p_password: string };
         Returns: string;
+      };
+      sign_up_student: {
+        Args: { p_display_name: string; p_email: string; p_password: string };
+        Returns: Json;
       };
       remove_member: {
         Args: { p_pot_id: string; p_user_id: string };
@@ -753,8 +1031,17 @@ export type Database = {
         Returns: string;
       };
       submit_practice_test: {
-        Args: { p_attempt_id: string; p_set_id: string; p_answers: Json };
+        Args: {
+          p_attempt_id: string;
+          p_set_id: string;
+          p_answers: Json;
+          p_generation?: number | null;
+        };
         Returns: Json;
+      };
+      study_set_removed_for: {
+        Args: { p_pot_id: string; p_kind: string; p_fingerprint: string };
+        Returns: boolean;
       };
       record_flashcard_run: {
         Args: {
@@ -787,10 +1074,102 @@ export type Database = {
         Args: { p_note_id: string; p_removed: boolean; p_reason: string };
         Returns: undefined;
       };
+      link_lms_course: {
+        Args: {
+          p_connection_id: string;
+          p_course_name: string;
+          p_course_url: string | null;
+          p_enrollment: string;
+          p_external_course_id: string;
+          p_pot_id?: string | null;
+        };
+        Returns: string;
+      };
+      unlink_lms_course: {
+        Args: { p_link_id: string };
+        Returns: undefined;
+      };
+      lms_connect: {
+        Args: {
+          p_courses: Json;
+          p_external_display: string | null;
+          p_external_user_id: string;
+          p_instance_url: string | null;
+          p_provider: LmsProvider;
+          p_refresh_token: string;
+          p_scopes: string[];
+          p_server_key: string;
+        };
+        Returns: string;
+      };
+      lms_disconnect: {
+        Args: { p_connection_id: string; p_server_key: string };
+        Returns: string | null;
+      };
+      lms_set_courses: {
+        Args: { p_connection_id: string; p_courses: Json; p_server_key: string };
+        Returns: undefined;
+      };
+      lms_sync_begin: {
+        Args: { p_force: boolean; p_link_id: string; p_server_key: string };
+        Returns: Json;
+      };
+      lms_sync_apply: {
+        Args: {
+          p_cursor: Json;
+          p_done: boolean;
+          p_items: Json;
+          p_link_id: string;
+          p_server_key: string;
+        };
+        Returns: Json;
+      };
+      lms_sync_finish: {
+        Args: {
+          p_error: string | null;
+          p_link_id: string;
+          p_server_key: string;
+          p_status: string;
+        };
+        Returns: undefined;
+      };
+      lms_connection_token: {
+        Args: { p_connection_id: string; p_server_key: string };
+        Returns: string | null;
+      };
+      lms_connection_needs_reconnect: {
+        Args: { p_connection_id: string; p_error: string | null; p_server_key: string };
+        Returns: undefined;
+      };
+      lms_sync_claim_due: {
+        Args: { p_server_key: string };
+        Returns: Json;
+      };
+      lms_cron_apply: {
+        Args: {
+          p_cursor: Json;
+          p_done: boolean;
+          p_items: Json;
+          p_link_id: string;
+          p_server_key: string;
+        };
+        Returns: Json;
+      };
+      lms_cron_finish: {
+        Args: {
+          p_error: string | null;
+          p_link_id: string;
+          p_server_key: string;
+          p_status: string;
+        };
+        Returns: undefined;
+      };
     };
     Enums: {
       attachment_kind: AttachmentKind;
       contribution_status: ContributionStatus;
+      lms_item_kind: LmsItemKind;
+      lms_provider: LmsProvider;
       pot_role: PotRole;
       proposal_event_kind: ProposalEventKind;
       proposal_status: ProposalStatus;

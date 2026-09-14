@@ -25,7 +25,7 @@ const LOOP = [
   {
     icon: PencilSimple,
     title: "Write it rough",
-    body: "Type what you remember, attach a photo of the whiteboard, paste a link. No formatting, no minimum polish.",
+    body: "Type what you remember, attach a photo of the whiteboard, paste a link. No formatting. It does not have to be neat.",
   },
   {
     icon: Sparkle,
@@ -35,7 +35,7 @@ const LOOP = [
   {
     icon: CheckCircle,
     title: "You review and edit",
-    body: "Change anything: the title, the structure, every word. The organized version is a draft of yours, not a decision made for you.",
+    body: "Change anything you like, the title, the structure, every word. What comes back is a draft of yours, not a decision made for you.",
   },
   {
     icon: PaperPlaneTilt,
@@ -61,13 +61,13 @@ export default async function ContributionsPage() {
           </h1>
           <p className="max-w-2xl text-lg sm:text-xl text-ink-muted leading-relaxed">
             A contribution is anything you know that your class does not have
-            yet. It travels four short steps, and you hold the pen at every
-            one of them.
+            yet. It goes through four steps, and you decide at every one of
+            them.
           </p>
         </div>
       </section>
 
-      <section className="px-6 sm:px-10 py-20 sm:py-28 bg-surface border-y border-edge">
+      <section id="how" className="scroll-mt-24 px-6 sm:px-10 py-20 sm:py-28 bg-surface border-y border-edge">
         <Reveal className="mx-auto w-full max-w-5xl space-y-14">
           <div className="max-w-lg space-y-3">
             <p className="text-[12px] font-semibold tracking-[0.14em] uppercase text-clay">
@@ -100,9 +100,9 @@ export default async function ContributionsPage() {
             <Signature className="size-7 text-primary" weight="duotone" aria-hidden />
             <h3 className="text-lg font-semibold text-ink">Your name stays on it</h3>
             <p className="text-sm text-ink-muted leading-relaxed">
-              Shared notes carry their contributors. When a correction lands,
-              both the original author and the person who fixed it appear in
-              the version history, permanently.
+              Shared notes carry their contributors. When a correction goes
+              through, the person who wrote the note and the person who fixed
+              it both appear in the version history, and they stay there.
             </p>
           </div>
           <div className="bg-surface border border-edge rounded-(--radius-card) p-8 space-y-4 shadow-(--shadow-card)">
@@ -110,14 +110,14 @@ export default async function ContributionsPage() {
             <h3 className="text-lg font-semibold text-ink">A private record of your days</h3>
             <p className="text-sm text-ink-muted leading-relaxed">
               Your run of days is yours alone. Nobody else sees it, where you
-              stand in a class is shown only to you, and a quiet stretch shows
-              the run you already managed rather than a zero.
+              stand in a class is shown only to you, and after a quiet week it
+              shows the run you already managed instead of a zero.
             </p>
           </div>
         </Reveal>
       </section>
 
-      <section className="px-6 sm:px-10 pb-24 sm:pb-32">
+      <section id="corrections" className="scroll-mt-24 px-6 sm:px-10 pb-24 sm:pb-32">
         <Reveal className="mx-auto w-full max-w-5xl space-y-8">
           <div className="max-w-xl space-y-3">
             <p className="text-[12px] font-semibold tracking-[0.14em] uppercase text-clay">
@@ -128,8 +128,9 @@ export default async function ContributionsPage() {
             </h2>
             <p className="text-base text-ink-muted leading-relaxed">
               Anyone in the class can propose a fix to a shared note, with a
-              reason and sources. A maintainer reviews it and decides. Nothing
-              in the vault ever changes silently, and no version is ever lost.
+              reason and sources. A maintainer reads it and decides. Nothing
+              changes without a person choosing it, and the old version stays
+              where it is.
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-6">

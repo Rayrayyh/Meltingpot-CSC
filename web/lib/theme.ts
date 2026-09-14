@@ -4,8 +4,9 @@
  * Three states, and the difference between them matters. "light" and "dark"
  * are explicit choices. "system" is also an explicit choice: it says follow
  * the operating system, and it is stored so that it can be told apart from
- * never having chosen at all. Nothing stored means dark, the owner's call on
- * 2026-08-30; the cream paper light theme stays one tap away in the header.
+ * never having chosen at all. Nothing stored means light, the owner's call on
+ * 2026-09-08 (dark had been the default since 2026-08-30); the dark theme
+ * stays one tap away in the header.
  */
 
 export const THEME_STORAGE_KEY = "mp-theme";
@@ -14,7 +15,7 @@ export const THEME_EVENT = "mp-theme-change";
 export type ThemeChoice = "system" | "light" | "dark";
 
 /** What a viewer who has never chosen gets. */
-export const DEFAULT_THEME: ThemeChoice = "dark";
+export const DEFAULT_THEME: ThemeChoice = "light";
 
 export function readThemeChoice(): ThemeChoice {
   try {
@@ -32,7 +33,7 @@ export function resolveTheme(choice: ThemeChoice): "light" | "dark" {
   try {
     return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
   } catch {
-    return "dark";
+    return "light";
   }
 }
 
@@ -51,13 +52,25 @@ export function applyThemeChoice(next: ThemeChoice) {
 
 /** Fires on this tab's own changes and on another tab's. */
 export function subscribeToTheme(onChange: () => void) {
+  // A choice made in another tab arrives as a storage event. The controls
+  // used to follow it while the page itself kept the old theme; the attribute
+  // is restamped from what is stored, without writing it back or announcing
+  // it again, before the listener hears.
+  const onStorage = (event: StorageEvent) => {
+    if (event.key !== null && event.key !== THEME_STORAGE_KEY) return;
+    const choice = readThemeChoice();
+    const root = document.documentElement;
+    if (choice === "system") root.removeAttribute("data-theme");
+    else root.setAttribute("data-theme", choice);
+    onChange();
+  };
   window.addEventListener(THEME_EVENT, onChange);
-  window.addEventListener("storage", onChange);
+  window.addEventListener("storage", onStorage);
   const media = window.matchMedia("(prefers-color-scheme: dark)");
   media.addEventListener("change", onChange);
   return () => {
     window.removeEventListener(THEME_EVENT, onChange);
-    window.removeEventListener("storage", onChange);
+    window.removeEventListener("storage", onStorage);
     media.removeEventListener("change", onChange);
   };
 }

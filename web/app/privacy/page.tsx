@@ -16,7 +16,7 @@ export default async function PrivacyPage() {
       signedIn={Boolean(user)}
       eyebrow="What we know and who sees it"
       title="Privacy policy"
-      updated="2 September 2026"
+      updated="8 September 2026"
     >
       <section>
         <h2>What we collect</h2>
@@ -26,6 +26,10 @@ export default async function PrivacyPage() {
           <li>Which classes you belong to and your role in them.</li>
           <li>
             A private record of the days you contributed, shown only to you.
+          </li>
+          <li>
+            If you connect Google Classroom or Canvas: the account name it
+            reports, your course list, and what those courses publish.
           </li>
         </ul>
         <p>
@@ -58,12 +62,36 @@ export default async function PrivacyPage() {
         </p>
       </section>
       <section>
+        <h2>Connected classes</h2>
+        <p>
+          Connecting Google Classroom or Canvas is optional. When you do,
+          MeltingPot reads the courses you belong to and what they publish:
+          assignments, due dates, announcements, and links to materials. It
+          reads only. Nothing you do here is sent back to the school, and
+          no grade, submission, or roster is read. Files in Google Drive are
+          never downloaded; a material is a link that opens where the
+          teacher put it.
+        </p>
+        <p>
+          The token that lets us read is stored encrypted in the database
+          and is only ever used on our server. Disconnecting deletes that
+          token and everything it brought in; notes you started from an
+          assignment stay yours. While our Google integration is in
+          Google&apos;s testing status, a connection lapses after seven days
+          and asks you to reconnect. A course a class maintainer links to a
+          Pot is visible to every member of that Pot; a course you keep in
+          your own calendar is visible to you alone.
+        </p>
+      </section>
+      <section>
         <h2>Where it lives</h2>
         <p>
-          Data is stored in Supabase, which runs on managed cloud
-          infrastructure. Every table is protected by row level security, so
-          the database itself enforces who can read what, and accounts that
-          maintain classes can turn on two-step sign in.
+          Sign in is handled by Clerk: your email address, password,
+          authenticator secret if you set one up, and your sessions live
+          there. Your notes and class data are stored in Supabase, which runs
+          on managed cloud infrastructure. Every table is protected by row
+          level security, so the database itself enforces who can read what,
+          and accounts that maintain classes can turn on two-step sign in.
         </p>
       </section>
       <section>

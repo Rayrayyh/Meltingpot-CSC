@@ -3,6 +3,7 @@
 import { motion, useMotionValue, useReducedMotion, useSpring } from "framer-motion";
 import {
   type ComponentProps,
+  type Ref,
   useCallback,
   useEffect,
   useRef,
@@ -37,17 +38,57 @@ function passwordChar() {
   return /firefox|fxios/i.test(navigator.userAgent) ? "●" : "•";
 }
 
+/**
+ * Every computed property that changes how wide a run of text comes out.
+ *
+ * The measure span is a sibling of the input rather than a child, so it
+ * inherits none of this and every one of them has to be copied or the
+ * measurement is wrong by the difference. text-transform is the one that bites
+ * hardest: a field styled uppercase renders six wide capitals while the span,
+ * fed the same string, measures six narrow lowercase letters.
+ *
+ * The order matters. Assigning the `font` shorthand resets font-variant,
+ * font-kerning, font-feature-settings, font-stretch and font-size-adjust to
+ * their initial values, so the shorthand goes on first and these follow it.
+ */
+function copyMetrics(measure: HTMLSpanElement, styles: CSSStyleDeclaration) {
+  measure.style.font = `${styles.fontStyle} ${styles.fontWeight} ${styles.fontSize} ${styles.fontFamily}`;
+  measure.style.fontStretch = styles.fontStretch;
+  measure.style.fontVariant = styles.fontVariant;
+  measure.style.fontKerning = styles.fontKerning;
+  measure.style.fontFeatureSettings = styles.fontFeatureSettings;
+  measure.style.fontVariationSettings = styles.fontVariationSettings;
+  measure.style.letterSpacing = styles.letterSpacing;
+  measure.style.wordSpacing = styles.wordSpacing;
+  measure.style.textTransform = styles.textTransform;
+  measure.style.textRendering = styles.textRendering;
+  measure.style.tabSize = styles.tabSize;
+  measure.style.direction = styles.direction;
+}
+
 export function SmoothCaretInput({
   className,
   onChange,
   onBlur,
+  ref,
   ...props
-}: ComponentProps<"input">) {
+}: ComponentProps<"input"> & { ref?: Ref<HTMLInputElement> }) {
   const caretX = useMotionValue(0);
   const caretOpacity = useMotionValue(0);
   const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const measureRef = useRef<HTMLSpanElement>(null);
+  const caretRef = useRef<HTMLSpanElement>(null);
+  // True between compositionstart and compositionend. A CJK or accent
+  // composition shows its own underlined preedit run and moves the selection
+  // around inside it, so a second caret drawn over the top is noise.
+  const composing = useRef(false);
+  // Armed on focus, consumed by the first measurement after it. The focus
+  // event itself cannot do the placing: on a click it fires before the browser
+  // has moved the selection to the pointer, so a jump made there lands on the
+  // old position and the real one then arrives as a spring, which is the exact
+  // fly-in this exists to prevent.
+  const placeInstantly = useRef(false);
   const prefersReducedMotion = useReducedMotion();
   const springCaretX = useSpring(caretX, prefersReducedMotion ? RIGID : SPRING);
 
@@ -55,12 +96,13 @@ export function SmoothCaretInput({
     (target: HTMLInputElement) => {
       const measure = measureRef.current;
       if (!measure) return;
+      const instant = placeInstantly.current;
+      placeInstantly.current = false;
 
       const styles = window.getComputedStyle(target);
       // The hidden span has to be the input's font exactly, or every
       // measurement is off by the difference.
-      measure.style.font = `${styles.fontStyle} ${styles.fontWeight} ${styles.fontSize} ${styles.fontFamily}`;
-      measure.style.letterSpacing = styles.letterSpacing;
+      copyMetrics(measure, styles);
 
       const start = target.selectionStart ?? 0;
       const end = target.selectionEnd ?? 0;
@@ -68,36 +110,94 @@ export function SmoothCaretInput({
       const index =
         start === end ? start : target.selectionDirection === "backward" ? start : end;
 
-      const before =
-        target.type === "password"
-          ? passwordChar().repeat(index)
-          : target.value.slice(0, index);
+      const masked = target.type === "password";
+      const value = masked ? passwordChar().repeat(target.value.length) : target.value;
+      const before = masked ? passwordChar().repeat(index) : value.slice(0, index);
 
       const paddingLeft = parseFloat(styles.paddingLeft) || 0;
       const paddingRight = parseFloat(styles.paddingRight) || 0;
+      // The caret is positioned from the input's border box, clientWidth is
+      // measured inside its border, so the border has to be added back or the
+      // caret sits a pixel left of every character.
+      const borderLeft = parseFloat(styles.borderLeftWidth) || 0;
+      const inner = Math.max(0, target.clientWidth - paddingLeft - paddingRight);
+
+      // The caret's height follows the field's type size, not the wrapper's.
+      // An em on the caret itself would resolve against the wrapper, which is
+      // 16px in a form that sets the class code at 24.
+      const caret = caretRef.current;
+      if (caret) caret.style.height = `${(parseFloat(styles.fontSize) || 16) * 1.1}px`;
+
+      // Bounding rects keep the fraction that offsetWidth rounds away, which
+      // centring then halves into a visible half pixel. They are in viewport
+      // space, though, and the caret is placed in the field's own space, so
+      // any scale an ancestor is applying (a card mid entrance, say) has to
+      // be divided back out or the caret drifts for the length of it.
+      const host = containerRef.current;
+      const scale =
+        host && host.offsetWidth > 0 ? host.getBoundingClientRect().width / host.offsetWidth : 1;
+      const width = () => measure.getBoundingClientRect().width / (scale || 1);
       measure.textContent = before;
-      const absolute = before.length > 0 ? measure.offsetWidth + paddingLeft : paddingLeft - 1;
+      const beforeWidth = before.length > 0 ? width() : 0;
+
+      /**
+       * Where the text begins inside the content box.
+       *
+       * Left aligned that is just the left padding, which is what this used to
+       * assume for every field. A centered field is the class code box, six
+       * wide letter spaced characters in the middle of a sixteen line tall
+       * control, and there the run starts wherever the browser put it, so the
+       * whole value has to be measured too. Once the value is wider than the
+       * box the browser stops centering and scrolls it like a left aligned
+       * field, which is what clamping at zero reproduces.
+       */
+      const align = styles.textAlign;
+      const rtl = styles.direction === "rtl";
+      const trailing = align === "right" || align === "end" || (rtl && align === "start");
+      const centered = align === "center";
+      let origin = borderLeft + paddingLeft;
+      if (centered || trailing) {
+        measure.textContent = value;
+        const fullWidth = value.length > 0 ? width() : 0;
+        const slack = Math.max(0, inner - fullWidth);
+        origin += centered ? slack / 2 : slack;
+        measure.textContent = before;
+      }
+
+      const absolute = before.length > 0 ? origin + beforeWidth : origin - 1;
 
       // Keep the caret inside the visible strip when the value is longer than
       // the field, matching what the native caret would do.
       const maxScroll = Math.max(0, target.scrollWidth - target.clientWidth);
-      const visibleRight = target.scrollLeft + target.clientWidth - paddingRight;
-      const visibleLeft = target.scrollLeft + paddingLeft;
+      const visibleRight = target.scrollLeft + borderLeft + target.clientWidth - paddingRight;
+      const visibleLeft = target.scrollLeft + borderLeft + paddingLeft;
       if (absolute > visibleRight) {
-        target.scrollLeft = Math.min(absolute - target.clientWidth + paddingRight, maxScroll);
+        target.scrollLeft = Math.min(absolute - visibleRight + target.scrollLeft, maxScroll);
       } else if (absolute < visibleLeft) {
-        target.scrollLeft = Math.max(0, absolute - paddingLeft);
+        target.scrollLeft = Math.max(0, absolute - borderLeft - paddingLeft);
       }
 
       const x = absolute - target.scrollLeft;
-      const minX = paddingLeft - 1;
-      const maxX = target.clientWidth - paddingRight;
-      caretX.set(Math.min(x, maxX));
+      const minX = Math.min(borderLeft + paddingLeft, origin) - 1;
+      const maxX = borderLeft + target.clientWidth - paddingRight;
+      // On focus the caret is placed, not flown in. The motion value starts
+      // at 0, so without this a click into the middle of a filled field sent
+      // the bar springing from the left border to the character, a journey
+      // the native caret never makes.
+      if (instant) {
+        caretX.jump(Math.min(x, maxX));
+        springCaretX.jump(Math.min(x, maxX));
+      } else {
+        caretX.set(Math.min(x, maxX));
+      }
       // Hidden while a range is selected: the browser draws that highlight and
-      // a caret sitting inside it reads as a second cursor.
-      caretOpacity.set(!hasSelection && x >= minX && x <= maxX + 1 ? 1 : 0);
+      // a caret sitting inside it reads as a second cursor. Hidden mid
+      // composition for the same reason, the preedit run is its own cursor.
+      caretOpacity.set(
+        !hasSelection && !composing.current && x >= minX && x <= maxX + 1 ? 1 : 0,
+      );
     },
-    [caretX, caretOpacity],
+    [caretX, springCaretX, caretOpacity],
   );
 
   // Assigned in an effect rather than during render: React reserves render
@@ -115,16 +215,33 @@ export function SmoothCaretInput({
     const refresh = () => {
       if (document.activeElement === input) updateRef.current(input);
     };
+    const onFocus = () => {
+      placeInstantly.current = true;
+      // Two frames: the selection a click sets is in place by then, and if no
+      // selectionchange ever fires (a programmatic focus) this still places
+      // the caret rather than leaving it wherever it last was.
+      requestAnimationFrame(() => requestAnimationFrame(refresh));
+    };
     // selectionchange is the only event that fires for arrow keys, clicks into
     // the middle of a value, and select-all alike.
     const onSelectionChange = () => {
       if (document.activeElement !== input) return;
       requestAnimationFrame(refresh);
     };
+    const onCompositionStart = () => {
+      composing.current = true;
+      refresh();
+    };
+    const onCompositionEnd = () => {
+      composing.current = false;
+      requestAnimationFrame(refresh);
+    };
 
     document.addEventListener("selectionchange", onSelectionChange);
     input.addEventListener("scroll", refresh);
-    input.addEventListener("focus", refresh);
+    input.addEventListener("focus", onFocus);
+    input.addEventListener("compositionstart", onCompositionStart);
+    input.addEventListener("compositionend", onCompositionEnd);
     // Webfonts land after first paint and change every measurement.
     document.fonts?.addEventListener("loadingdone", refresh);
     void document.fonts?.ready.then(refresh);
@@ -136,7 +253,9 @@ export function SmoothCaretInput({
     return () => {
       document.removeEventListener("selectionchange", onSelectionChange);
       input.removeEventListener("scroll", refresh);
-      input.removeEventListener("focus", refresh);
+      input.removeEventListener("focus", onFocus);
+      input.removeEventListener("compositionstart", onCompositionStart);
+      input.removeEventListener("compositionend", onCompositionEnd);
       document.fonts?.removeEventListener("loadingdone", refresh);
       observer.disconnect();
     };
@@ -146,26 +265,45 @@ export function SmoothCaretInput({
     <div ref={containerRef} className="relative grid grid-cols-1">
       <input
         {...props}
-        ref={inputRef}
+        // The component owns this ref to measure with, so a caller's ref is
+        // filled in alongside rather than replacing it. Search reads the live
+        // value off its own ref, and a field it cannot reach is a worse bug
+        // than a caret that does not glide.
+        ref={(node) => {
+          inputRef.current = node;
+          if (typeof ref === "function") ref(node);
+          else if (ref) ref.current = node;
+        }}
         onChange={(e) => {
           onChange?.(e);
           const target = e.currentTarget;
-          requestAnimationFrame(() => updateRef.current(target));
+          // Two frames. A controlled field whose onChange rewrites the value,
+          // as the class code box does when it uppercases and strips
+          // separators, has not committed that value to the DOM by the next
+          // frame, so measuring then measures the text the user typed rather
+          // than the text on screen.
+          requestAnimationFrame(() =>
+            requestAnimationFrame(() => updateRef.current(target)),
+          );
         }}
         onBlur={(e) => {
           caretOpacity.set(0);
           onBlur?.(e);
         }}
-        className={cn("col-start-1 row-start-1 [caret-color:transparent]", className)}
+        className={cn("mp-caret-host col-start-1 row-start-1 [caret-color:transparent]", className)}
       />
-      <span
-        ref={measureRef}
-        aria-hidden
-        className="pointer-events-none invisible absolute left-0 top-0 whitespace-pre"
-      />
+      {/* The measure span sits in a box with no size, so a long value in a
+          field near the right edge cannot push a horizontal scrollbar onto the
+          page. whitespace-pre is load bearing: it is what keeps the span at its
+          full text width inside a zero width parent, and without it every
+          measurement would silently be 0. */}
+      <span aria-hidden className="pointer-events-none absolute left-0 top-0 h-0 w-0 overflow-hidden">
+        <span ref={measureRef} className="invisible whitespace-pre" />
+      </span>
       <motion.span
+        ref={caretRef}
         aria-hidden
-        className="pointer-events-none col-start-1 row-start-1 h-[1.1em] w-0.5 self-center rounded-full bg-primary"
+        className="mp-caret-bar pointer-events-none col-start-1 row-start-1 h-[1.1em] w-0.5 self-center rounded-full bg-primary"
         style={{ x: springCaretX, opacity: caretOpacity }}
       />
     </div>

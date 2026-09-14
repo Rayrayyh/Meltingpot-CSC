@@ -1,0 +1,525 @@
+<title>The MeltingPot Logbook</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap">
+
+<style>
+:root{
+  --ground:#f2f1ed;
+  --surface:#fbfaf8;
+  --sunken:#e9e7e0;
+  --ink:#191817;
+  --ink-2:#5d5952;
+  --ink-3:#8d887e;
+  --rule:#ddd9d0;
+  --rule-strong:#c7c1b4;
+  --accent:#ab5a14;
+  --accent-soft:#f3e3ce;
+  --undone:#9a3d2c;
+  --undone-soft:#f6e0da;
+  --kept:#3d6b4f;
+  --shadow:0 1px 2px rgba(25,24,23,.05);
+  --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+  --display:"Archivo","Helvetica Neue",Helvetica,Arial,sans-serif;
+  --serif:"Source Serif 4",Georgia,"Times New Roman",serif;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --ground:#161513;
+    --surface:#1e1c19;
+    --sunken:#252220;
+    --ink:#ecebe4;
+    --ink-2:#a49e94;
+    --ink-3:#7b756b;
+    --rule:#302d28;
+    --rule-strong:#433e37;
+    --accent:#f19a44;
+    --accent-soft:#3a2a17;
+    --undone:#e08a72;
+    --undone-soft:#3a221c;
+    --kept:#7fb894;
+    --shadow:0 1px 2px rgba(0,0,0,.35);
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#161513;
+  --surface:#1e1c19;
+  --sunken:#252220;
+  --ink:#ecebe4;
+  --ink-2:#a49e94;
+  --ink-3:#7b756b;
+  --rule:#302d28;
+  --rule-strong:#433e37;
+  --accent:#f19a44;
+  --accent-soft:#3a2a17;
+  --undone:#e08a72;
+  --undone-soft:#3a221c;
+  --kept:#7fb894;
+  --shadow:0 1px 2px rgba(0,0,0,.35);
+}
+
+*{box-sizing:border-box}
+body{
+  background:var(--ground);
+  color:var(--ink);
+  font-family:var(--serif);
+  font-size:17px;
+  line-height:1.62;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1080px;margin:0 auto;padding:0 28px 96px}
+@media(max-width:640px){.wrap{padding:0 18px 64px}}
+
+h1,h2,h3,h4{font-family:var(--display);text-wrap:balance;margin:0;line-height:1.16}
+p{margin:0}
+a{color:var(--accent)}
+.mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
+.eyebrow{
+  font-family:var(--mono);font-size:11px;font-weight:600;
+  letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3);
+}
+
+/* masthead */
+.mast{border-bottom:2px solid var(--ink);padding:56px 0 22px;margin-bottom:0}
+.mast h1{font-size:clamp(38px,6.4vw,68px);font-weight:700;letter-spacing:-.028em;margin:14px 0 0}
+.mast .dek{font-size:clamp(18px,2.2vw,21px);color:var(--ink-2);max-width:60ch;margin-top:18px}
+.mastmeta{
+  display:flex;flex-wrap:wrap;gap:8px 26px;margin-top:26px;
+  font-family:var(--mono);font-size:12px;color:var(--ink-3);
+  font-variant-numeric:tabular-nums;
+}
+.mastmeta b{color:var(--ink-2);font-weight:500}
+
+/* correction */
+.correction{
+  margin:34px 0 0;padding:26px 28px;background:var(--surface);
+  border:1px solid var(--rule);border-left:3px solid var(--undone);border-radius:3px;
+}
+.correction h2{font-size:19px;font-weight:600;letter-spacing:-.01em}
+.correction p{margin-top:10px;color:var(--ink-2);font-size:16px;max-width:66ch}
+.vs{
+  display:grid;grid-template-columns:1fr auto auto;gap:1px;
+  margin-top:20px;background:var(--rule);border:1px solid var(--rule);border-radius:2px;
+  overflow:hidden;font-family:var(--mono);font-size:13px;font-variant-numeric:tabular-nums;
+}
+.vs>*{background:var(--surface);padding:9px 14px}
+.vs .hd{font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);background:var(--sunken)}
+.vs .num{text-align:right;white-space:nowrap}
+.vs .was{color:var(--ink-3);text-decoration:line-through;text-decoration-thickness:1px}
+.vs .is{color:var(--ink);font-weight:600}
+
+/* section frame */
+section{margin-top:72px}
+.shead{display:flex;align-items:baseline;gap:16px;border-bottom:1px solid var(--rule-strong);padding-bottom:12px;margin-bottom:28px}
+.shead h2{font-size:clamp(23px,3vw,30px);font-weight:700;letter-spacing:-.02em}
+.shead .n{font-family:var(--mono);font-size:12px;color:var(--ink-3);font-weight:500}
+.lede{color:var(--ink-2);max-width:68ch;font-size:17px}
+
+/* stats */
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(146px,1fr));gap:1px;background:var(--rule);border:1px solid var(--rule);border-radius:2px;overflow:hidden}
+.stat{background:var(--surface);padding:18px 16px 16px}
+.stat .v{font-family:var(--mono);font-size:26px;font-weight:600;letter-spacing:-.02em;font-variant-numeric:tabular-nums;line-height:1.1}
+.stat .k{font-family:var(--mono);font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-3);margin-top:7px}
+.stat .s{font-size:13px;color:var(--ink-3);margin-top:4px;font-family:var(--display)}
+
+/* chart */
+.chartbox{background:var(--surface);border:1px solid var(--rule);border-radius:3px;padding:24px 22px 18px;overflow-x:auto}
+.chart{min-width:660px}
+.crow{display:grid;grid-template-columns:96px 1fr;gap:14px;align-items:end;margin-bottom:16px}
+.clabel{font-family:var(--mono);font-size:10.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-3);padding-bottom:4px;line-height:1.35}
+.clabel b{display:block;color:var(--ink-2);font-weight:600;font-size:11px}
+.bars{display:grid;grid-template-columns:repeat(22,1fr);gap:3px;align-items:end;height:74px;position:relative}
+.bar{background:var(--accent);border-radius:2px 2px 0 0;min-height:1.5px;position:relative;transition:opacity .12s}
+.bar:hover{opacity:.62}
+.bar.zero{background:var(--rule-strong);height:1.5px !important;border-radius:0}
+.bar.mark{outline:1px solid var(--ink);outline-offset:1px}
+.axis{display:grid;grid-template-columns:96px 1fr;gap:14px;border-top:1px solid var(--rule);padding-top:8px}
+.days{display:grid;grid-template-columns:repeat(22,1fr);gap:3px;font-family:var(--mono);font-size:9px;color:var(--ink-3);text-align:center;font-variant-numeric:tabular-nums}
+.days span{overflow:hidden}
+.days .mth{color:var(--ink-2);font-weight:600}
+.peak{position:absolute;top:-15px;font-family:var(--mono);font-size:9.5px;color:var(--ink-2);white-space:nowrap;transform:translateX(-50%);font-variant-numeric:tabular-nums}
+.cnote{font-family:var(--mono);font-size:11px;color:var(--ink-3);margin-top:12px;display:flex;flex-wrap:wrap;gap:6px 20px}
+
+/* phases */
+.phase{border-top:1px solid var(--rule);padding-top:26px;margin-top:34px}
+.phase:first-of-type{border-top:0;padding-top:0;margin-top:0}
+.phead{display:flex;flex-wrap:wrap;align-items:baseline;gap:10px 16px}
+.pnum{font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:.1em;color:var(--surface);background:var(--ink);padding:3px 8px;border-radius:2px}
+.pdate{font-family:var(--mono);font-size:12px;color:var(--ink-3);font-variant-numeric:tabular-nums}
+.phase h3{font-size:clamp(19px,2.4vw,24px);font-weight:600;letter-spacing:-.018em;margin-top:12px;max-width:58ch}
+.psum{color:var(--ink-2);margin-top:12px;max-width:70ch}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:26px;margin-top:24px}
+@media(max-width:760px){.cols{grid-template-columns:1fr;gap:22px}}
+.col h4{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--rule)}
+.col ul{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:11px}
+.col li{font-size:15.5px;line-height:1.55;color:var(--ink-2);padding-left:15px;position:relative}
+.col li::before{content:"";position:absolute;left:0;top:9px;width:5px;height:5px;border-radius:50%;background:var(--rule-strong)}
+.col.undone li::before{background:var(--undone);border-radius:0}
+.col li b{color:var(--ink);font-weight:600;font-family:var(--display);font-size:15px}
+.col li .hash{font-family:var(--mono);font-size:12px;color:var(--ink-3)}
+
+/* quote */
+.quote{margin-top:22px;padding:16px 20px;background:var(--sunken);border-radius:3px;font-size:15.5px;color:var(--ink-2)}
+.quote q{color:var(--ink);font-style:italic}
+.quote .attr{display:block;font-family:var(--mono);font-size:11px;color:var(--ink-3);margin-top:8px;letter-spacing:.03em}
+
+/* undone ledger */
+.ledger{display:grid;gap:1px;background:var(--rule);border:1px solid var(--rule);border-radius:2px;overflow:hidden}
+.lrow{background:var(--surface);padding:16px 20px;display:grid;grid-template-columns:132px 1fr;gap:20px}
+@media(max-width:680px){.lrow{grid-template-columns:1fr;gap:6px}}
+.lrow .what{font-family:var(--display);font-weight:600;font-size:15px;color:var(--ink)}
+.lrow .why{font-size:15px;color:var(--ink-2)}
+.lrow .tag{font-family:var(--mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--undone);padding-top:3px}
+
+/* patterns */
+.pat{background:var(--surface);border:1px solid var(--rule);border-radius:3px;padding:24px 26px;margin-bottom:18px}
+.pat h3{font-size:20px;font-weight:600;letter-spacing:-.015em}
+.pat p{color:var(--ink-2);margin-top:11px;max-width:70ch;font-size:16px}
+.chips{display:flex;flex-wrap:wrap;gap:7px;margin-top:16px}
+.chip{font-family:var(--mono);font-size:11px;color:var(--ink-2);background:var(--sunken);border:1px solid var(--rule);padding:4px 9px;border-radius:2px}
+
+/* how you work */
+.hw{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:20px;margin-top:26px}
+.hwc{border-top:2px solid var(--ink);padding-top:14px}
+.hwc h4{font-size:16px;font-weight:600;letter-spacing:-.01em}
+.hwc p{font-size:15px;color:var(--ink-2);margin-top:9px}
+.hwc .fig{font-family:var(--mono);font-size:12px;color:var(--accent);margin-top:10px;font-variant-numeric:tabular-nums}
+
+/* open items */
+.open{display:grid;gap:1px;background:var(--rule);border:1px solid var(--rule);border-radius:2px;overflow:hidden}
+.orow{background:var(--surface);padding:15px 20px;display:grid;grid-template-columns:auto 1fr auto;gap:16px;align-items:baseline}
+@media(max-width:640px){.orow{grid-template-columns:auto 1fr;gap:10px}.orow .who{grid-column:2}}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--accent);margin-top:7px}
+.dot.wait{background:var(--rule-strong)}
+.orow .t{font-size:15.5px;color:var(--ink)}
+.orow .t small{display:block;color:var(--ink-3);font-size:13.5px;margin-top:3px;font-family:var(--display)}
+.orow .who{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3);white-space:nowrap}
+
+footer{margin-top:76px;border-top:1px solid var(--rule);padding-top:22px;font-size:14px;color:var(--ink-3);max-width:74ch}
+footer code{font-family:var(--mono);font-size:12.5px;color:var(--ink-2)}
+
+@media (prefers-reduced-motion:reduce){*{transition:none !important;animation:none !important}}
+</style>
+
+<div class="wrap">
+
+<header class="mast">
+  <div class="eyebrow">Session record &middot; Rayrayyh/Meltingpot-CSC</div>
+  <h1>The MeltingPot Logbook</h1>
+  <p class="dek">Twenty-one days, one continuous session, seventeen compactions. What shipped, what was torn back out, and where the time actually went.</p>
+  <div class="mastmeta">
+    <span>19 Aug &ndash; 9 Sep 2026</span>
+    <span><b>341</b> messages typed</span>
+    <span><b>7,958</b> tool calls</span>
+    <span><b>229</b> commits</span>
+    <span><b>44,451</b> transcript lines</span>
+  </div>
+</header>
+
+<div class="correction">
+  <h2>Why this page exists</h2>
+  <p>The built-in <span class="mono">/insights</span> report reads only the current context window. After the seventeenth compaction that window held one afternoon, so it described a two-hour session about a sign-in mockup and presented it as the whole project.</p>
+  <div class="vs">
+    <div class="hd">Measure</div><div class="hd num">/insights said</div><div class="hd num">Actual</div>
+    <div>Span</div><div class="num was">92 minutes</div><div class="num is">21 days</div>
+    <div>Messages you typed</div><div class="num was">9</div><div class="num is">341</div>
+    <div>Tool calls</div><div class="num was">59</div><div class="num is">7,958</div>
+    <div>Commits</div><div class="num was">1</div><div class="num is">229</div>
+    <div>Files modified</div><div class="num was">0</div><div class="num is">see note</div>
+  </div>
+  <p style="margin-top:16px"><b style="font-family:var(--display)">The zero is a second, separate bug.</b> That counter watches the Edit and Write tools. This session runs in auto mode, where most edits go through Bash heredocs and <span class="mono">sed</span>, so the counter never sees them. It would read zero on a day that rewrote the schema.</p>
+</div>
+
+<section>
+  <div class="shead"><h2>The session in numbers</h2><span class="n">measured from the transcript</span></div>
+  <div class="stats">
+    <div class="stat"><div class="v">21</div><div class="k">Days</div><div class="s">31 Aug fully idle</div></div>
+    <div class="stat"><div class="v">341</div><div class="k">Messages</div><div class="s">median 18 words</div></div>
+    <div class="stat"><div class="v">14,338</div><div class="k">Replies</div><div class="s">42 per message</div></div>
+    <div class="stat"><div class="v">7,958</div><div class="k">Tool calls</div><div class="s">4,514 were Bash</div></div>
+    <div class="stat"><div class="v">4.3%</div><div class="k">Error rate</div><div class="s">339 failures</div></div>
+    <div class="stat"><div class="v">0</div><div class="k">Interruptions</div><div class="s">in 21 days</div></div>
+    <div class="stat"><div class="v">229</div><div class="k">Commits</div><div class="s">24 deploys</div></div>
+    <div class="stat"><div class="v">17</div><div class="k">Compactions</div><div class="s">context resets</div></div>
+    <div class="stat"><div class="v">48,215</div><div class="k">Lines standing</div><div class="s">371 source files</div></div>
+    <div class="stat"><div class="v">65,345</div><div class="k">Lines written</div><div class="s">1,752 removed</div></div>
+    <div class="stat"><div class="v">65</div><div class="k">Migrations</div><div class="s">7 create tables</div></div>
+    <div class="stat"><div class="v">419</div><div class="k">Tests</div><div class="s">54 files</div></div>
+  </div>
+</section>
+
+<section>
+  <div class="shead"><h2>The pulse</h2><span class="n">one column per day</span></div>
+  <p class="lede">Three measures on one time axis. The two spikes are the same shape of day: an open brief with a long autonomous run behind it.</p>
+  <div class="chartbox">
+    <div class="chart" id="chart"></div>
+  </div>
+  <div class="cnote">
+    <span>Peaks labelled. Flat grey marks a zero.</span>
+    <span>23 Aug outlined: hackathon deadline.</span>
+  </div>
+</section>
+
+<section>
+  <div class="shead"><h2>Six phases</h2><span class="n">the project as it actually moved</span></div>
+  <p class="lede">The dates are a real sequence, not a device: each phase ends where the project's target changed. Two competitions, three repositories, two auth providers.</p>
+
+  <div class="phase">
+    <div class="phead"><span class="pnum">P1</span><span class="pdate">19 &ndash; 23 Aug &middot; 88 commits &middot; 94 messages</span></div>
+    <h3>Empty repo to deployed submission in five days</h3>
+    <p class="psum">A thirteen-step scaffold landed in a single day. Then the spec's own constraint broke: decision 003 fixed the MVP on a deterministic organizer with no live model calls, and once your Gemini keys worked the live pipeline displaced it. The deterministic path survived as a fallback, which is what the demo video accidentally recorded.</p>
+    <div class="cols">
+      <div class="col"><h4>What landed</h4><ul>
+        <li><b>The whole MVP on 19 Aug.</b> Next.js scaffold, Supabase with RLS, join-by-code, Pot feed, contribution and correction loops, version history.</li>
+        <li><b>A live Gemini organizer</b> with vision for image contributions, capacity retry, and pot-themed copy that never names the model.</li>
+        <li><b>The study hub.</b> Flashcards with tags, configurable practice tests that change without a page reload.</li>
+        <li><b>Security hardening</b> from a full audit: answer keys moved server-side, header spoofing closed, student text out of the model instruction.</li>
+      </ul></div>
+      <div class="col undone"><h4>What was undone</h4><ul>
+        <li><b>Google sign-in.</b> Shipped and ripped out the same day, replaced by an auth seam. <span class="hash">f48aec1 &rarr; 70009ec</span></li>
+        <li><b>The forest-green design system</b>, built and re-skinned to orange within hours of each other.</li>
+        <li><b>The hero pot, five times over.</b> Nudged, hand-drawn, traced, replaced by your own raster committed straight to main, then deleted again. Still clipped on the final morning.</li>
+        <li><b>Database guards</b> dropped by migration 0031 and restored by 0033, 0035 and 0037.</li>
+        <li><b>A recurring check-in routine</b> the session created for itself, which fired about 27 times before you killed it.</li>
+      </ul></div>
+    </div>
+    <div class="quote"><q>You did NOT use the exact reference photo I attached.</q><span class="attr">22 Aug, 00:43 &mdash; two minutes later you committed the image yourself</span></div>
+  </div>
+
+  <div class="phase">
+    <div class="phead"><span class="pnum">P2</span><span class="pdate">24 &ndash; 27 Aug &middot; 27 commits &middot; 65 messages</span></div>
+    <h3>A second competition, a new repository, and a dashboard redrawn by hand</h3>
+    <p class="psum">The deadline passed and the project was re-entered elsewhere. Every commit in this window landed in a brand new repo; the original stops dead at 23 August. This is also where your working method changed permanently: show me media, then commit.</p>
+    <div class="cols">
+      <div class="col"><h4>What landed</h4><ul>
+        <li><b>One unified sidebar</b> for the whole product, with search, shortcuts and notifications.</li>
+        <li><b>A full doodle restyle</b> of the dashboard across five commits.</li>
+        <li><b>Teacher analytics:</b> per-question miss rate separated from miss count, and what the class is shaky on.</li>
+        <li><b>A 60-rule interface conformance pass</b> that found and fixed seven violations.</li>
+      </ul></div>
+      <div class="col undone"><h4>What was undone</h4><ul>
+        <li><b>The working repository itself.</b> The MVP repo was abandoned mid-session and never caught up.</li>
+        <li><b>Scribble density</b>, raised then dialled back, needing a purpose-built comparison rig to settle one visual parameter.</li>
+        <li><b>The 404 page</b> regressed during the restyle and was rebuilt from your own design file.</li>
+        <li><b>A profile card move nobody asked for</b>, made alongside an 8px notification lift and backed out.</li>
+        <li><b>The Figma mirror</b>, stale within 75 minutes of being built, re-synced twice by hand.</li>
+      </ul></div>
+    </div>
+    <div class="quote"><q>I didn't ask you to move the profile card, only the notification card.</q><span class="attr">26 Aug &mdash; one of three scoping corrections in four minutes, for an 8px change</span></div>
+  </div>
+
+  <div class="phase">
+    <div class="phead"><span class="pnum">P3</span><span class="pdate">28 &ndash; 31 Aug &middot; 23 commits &middot; 50 messages</span></div>
+    <h3>Three days on the tilt of one card</h3>
+    <p class="psum">The most expensive stretch of the project, and the one with least to show. Roughly fifteen turns across two days went into the hero card's tilt, skew and shadow, none of it committed, all of it discarded when you pasted the exact transform yourself.</p>
+    <div class="cols">
+      <div class="col"><h4>What landed</h4><ul>
+        <li><b>Native scrolling restored</b> on the landing page.</li>
+        <li><b>Security headers</b> on every route, then hardened against an outside scanner.</li>
+        <li><b>A password checklist</b> that ticks as you type.</li>
+        <li><b>Every empty state</b> now offers the next action.</li>
+        <li><b>The cursor lock reticle</b> and a pot that warms between routes.</li>
+      </ul></div>
+      <div class="col undone"><h4>What was undone</h4><ul>
+        <li><b>A GSAP glide entrance.</b> GSAP was pulled into the stack for it. It lived roughly 30 minutes before "remove the glide animation". <span class="hash">621e46a &ldquo;Static hero&rdquo;</span></li>
+        <li><b>Lenis smooth scrolling.</b> Four rounds of "still jittery" ended by deleting the library, not fixing it.</li>
+        <li><b>Eight rounds of hand-tuned tilt</b>, replaced by the transform you supplied from a video the agent twice failed to find.</li>
+        <li><b>A whole round of work on the wrong surface</b>, the app dashboard instead of the landing card.</li>
+        <li><b>The streak feature.</b> Planned, built, screenshotted, never committed.</li>
+      </ul></div>
+    </div>
+    <div class="quote"><q>Undo the scaling, you ruined the tilt of it.</q><span class="attr">29 Aug, 04:45 &mdash; six minutes after the scaling landed</span></div>
+  </div>
+
+  <div class="phase">
+    <div class="phead"><span class="pnum">P4</span><span class="pdate">1 &ndash; 4 Sep &middot; 29 commits &middot; 67 messages</span></div>
+    <h3>Judged, scored, then retargeted at a third hackathon</h3>
+    <p class="psum">Rubric-driven work: an outside panel scored the entry 73/100, and the two lowest dimensions got direct attention. Switching the deployed site to the live model moved Creative Use of AI from 15/25 to 19/25. Then on 4 September the whole target changed again.</p>
+    <div class="cols">
+      <div class="col"><h4>What landed</h4><ul>
+        <li><b>Landing section two rebuilt</b> as three entry paths, after the audit found it was a locked door for every cold visitor.</li>
+        <li><b>Per-icon nav hover animations</b>, one routine per icon.</li>
+        <li><b>The collapsible sidebar</b> with sliding Pots list and custom controls.</li>
+        <li><b>Live Gemini on the judged site</b>, plus a practice test that fails visibly instead of hanging.</li>
+        <li><b>A demo classroom built for judges</b>, with one consistent set of names.</li>
+      </ul></div>
+      <div class="col undone"><h4>What was undone</h4><ul>
+        <li><b>Three complete sets of section-two copy</b>, rejected as too specific, too AI sounding, too generic.</li>
+        <li><b>The no-comparison product rule.</b> Reversed: rankings and percentile standing shipped, with optimistic phrasing as the compromise.</li>
+        <li><b>The branch-only agreement</b>, reversed by merging the same branch to main twice in one day.</li>
+        <li><b>The imported repository</b>, deleted and re-imported from scratch rather than repaired.</li>
+        <li><b>Deleted files came back</b> after that re-import and had to be deleted a second time.</li>
+      </ul></div>
+    </div>
+    <div class="quote"><q>I don't want to run all those commands.</q><span class="attr">3 Sep &mdash; the git recovery path that led to destroying and re-importing the repo</span></div>
+  </div>
+
+  <div class="phase">
+    <div class="phead"><span class="pnum">P5</span><span class="pdate">5 &ndash; 7 Sep &middot; 23 commits &middot; 21 messages</span></div>
+    <h3>A six-phase LMS integration built in one night, and unexercisable</h3>
+    <p class="psum">Canvas and Google Classroom went in end to end in a single sitting: schema, OAuth tokens in Vault, adapter seam, sync engine, Pot linking, background freshness, copy. None of it can run. The Canvas key was never issued and the Google Cloud project was never created.</p>
+    <div class="cols">
+      <div class="col"><h4>What landed</h4><ul>
+        <li><b>Classwork phases 0 through 5</b>, including tokens in Supabase Vault and a provider adapter seam.</li>
+        <li><b>A monthly contribution grid</b> redrawn GitHub-style in the brand palette.</li>
+        <li><b>The smooth caret</b> across every text input.</li>
+        <li><b>An eight-lens bug pass</b> with one skeptic per finding.</li>
+      </ul></div>
+      <div class="col undone"><h4>What was undone</h4><ul>
+        <li><b>Every RLS policy, rewritten wholesale.</b> All of them called Supabase's <span class="mono">auth.uid()</span>, which a Clerk token does not satisfy.</li>
+        <li><b>The Canvas adapter</b>, written against a stub because the school's key had not arrived.</li>
+        <li><b>An entire Clerk implementation</b>, landed switched off and still inert at the end of the window.</li>
+        <li><b>The smooth caret</b>, implemented a second and third time for focus and forced-colours mode.</li>
+      </ul></div>
+    </div>
+    <div class="quote"><q>So I have to use render for the project?</q><span class="attr">5 Sep &mdash; fourteen minutes after ordering the Netlify deploy</span></div>
+  </div>
+
+  <div class="phase">
+    <div class="phead"><span class="pnum">P6</span><span class="pdate">8 &ndash; 9 Sep &middot; 34 commits &middot; 44 messages</span></div>
+    <h3>Auth moved to Clerk on a live domain, by walking you through a dashboard</h3>
+    <p class="psum">The busiest day of the project by commits. Five hours of it were spent on instructions that did not match what was on your screen, producing eleven documentation commits and no product code.</p>
+    <div class="cols">
+      <div class="col"><h4>What landed</h4><ul>
+        <li><b>Clerk live on meltingpots.xyz</b>, five DNS records verified, certificates issued.</li>
+        <li><b>An account import script</b> for the Supabase-to-Clerk switch.</li>
+        <li><b>Two deep bug passes</b>, one against the codebase and live database, one against the vendors' own dashboards.</li>
+        <li><b>The custom 404's face on every error</b>, plus a crawler and LLM front door.</li>
+        <li><b>The social card</b> with your own artwork, real names, and a self-invalidating URL.</li>
+      </ul></div>
+      <div class="col undone"><h4>What was undone</h4><ul>
+        <li><b>The trial Clerk instance</b> the plan routed you through, which you overrode. Created, skipped, then kept after a reversal.</li>
+        <li><b>The AI-generated social card</b>, discarded for your own artwork, then reworked three more times.</li>
+        <li><b>The embedding header</b>, first written where it did not apply to static files.</li>
+        <li><b>The "remove Clerk branding" task</b>, which chased a badge that was never rendered, because the app mounts no Clerk UI.</li>
+        <li><b>"Don't commit anything"</b>, given twice, then reversed the same night.</li>
+      </ul></div>
+    </div>
+    <div class="quote"><q>It doesn't look like clerk at all.</q><span class="attr">8 Sep &mdash; the custom form in front of Clerk sent a task chasing branding that did not exist</span></div>
+  </div>
+</section>
+
+<section>
+  <div class="shead"><h2>What got built and thrown away</h2><span class="n">the 15,000-line gap</span></div>
+  <p class="lede">65,345 lines were written and 48,215 stand. The difference is not waste in the usual sense: most of it is one of six recognizable patterns, and only two of them were avoidable.</p>
+  <div class="ledger">
+    <div class="lrow"><div class="tag">Reversed by you</div><div><div class="what">Product rules the owner lifted</div><div class="why">No leaderboards became rankings and percentiles. No live model calls became a live Gemini pipeline. Deterministic-only was in the spec until the keys worked. These are scope decisions, not mistakes, and each is recorded in <span class="mono">memory/decisions</span>.</div></div></div>
+    <div class="lrow"><div class="tag">Target moved</div><div><div class="what">Three competitions, three repos</div><div class="why">PixelForge, then Prometheus, then CSC Back to School. Each move brought a new repository, a new Netlify site, new rules committed to root, and a documentation truth-up. The original repo was abandoned on 23 August and never caught up.</div></div></div>
+    <div class="lrow"><div class="tag">Vendor swap</div><div><div class="what">Auth, decided four times</div><div class="why">Supabase Auth, then Google sign-in, then Google removed for a provider seam, then Clerk built inert, then Clerk live. This churn was cheap precisely because decision 013 turned a vendor choice into an interface. The seam is the reason the last switch cost days and not weeks.</div></div></div>
+    <div class="lrow"><div class="tag">Avoidable</div><div><div class="what">Visual tuning one property at a time</div><div class="why">The hero pot across 13 commits, the card tilt across eight uncommitted rounds, scribble density up then down, glide animation in and out in 30 minutes. Each round costs a full render and review cycle. This is the single largest recoverable cost in the project.</div></div></div>
+    <div class="lrow"><div class="tag">Avoidable</div><div><div class="what">Guards silently dropped and restored</div><div class="why">Migration 0031 re-emitted a function body and discarded protections the previous version carried; 0033, 0035 and 0037 exist only to put them back. Written up as lesson 011, and the same shape recurs across five other lessons.</div></div></div>
+    <div class="lrow"><div class="tag">Blocked</div><div><div class="what">Work built against a wall</div><div class="why">The Canvas adapter against a stub, Google Classroom without an OAuth client, Clerk built switched off. Real code, correct code, still unexercised because a credential outside the session never arrived.</div></div></div>
+  </div>
+</section>
+
+<section>
+  <div class="shead"><h2>Two failure modes, sixty-five notes</h2><span class="n">memory/decisions and memory/lessons</span></div>
+  <p class="lede">The 18 lessons are not 18 different mistakes. Cluster them and almost all collapse into two, plus a third that is the environment rather than the code.</p>
+
+  <div class="pat">
+    <h3>A truth checked once is assumed permanent</h3>
+    <p>Five lessons are the same error wearing different clothes: a row validated at creation and assumed still valid, a header trusted because it was there, a function body re-emitted from memory instead of read, a ledger entry pointing at a parent that vanished. Every one is a snapshot mistaken for a fact. This is where the schema is fragile.</p>
+    <div class="chips"><span class="chip">005 rls is not a filter</span><span class="chip">007 definer and rls recheck</span><span class="chip">010 the left of x-forwarded-for</span><span class="chip">011 re-emitting a function body</span><span class="chip">013 a vanishing parent</span></div>
+  </div>
+
+  <div class="pat">
+    <h3>What you see is not what is serving</h3>
+    <p>Five more describe a stale layer between the change and the observation: a rebuild under a running server, a production build emptying the dev cache, a route handler that does not know its own host, a social card swapped in place that stays cached, a fixed element captured by a transform. Every one cost a debugging session aimed at the wrong layer.</p>
+    <div class="chips"><span class="chip">009 fixed is not the viewport</span><span class="chip">012 rebuild under a running server</span><span class="chip">014 a handler and its own host</span><span class="chip">015 the emptied dev cache</span><span class="chip">017 a card swapped in place</span></div>
+  </div>
+
+  <div class="pat">
+    <h3>And the toolchain itself</h3>
+    <p>Seven lessons say the environment, not the code, was the most reliable source of failure: egress TLS blocking the browser, container binaries, test data bleeding between runs. The most recent, lesson 018, is the one that let the real Clerk component be rendered at all.</p>
+    <div class="chips"><span class="chip">002 next 16 and playwright</span><span class="chip">004 browser tls blocked</span><span class="chip">006 e2e isolation and write races</span><span class="chip">016 the live site on tls 1.2</span><span class="chip">018 a vendor component on the live origin</span></div>
+  </div>
+
+  <p class="lede" style="margin-top:24px">The maturation is real, though. Decisions 039 and 043 turn those lessons into a repeatable audit: eight lenses, then twenty-seven agents, each finding checked by a skeptic before anything is changed. That is a process the project invented for itself after being burned.</p>
+</section>
+
+<section>
+  <div class="shead"><h2>How you work</h2><span class="n">measured across 341 messages</span></div>
+  <p class="lede">Long autonomous runs on an explicit grant, with visual decisions kept entirely for yourself. Verification is your own eyes on the deployed site, almost never a test.</p>
+  <div class="hw">
+    <div class="hwc"><h4>Short, physical, specific</h4><p>Median message is 18 words; 75 are eight or fewer. You specify what in unusual physical detail and leave how alone, handing over exact CSS when you have it but never touching architecture.</p><div class="fig">75 messages &le; 8 words</div></div>
+    <div class="hwc"><h4>Proof is a picture</h4><p>You verify by looking. Screenshots, video and "show me" run through the session; explicit test runs are rare and usually incidental.</p><div class="fig">52 proof demands &middot; 64 messages with images</div></div>
+    <div class="hwc"><h4>The pre-commit gate</h4><p>From week two on, the standing rule is build it, show media, do not commit yet. It caught real problems and it is why some good work never landed.</p><div class="fig">16 don't-commit instructions</div></div>
+    <div class="hwc"><h4>Shipping state</h4><p>Deploy, branch and commit hygiene is the single most recurring theme. You asked whether something was deployed more often than you asked for any feature.</p><div class="fig">39 messages mention deploy</div></div>
+    <div class="hwc"><h4>You commissioned your own audits</h4><p>Nine separate time-boxed bug passes, usually phrased as a duration. You asked to be told what was wrong more often than most people ask for anything.</p><div class="fig">9 bug passes ordered</div></div>
+    <div class="hwc"><h4>Correction without heat</h4><p>Flat, immediate, always paired with an undo and a tighter constraint. The sharpest it gets is capitalisation. Praise exists but nearly always carries a "however".</p><div class="fig">0 interruptions in 21 days</div></div>
+  </div>
+
+  <div class="pat" style="margin-top:26px;border-left:3px solid var(--undone)">
+    <h3>The three habits that cost the most</h3>
+    <p><b>Tuning one property per round.</b> Six messages over eight minutes to move one image; roughly fifteen turns over two days on the card tilt, thrown away when you pasted the values. Each round is a full render and review cycle. Handing over the target values, or a range to bracket, collapses ten rounds into one.</p>
+    <p style="margin-top:14px"><b>Describing a reference instead of attaching it.</b> "It was another one, look for it" cost two failed searches for a video. It resolved the moment you attached the file. The same pattern repeats with the hero pot, which you eventually committed yourself.</p>
+    <p style="margin-top:14px"><b>Preferences stated once, then restated.</b> Four rules had to be given twice with visible irritation: mp4 video, one deploy target, stay on the branch, and the copy voice. You solved this yourself in the end, and it is the best instruction in the whole session: <q style="font-style:italic;color:var(--ink)">Store these instructions in a reasonable place so they outlive your context window.</q></p>
+  </div>
+
+  <div class="pat" style="border-left:3px solid var(--undone)">
+    <h3>One thing worth flagging</h3>
+    <p>A credential a vendor dashboard asks for should travel from you into that dashboard, not through a chat transcript on the way. A transcript is not a secret store: it persists, it is summarized, and tooling reads it back later. Where a setup step seems to need a secret key in the conversation, paste it into Netlify or the vendor’s own field instead, and rotate anything that has already gone the other way. You asked for a sweep for exposed keys early on, so the instinct was already right; it is the handling under time pressure that slips.</p>
+  </div>
+</section>
+
+<section>
+  <div class="shead"><h2>Where it stands</h2><span class="n">as of 9 Sep</span></div>
+  <p class="lede">The product is live at meltingpots.xyz on Clerk auth. The domain deadline is closed; one item still blocks working code.</p>
+  <div class="open">
+    <div class="orow"><span class="dot wait"></span><div class="t">Verify the registry contact email<small>Done 9 Sep. The domain is no longer at risk of suspension.</small></div><span class="who">Closed</span></div>
+    <div class="orow"><span class="dot"></span><div class="t">Google Classroom credentials<small>The only item blocking working code. The whole integration is built, tested and deployed, and the hourly sync has been returning 503 since it was scheduled.</small></div><span class="who">You</span></div>
+    <div class="orow"><span class="dot"></span><div class="t">Walk the Clerk verification on the live site<small>Sign in, sign out, password change, second factor, a fresh sign-up from a class code. Verified with a probe account, not yet from a real one with a second factor.</small></div><span class="who">You</span></div>
+    <div class="orow"><span class="dot wait"></span><div class="t">Canvas developer key<small>Waiting on your school admin, then two Netlify variables.</small></div><span class="who">Blocked</span></div>
+    <div class="orow"><span class="dot wait"></span><div class="t">Decide the footer credit<small>It still says Prometheus. The project is entered in CSC.</small></div><span class="who">You &middot; decision</span></div>
+    <div class="orow"><span class="dot"></span><div class="t">Move the e2e suite to Clerk test tokens<small>It still runs on the Supabase path, which is no longer what the live site uses.</small></div><span class="who">Mine</span></div>
+    <div class="orow"><span class="dot"></span><div class="t">The user.deleted webhook<small>Removing someone in Clerk currently tells Postgres nothing. Deleting a profile is a line of SQL by hand today.</small></div><span class="who">Mine</span></div>
+  </div>
+</section>
+
+<footer>
+  Built from the session's own transcript: <code>44,451</code> JSONL lines across 21 days, plus 229 commits from <code>melting-pot</code> and <code>Meltingpot-CSC</code> and the 65 notes in <code>memory/</code>. Counts are measured, not estimated. Two corrections were made while building it: the first commit corpus missed eight days of history because it read the wrong checkout, and the first message count of 437 was inflated by system notifications, which is why the figure here is 341.
+</footer>
+
+</div>
+
+<script>
+const DATA = [
+  ["08-19",11,1206,30],["08-20",20,968,17],["08-21",28,807,13],["08-22",21,531,21],
+  ["08-23",14,219,7],["08-24",15,367,15],["08-25",20,189,7],["08-26",27,355,4],
+  ["08-27",3,20,1],["08-28",17,136,0],["08-29",18,250,5],["08-30",15,367,18],
+  ["08-31",0,0,0],["09-01",15,144,4],["09-02",19,283,7],["09-03",23,196,11],
+  ["09-04",10,172,7],["09-05",15,1123,17],["09-06",0,8,1],["09-07",6,18,5],
+  ["09-08",40,594,34],["09-09",4,18,0]
+];
+const ROWS = [
+  {i:1, name:"Your messages", unit:"peak 40"},
+  {i:2, name:"Tool calls",    unit:"peak 1,206"},
+  {i:3, name:"Commits",       unit:"peak 34"}
+];
+const fmt = n => n.toLocaleString("en-US");
+const chart = document.getElementById("chart");
+
+chart.innerHTML = ROWS.map(r => {
+  const max = Math.max(...DATA.map(d => d[r.i]));
+  const bars = DATA.map(d => {
+    const v = d[r.i];
+    const h = v === 0 ? 0 : Math.max(2, Math.round(v / max * 72));
+    const zero = v === 0 ? " zero" : "";
+    const mark = d[0] === "08-23" ? " mark" : "";
+    const peak = v === max
+      ? '<span class="peak" style="left:50%">' + fmt(v) + '</span>' : '';
+    return '<div class="bar' + zero + mark + '" style="height:' + h + 'px" '
+      + 'title="' + d[0] + ' — ' + fmt(v) + ' ' + r.name.toLowerCase() + '">' + peak + '</div>';
+  }).join("");
+  return '<div class="crow"><div class="clabel"><b>' + r.name + '</b>' + r.unit + '</div>'
+    + '<div class="bars">' + bars + '</div></div>';
+}).join("")
++ '<div class="axis"><div></div><div class="days">'
++ DATA.map(d => {
+    const [m, day] = d[0].split("-");
+    const first = day === "19" || day === "01";
+    return '<span class="' + (first ? "mth" : "") + '">'
+      + (first ? (m === "08" ? "Aug" : "Sep") : day) + '</span>';
+  }).join("")
++ '</div></div>';
+</script>

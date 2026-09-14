@@ -8,20 +8,34 @@ import {
   RevisionRequestedModule,
 } from "@/components/home/attention-modules";
 import { ContributionRecord } from "@/components/home/contribution-record";
+import { DueSoonModule, ReconnectNotices } from "@/components/home/due-soon";
 import { HomeJoinCard } from "@/components/home/home-join-card";
 import { PotStatCard } from "@/components/home/pot-stat-card";
+import { ClassworkAutoSync } from "@/components/classwork/auto-sync";
 import { UserShell } from "@/components/shell/user-shell";
 import { Button } from "@/components/ui/button";
 import { Card, CardSection, Eyebrow } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
-import { INVALID_CODE_MESSAGE } from "@/components/landing/join-card";
+import { CLOSED_POT_MESSAGE, INVALID_CODE_MESSAGE } from "@/lib/join-messages";
+import {
+  classworkOffered,
+  getConnections,
+  getDueSoon,
+  getVisibleLinks,
+  staleLinkIds,
+} from "@/lib/data/classwork";
 import { getDashboard } from "@/lib/data/dashboard";
+import { readerZone } from "@/lib/data/streak";
 import { requireUser } from "@/lib/data/user";
 
 export const metadata = { title: "Home" };
 
-function greeting(name: string) {
-  const hour = new Date().getHours();
+function greeting(name: string, zone: string) {
+  // The server's clock is not the reader's: the hour is read in their zone,
+  // the same one the record cuts its days in.
+  const hour = Number(
+    new Intl.DateTimeFormat("en-GB", { hour: "numeric", hourCycle: "h23", timeZone: zone }).format(new Date()),
+  );
   const part = hour < 5 ? "Evening" : hour < 12 ? "Morning" : hour < 18 ? "Afternoon" : "Evening";
   return `${part}, ${name.split(" ")[0]}`;
 }
@@ -35,16 +49,31 @@ export default async function HomePage({ searchParams }: PageProps<"/home">) {
   const joinError =
     params.error === "notfound"
       ? INVALID_CODE_MESSAGE
-      : params.error === "busy"
-        ? "Too many tries from this network. Wait a few minutes and try again."
-        : params.error === "error"
-          ? "We couldn't reach that Pot just now. Try again in a moment."
-          : null;
-  const dashboard = await getDashboard(user.id);
+      : params.error === "closed"
+        ? CLOSED_POT_MESSAGE
+        : params.error === "busy"
+          ? "Too many tries from this network. Wait a few minutes and try again."
+          : params.error === "error"
+            ? "We couldn't reach that Pot just now. Try again in a moment."
+            : null;
+  // Classwork reads only run on a site where a provider can be connected;
+  // everywhere else Home costs exactly what it did before.
+  const offered = classworkOffered();
+  const zone = await readerZone();
+  const now = new Date().getTime();
+  const [dashboard, dueSoon, connections, links] = await Promise.all([
+    getDashboard(user.id),
+    offered ? getDueSoon(zone, 7, 5, now) : Promise.resolve([]),
+    offered ? getConnections() : Promise.resolve([]),
+    offered ? getVisibleLinks() : Promise.resolve([]),
+  ]);
+  const lapsed = connections.some((c) => c.needsReconnectAt);
   const hasAttention =
     dashboard.reviewQueue.length > 0 ||
     dashboard.revisionRequested.length > 0 ||
-    dashboard.drafts.length > 0;
+    dashboard.drafts.length > 0 ||
+    dueSoon.length > 0 ||
+    lapsed;
 
   const archivedGroup =
     dashboard.archivedPots.length > 0 ? (
@@ -82,11 +111,12 @@ export default async function HomePage({ searchParams }: PageProps<"/home">) {
 
   return (
     <UserShell>
+      {offered ? <ClassworkAutoSync linkIds={staleLinkIds(links, now)} /> : null}
       <div className="mx-auto w-full max-w-5xl px-6 py-12 space-y-10">
         <header className="flex items-end justify-between gap-4">
           <div>
             <h1 className="text-2xl font-semibold tracking-tight">
-              {greeting(user.displayName)}
+              {greeting(user.displayName, zone)}
             </h1>
             <p className="text-sm text-ink-muted mt-1">
               {dashboard.reviewQueue.length > 0
@@ -106,6 +136,7 @@ export default async function HomePage({ searchParams }: PageProps<"/home">) {
 
         {dashboard.pots.length === 0 ? (
           <div className="space-y-6">
+            <ReconnectNotices connections={connections} />
             <Card>
               <EmptyState
                 title="Join your first Pot"
@@ -115,6 +146,8 @@ export default async function HomePage({ searchParams }: PageProps<"/home">) {
                 <HomeJoinCard initialCode={joinCode} initialError={joinError} />
               </div>
             </Card>
+            {/* A course can be in a person's calendar before they have a class here. */}
+            <DueSoonModule items={dueSoon} now={now} zone={zone} />
             {/* A user whose only Pot is archived still needs a path to it. */}
             {archivedGroup}
           </div>
@@ -123,6 +156,8 @@ export default async function HomePage({ searchParams }: PageProps<"/home">) {
             <div className="space-y-6 min-w-0">
               {hasAttention ? (
                 <section aria-label="Needs your attention" className="space-y-4">
+                  <ReconnectNotices connections={connections} />
+                  <DueSoonModule items={dueSoon} now={now} zone={zone} />
                   <ReviewQueueModule items={dashboard.reviewQueue} />
                   <RevisionRequestedModule items={dashboard.revisionRequested} />
                   <DraftsModule items={dashboard.drafts} />

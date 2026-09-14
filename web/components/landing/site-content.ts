@@ -18,7 +18,7 @@ export const STEPS: { number: string; icon: Icon; title: string; body: string }[
     number: "1",
     icon: SignIn,
     title: "Join your class",
-    body: "One code from a classmate puts the whole vault in front of you. No forms, no setup, no login wall.",
+    body: "A classmate sends you six characters and the whole vault opens. No forms, no setup, nothing to sign before you can look.",
   },
   {
     number: "2",
@@ -37,18 +37,18 @@ export const STEPS: { number: string; icon: Icon; title: string; body: string }[
 export const PRINCIPLES: { icon: Icon; title: string; body: string }[] = [
   {
     icon: LockSimpleOpen,
-    title: "Originals are sacred",
-    body: "Every submission is kept exactly as written and stays one tap away, in every version, forever.",
+    title: "Your original is always there",
+    body: "Every note is kept exactly as you wrote it, and it stays one tap away from every version that comes after.",
   },
   {
     icon: HandPalm,
-    title: "You hold the pen",
-    body: "The organizer suggests titles, structure, and placement. It never publishes. Only you can share your notes.",
+    title: "Nothing publishes itself",
+    body: "The organizer suggests a title, a structure, and somewhere to file it. Sharing is a button you press.",
   },
   {
     icon: ShieldCheck,
     title: "People decide corrections",
-    body: "Suggested fixes travel with reasons and sources to a maintainer who decides. Nothing changes silently.",
+    body: "A suggested fix arrives with a reason and any sources, and a person decides what happens to it.",
   },
 ];
 

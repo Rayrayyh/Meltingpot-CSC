@@ -7,6 +7,7 @@ import { MagnifyingGlass } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { SectionPill } from "@/components/ui/pills";
 import { Select } from "@/components/ui/select";
+import { SmoothCaretInput } from "@/components/ui/smooth-caret";
 import type { SearchCounts, SearchPot, SearchSort, SearchType } from "@/lib/data/search";
 
 const TYPES: Array<{ key: SearchType; label: string }> = [
@@ -108,7 +109,7 @@ export function SearchControls({
       <form onSubmit={handleSubmit} role="search" className="flex max-w-lg gap-2">
         <div className="relative flex-1">
           <MagnifyingGlass className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-ink-faint" />
-          <input
+          <SmoothCaretInput
             ref={inputRef}
             // Re-seeded when the committed query changes, so the box follows
             // the back button instead of holding an abandoned edit.

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { GithubLogo } from "@phosphor-icons/react/dist/ssr";
 import { Wordmark } from "@/components/shell/wordmark";
 import { MAKERS, REPO_URL } from "@/components/landing/site-content";
+import { GoesOutComesInUnderline } from "@/components/ui/goes-out-comes-in-underline";
 
 /**
  * The public pages' shared footer: the three people who made it first, then
@@ -31,11 +32,18 @@ export function SiteFooter() {
                   alt=""
                   width={128}
                   height={128}
+                  // React hoists a <link rel=preload> for every eager image
+                  // it renders on the server, so these four faces, which live
+                  // at the very bottom of every page, were being fetched
+                  // ahead of the hero. Same trap as the 404 artwork in
+                  // melt-frame.tsx; same way out.
+                  loading="lazy"
+                  decoding="async"
                   className="size-8 rounded-lg border border-edge object-cover transition-transform duration-300 group-hover:-translate-y-0.5"
                 />
-                <span className="text-[12px] text-ink transition-colors group-hover:text-primary">
+                <GoesOutComesInUnderline className="text-[12px] text-ink transition-colors group-hover:text-primary">
                   {maker.name}
-                </span>
+                </GoesOutComesInUnderline>
               </a>
             </li>
           ))}
@@ -67,22 +75,26 @@ export function SiteFooter() {
           />
           <span aria-hidden className="hidden h-10 w-px bg-edge sm:block" />
           <Credit
-            href="https://august-ai-challenge-31059.devpost.com/"
-            label="Built for the Prometheus August AI Challenge"
+            href="https://csc-back-to-school.devpost.com/"
+            label="Built for the CSC Back-to-School Hackathon"
             mark={
-              /* The challenge's own mark, supplied by the owner. It ships as
-                 white artwork on transparency, which would be invisible on
-                 cream, so it is painted as a mask rather than an image: the
-                 alpha channel gives the shape and currentColor gives the
-                 colour. That way it reads as ink in either theme instead of
-                 needing two files, and it stays legible if the palette moves
-                 again. 627x93 after trimming the export's empty padding. */
+              /* The hackathon's own lockup, taken from the banner on its Devpost
+                 page, which sets it in navy and gold on cream. Neither colour
+                 survives a theme switch, so the cream is keyed out and what is
+                 left is painted as a mask: the alpha channel gives the letter
+                 shapes and the box colour gives the ink. One file reads
+                 correctly in light and dark, and it still will if the palette
+                 moves again. The gold rules and the line drawing of the
+                 campus sit at about a third of the navy's opacity, which a
+                 single ink flattens to a wash, so the alpha is floored to
+                 drop the export's noise and then gamma lifted to bring the
+                 drawing back up beside the type. 591x168 after trimming. */
               <span
                 aria-hidden
-                className="block h-7 w-[189px] bg-ink transition-transform duration-300 group-hover:-translate-y-0.5"
+                className="block h-14 w-[197px] max-w-full bg-ink transition-transform duration-300 group-hover:-translate-y-0.5"
                 style={{
-                  maskImage: "url(/prometheus-logo.png)",
-                  WebkitMaskImage: "url(/prometheus-logo.png)",
+                  maskImage: "url(/csc-logo.png)",
+                  WebkitMaskImage: "url(/csc-logo.png)",
                   maskSize: "contain",
                   WebkitMaskSize: "contain",
                   maskRepeat: "no-repeat",
@@ -101,10 +113,10 @@ export function SiteFooter() {
         <p>MeltingPot, 2026. Made by students, for students.</p>
         <nav className="flex items-center gap-6">
           <Link href="/terms" className="hover:text-primary transition-colors">
-            Terms of service
+            <GoesOutComesInUnderline>Terms of service</GoesOutComesInUnderline>
           </Link>
           <Link href="/privacy" className="hover:text-primary transition-colors">
-            Privacy policy
+            <GoesOutComesInUnderline>Privacy policy</GoesOutComesInUnderline>
           </Link>
         </nav>
       </div>
@@ -132,10 +144,10 @@ function Credit({
       rel="noreferrer noopener"
       className="group inline-flex flex-col items-center gap-2.5"
     >
-      <span className="flex h-7 items-end">{mark}</span>
-      <span className="text-center text-sm font-semibold tracking-tight text-ink transition-colors group-hover:text-primary">
+      <span className="flex h-14 items-end">{mark}</span>
+      <GoesOutComesInUnderline className="text-center text-sm font-semibold tracking-tight text-ink transition-colors group-hover:text-primary">
         {label}
-      </span>
+      </GoesOutComesInUnderline>
     </a>
   );
 }

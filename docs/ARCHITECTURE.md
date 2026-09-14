@@ -24,7 +24,7 @@ analytics vendor, and no third party script on any page.
 
 ## Trust boundaries
 
-There are four, and each one re-checks rather than trusting the last.
+There are five, and each one re-checks rather than trusting the last.
 
 1. **Public web to the app.** Anyone can reach the landing, the three
    marketing pages, the legal pages, the sign in and sign up pages and the
@@ -37,7 +37,10 @@ There are four, and each one re-checks rather than trusting the last.
    is allowed to do.
 3. **Inside the database.** Row level security is on for every table in the
    `public` schema. Reads are policy-filtered by membership
-   (`is_pot_member`) or by ownership (`author_id = auth.uid()`). Writes that
+   (`is_pot_member`) or by ownership (`author_id = current_uid()`, where
+   `public.current_uid()` is the caller's profile id whatever signed them in:
+   a Clerk subject mapped to one on the live site, Supabase Auth's uuid
+   under local runs and the test suite, migration 0054). Writes that
    matter do not go through table policies at all: they go through security
    definer functions that re-check membership, role, rate limit and payload
    shape, so a client cannot construct a write that skips a guard.
@@ -46,6 +49,16 @@ There are four, and each one re-checks rather than trusting the last.
    reaches the browser, and no model output is trusted as authority: an
    organized note is a suggestion the writer approves, and every generated
    note and study set records which engine produced it.
+5. **The app to a school's systems.** Google Classroom and Canvas are read
+   through OAuth, server side only, with read-only scopes. The refresh token
+   goes into Supabase Vault and only two definer functions can hand it back,
+   both of which demand a server key held in Netlify and in Vault as well as
+   the caller's own standing to the link. Nothing is written to the school,
+   no grade or roster is read, and disconnecting deletes the token and every
+   imported row. The hourly catch-up is the one machine path: pg_cron posts
+   through pg_net with a bearer, and the route runs as the anonymous role
+   with the server key, capped at five links a call (decision 038,
+   `docs/CLASSWORK.md`).
 
 Second factor sits across boundaries two and three. Anyone who runs a Pot
 can enrol TOTP; once enrolled, `has_required_aal()` is embedded inside
@@ -61,21 +74,30 @@ database as well as by the proxy.
 | Server actions (`app/**/actions.ts`, `app/actions/record.ts`) | Server | Same as above, as the caller | None |
 | `proxy.ts` | Edge | Cookie presence and assurance level | None |
 | Study and organize route handlers | Server | The Pot they were asked about, as the caller | The model API key |
-| Supabase Auth | Supabase | Its own tables | Password hashes, TOTP secrets |
+| Classwork route handlers (`/api/classwork/*`) | Server | The caller's links and connections; a refresh token for one pass, in memory | The server key, the OAuth client secrets, the state secret |
+| The hourly door (`/api/classwork/sync-due`) | Server, called by pg_net | Up to five overdue links a call, as anon plus the key | The trigger bearer and the server key |
+| Clerk (the live site) | Clerk | Its own records | Password hashes, TOTP secrets, sessions |
+| Supabase Auth (local runs and the test suite; banned for the accounts that moved, 0057) | Supabase | Its own tables | Password hashes, TOTP secrets |
+| Supabase Vault | Supabase | Refresh tokens, the server key, the trigger bearer | Read only inside definer functions |
 | Postgres functions (definer) | Supabase | Everything, by design | None; they check the caller first |
 
 The publishable key in the browser bundle is the anonymous role key. It is
 public on purpose and grants nothing on its own: `lib/security/rls.test.ts`
-proves that by using it to attempt a read of all sixteen tables and getting
-nothing back from any of them.
+proves that by using it to attempt a read of every table in its list and
+getting nothing back from any of them.
 
 ## Sensitive data paths
 
-- **Sign up and sign in.** Sign up goes through `register_student`, a definer
+- **Sign up and sign in.** Sign up goes through `sign_up_student`, a definer
   function, because hosted confirmations and the shared mailer make GoTrue
   signup unusable here (memory/lessons/003). It enforces the same five
-  password rules the browser shows. Passwords are stored by Supabase Auth
-  with bcrypt. Sign in is GoTrue with the session in an httpOnly cookie.
+  password rules the browser shows, answers an expected refusal (a taken
+  email, a weak password) as a value so the attempt stays counted against
+  the per-address limit, and hands the insert to `register_student`, which
+  no browser role can call since 0053, and which admits only the test domain
+  since 0057. On the live site Clerk holds the password and the session, in
+  its own cookie on the domain; under Supabase Auth passwords are stored with
+  bcrypt and sign in is GoTrue with the session in an httpOnly cookie.
 - **Changing a password.** `/me/settings` sets the new password and then
   revokes every other session, so a session opened with the old password
   does not survive the change.
@@ -96,6 +118,16 @@ nothing back from any of them.
   caller's own rows. `own_standing` aggregates a class inside the database
   and returns only the caller's rank and counts, so no classmate's figures
   reach a browser.
+- **Classwork.** A connection is one row per person per provider in
+  `lms_connections`, readable by its owner minus the Vault id and the scope
+  list, which sit outside the column grant. A link (`lms_course_links`) is
+  readable by its owner or, for a Pot link, by every member; its pass cursor
+  is outside the grant too. Items (`lms_items`) follow their link. Every
+  write goes through the keyed definer functions of 0050 to 0052; the
+  browser can write nothing. A note started from an item stamps
+  `contributions.source_lms_item_id`, whose policy checks the author can see
+  that item, and nothing imported ever becomes a note, an attachment or a
+  counted day until a person shares.
 
 ## Preventing cross-tenant access
 

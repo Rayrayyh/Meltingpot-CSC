@@ -1,0 +1,35 @@
+# MeltingPot
+
+> MeltingPot is a web app where the students in a class build one shared vault of knowledge. A class space is a Pot. Students join with a six-character class code, write rough, unformatted notes, an organizer structures them, and the student approves before anything is shared. Corrections to shared notes go through maintainer review. Flashcards and practice tests are built from what the class shared. Live at https://meltingpots.xyz.
+
+Key facts
+
+- Made for students and the people who run a class (owners and maintainers). Free to use.
+- Nothing is published automatically. The writer approves their own note; a maintainer approves a correction.
+- The original note is always kept and shown beside the organized version. Nothing is overwritten.
+- Joining needs a class code from whoever runs the Pot. The Pot's preview is visible before signing up; sign up is an email and a password.
+- Study material (a summary, flashcards, a practice test) is generated from shared notes and kept for the whole class. Practice tests are marked on the server.
+- Google Classroom and Canvas courses can be linked so assignments, due dates and materials appear beside the notes. Nothing is written back to the school.
+- Sign in is handled by Clerk. Notes and class data are stored in Supabase with row level security. See the privacy page.
+- Open source under the MIT license: https://github.com/Rayrayyh/Meltingpot-CSC
+
+## Pages
+
+- [Home](https://meltingpots.xyz/): what MeltingPot is and how to join a class
+- [How it works](https://meltingpots.xyz/how-it-works): write rough, review the organized version, share it yourself
+- [Classes](https://meltingpots.xyz/classes): what a Pot is, what joining looks like, what a class builds together
+- [Contributions](https://meltingpots.xyz/contributions): how a note travels from a keyboard to the class's vault, with the writer's name on it
+- [Privacy](https://meltingpots.xyz/privacy): what is collected, where it lives, how to have it removed
+- [Terms](https://meltingpots.xyz/terms): the terms that apply when you use MeltingPot
+
+## Vocabulary
+
+- Pot: one class's shared space, identified by a class code.
+- Contribution: a note a student writes, in their own words, before it is organized.
+- Shared note: a contribution the writer approved for the class to read.
+- Correction: a proposed change to a shared note, reviewed by a maintainer.
+- Maintainer: a member who reviews corrections and looks after the Pot; the owner created it.
+
+## Optional
+
+- [Source code](https://github.com/Rayrayyh/Meltingpot-CSC): the repository, with architecture notes in docs/

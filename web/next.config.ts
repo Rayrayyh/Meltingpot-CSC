@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import { clerkPolicyOrigins } from "./lib/auth/clerk-frontend-api";
 
 // In this development container, outbound TLS from browsers is blocked by the
 // egress policy while server-side Node traffic passes. Setting
@@ -13,6 +14,16 @@ const supabaseRewriteOrigin = process.env.SUPABASE_REWRITE_ORIGIN;
 const SUPABASE_ORIGIN = "https://evcfmwxzxwmeiczfupsw.supabase.co";
 const SUPABASE_WSS = "wss://evcfmwxzxwmeiczfupsw.supabase.co";
 
+// When Clerk is the identity provider its browser SDK, its API and its bot
+// check need allowing; the hosts come off the publishable key so there is one
+// variable to set. With Supabase as the provider these lists are empty and the
+// policy is what it always was.
+const clerk =
+  process.env.NEXT_PUBLIC_AUTH_PROVIDER === "clerk"
+    ? clerkPolicyOrigins(process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY)
+    : { script: [], connect: [], frame: [], img: [], worker: [] };
+const join = (list: string[]) => (list.length ? ` ${list.join(" ")}` : "");
+
 // Production only: dev needs eval for React refresh, and a dev-shaped policy
 // would drift from what actually ships. script-src carries 'unsafe-inline'
 // because the App Router streams inline hydration scripts and the theme stamp
@@ -20,11 +31,13 @@ const SUPABASE_WSS = "wss://evcfmwxzxwmeiczfupsw.supabase.co";
 // proxy.ts is the post-deadline upgrade.
 const csp = [
   "default-src 'self'",
-  "script-src 'self' 'unsafe-inline'",
+  `script-src 'self' 'unsafe-inline'${join(clerk.script)}`,
   "style-src 'self' 'unsafe-inline'",
-  `img-src 'self' data: blob: ${SUPABASE_ORIGIN}`,
+  `img-src 'self' data: blob: ${SUPABASE_ORIGIN}${join(clerk.img)}`,
   "font-src 'self'",
-  `connect-src 'self' ${SUPABASE_ORIGIN} ${SUPABASE_WSS}`,
+  `connect-src 'self' ${SUPABASE_ORIGIN} ${SUPABASE_WSS}${join(clerk.connect)}`,
+  `frame-src 'self'${join(clerk.frame)}`,
+  `worker-src 'self'${join(clerk.worker)}`,
   "frame-ancestors 'none'",
   "base-uri 'self'",
   "form-action 'self'",
@@ -94,6 +107,36 @@ const nextConfig: NextConfig = {
             : []),
         ],
       },
+      // The public brand images are meant to be embedded elsewhere: a social
+      // card is only useful in someone else's page. The blanket
+      // same-origin policy above is right for our documents and our
+      // attachments, and wrong for these, which are public, static and
+      // carry nothing to leak. Without this a client that hotlinks the card
+      // rather than re-hosting it shows a broken preview.
+      {
+        source: "/:file(opengraph-image.png|icon.png|apple-icon.png|favicon.ico)",
+        headers: [{ key: "Cross-Origin-Resource-Policy", value: "cross-origin" }],
+      },
+      // Nothing behind a sign in, and none of the doors to it, belongs in an
+      // index. robots.txt says so for well behaved crawlers; this header says
+      // it to the ones that fetch first and ask later.
+      ...[
+        "/home",
+        "/p/:path*",
+        "/me/:path*",
+        "/pots/:path*",
+        "/study/:path*",
+        "/calendar",
+        "/search",
+        "/login/:path*",
+        "/signup",
+        "/join/:path*",
+        "/api/:path*",
+        "/dev/:path*",
+      ].map((source) => ({
+        source,
+        headers: [{ key: "X-Robots-Tag", value: "noindex, nofollow" }],
+      })),
     ];
   },
 };

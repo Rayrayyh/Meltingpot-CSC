@@ -36,12 +36,17 @@ export const supabaseClientAuth: ClientAuthProvider = {
     // Registration goes through a database function rather than GoTrue signup:
     // hosted confirmations and the shared mailer rate limit make the built-in
     // path unusable here (memory/lessons/003).
-    const { error } = await supabaseBrowser().rpc("register_student", {
+    // sign_up_student (0053) answers an expected refusal, a taken email or a
+    // weak password, as a value rather than a raise, so the attempt stays
+    // counted against the rate limit instead of being rolled back with it.
+    const { data, error } = await supabaseBrowser().rpc("sign_up_student", {
       p_email: email,
       p_password: password,
       p_display_name: displayName,
     });
     if (error) throw new AuthError(codeFor(error.message), error.message);
+    const refused = data && typeof data === "object" && !Array.isArray(data) ? data.error : null;
+    if (typeof refused === "string") throw new AuthError(codeFor(refused), refused);
   },
 
   async signIn({ email, password }): Promise<SignInOutcome> {

@@ -24,7 +24,7 @@ function totp(secret: string, at = Date.now()) {
 async function signIn(page: Page) {
   await page.goto("/login");
   await page.getByLabel("Email").fill("maya@meltingpot.dev");
-  await page.getByLabel("Password").fill("MeltingPot-dev1");
+  await page.getByLabel("Password", { exact: true }).fill("MeltingPot-dev1");
   await page.getByRole("button", { name: "Sign in", exact: true }).click();
 }
 
@@ -49,31 +49,54 @@ test("two-step sign in: enrol, gate the next sign in, then turn it off", async (
   await page.getByRole("button", { name: "Turn on two-step sign in" }).click();
   await expect(page.getByText("Two-step sign in is on")).toBeVisible({ timeout: 15_000 });
 
-  // Signing in again stops for the code instead of opening the dashboard.
-  await page.getByRole("button", { name: "Account menu" }).click();
-  await page.getByRole("button", { name: "Log out" }).click();
-  await expect(page).toHaveURL(/\/$/, { timeout: 15_000 });
+  // From here the seed owner has a factor. Whatever fails below, the finally
+  // takes it off again: dev_seed is the only other thing that would, and a
+  // maya locked behind a code stops every other spec at sign in.
+  try {
+    // Signing in again stops for the code instead of opening the dashboard.
+    await page.getByRole("button", { name: "Account menu" }).click();
+    await page.getByRole("button", { name: "Sign out" }).click();
+    await expect(page).toHaveURL(/\/$/, { timeout: 15_000 });
 
-  await signIn(page);
-  await expect(page.getByRole("heading", { name: "One more step" })).toBeVisible({
-    timeout: 15_000,
-  });
-  await expect(page).not.toHaveURL(/\/home/);
+    await signIn(page);
+    await expect(page.getByRole("heading", { name: "One more step" })).toBeVisible({
+      timeout: 15_000,
+    });
+    await expect(page).not.toHaveURL(/\/home/);
 
-  // A wrong code is refused, and the right one is accepted.
-  await page.getByLabel(/six-digit code/i).fill("000000");
-  await page.getByRole("button", { name: "Continue" }).click();
-  await expect(page.getByRole("alert")).toBeVisible({ timeout: 15_000 });
+    // A wrong code is refused, and the right one is accepted.
+    await page.getByLabel(/six-digit code/i).fill("000000");
+    await page.getByRole("button", { name: "Continue" }).click();
+    await expect(page.getByRole("alert")).toBeVisible({ timeout: 15_000 });
 
-  await page.getByLabel(/six-digit code/i).fill(totp(secret));
-  await page.getByRole("button", { name: "Continue" }).click();
-  await expect(page).toHaveURL(/\/home/, { timeout: 20_000 });
+    await page.getByLabel(/six-digit code/i).fill(totp(secret));
+    await page.getByRole("button", { name: "Continue" }).click();
+    await expect(page).toHaveURL(/\/home/, { timeout: 20_000 });
+  } finally {
+    await removeFactor(page, secret);
+  }
+});
 
-  // Leave the account as it was found.
+/**
+ * Leaves the account as it was found. Reaches settings from wherever the
+ * test stopped: signed out, or stopped at the code step.
+ */
+async function removeFactor(page: Page, secret: string) {
   await page.goto("/me/settings");
-  await page.getByRole("button", { name: "Turn off" }).click();
+  if (/\/login/.test(page.url())) {
+    if (!/\/login\/verify/.test(page.url())) await signIn(page);
+    const codeField = page.getByLabel(/six-digit code/i);
+    if (await codeField.isVisible({ timeout: 5_000 }).catch(() => false)) {
+      await codeField.fill(totp(secret));
+      await page.getByRole("button", { name: "Continue" }).click();
+    }
+    await page.goto("/me/settings");
+  }
+  const turnOff = page.getByRole("button", { name: "Turn off" });
+  if (!(await turnOff.isVisible({ timeout: 5_000 }).catch(() => false))) return;
+  await turnOff.click();
   await page.getByRole("button", { name: "Turn it off" }).click();
   await expect(page.getByRole("button", { name: "Set up two-step sign in" })).toBeVisible({
     timeout: 15_000,
   });
-});
+}

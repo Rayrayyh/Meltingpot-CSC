@@ -3,13 +3,16 @@ import { expect, test, type Page } from "@playwright/test";
 async function loginAs(page: Page, email: string) {
   await page.goto("/login");
   await page.getByLabel("Email").fill(email);
-  await page.getByLabel("Password").fill("MeltingPot-dev1");
+  await page.getByLabel("Password", { exact: true }).fill("MeltingPot-dev1");
   await page.getByRole("button", { name: "Sign in", exact: true }).click();
   await expect(page).toHaveURL(/\/home/, { timeout: 15_000 });
 }
 
 async function openBiologyPot(page: Page) {
-  await page.getByRole("link", { name: "Biology 101" }).first().click();
+  // The Pot cards live on Home; the Pots list in the nav starts closed
+  // outside a Pot (decision 029), so the way in is always through Home.
+  await page.goto("/home");
+  await page.getByRole("main").getByRole("link", { name: "Biology 101", exact: true }).click();
   await expect(page).toHaveURL(/\/p\//, { timeout: 15_000 });
 }
 
@@ -44,7 +47,7 @@ test.describe("Maintainer moderation", () => {
     await expect(page.getByRole("link", { name: "Suggest correction" })).toHaveCount(0);
 
     // It is gone from the feed.
-    await page.getByRole("link", { name: "Biology 101" }).first().click();
+    await page.getByRole("main").getByRole("link", { name: "Biology 101", exact: true }).click();
     await expect(page.getByText("The cell cycle and its checkpoints")).toHaveCount(0);
 
     // And gone from search.
@@ -68,7 +71,9 @@ test.describe("Maintainer moderation", () => {
   test("a member has no removal control", async ({ page }) => {
     await loginAs(page, "priya@meltingpot.dev");
     await openBiologyPot(page);
-    await page.getByText("Osmosis and tonicity").click();
+    // The notification card names the same note; the feed's link is the one
+    // that opens it.
+    await page.getByRole("main").getByRole("link", { name: /^Osmosis and tonicity/ }).first().click();
     await expect(page.getByRole("heading", { name: "Osmosis and tonicity" })).toBeVisible();
     await expect(page.getByRole("button", { name: "Remove from the Pot" })).toHaveCount(0);
   });
@@ -78,7 +83,9 @@ test.describe("Notes as study material", () => {
   test("highlights the terms the note defines", async ({ page }) => {
     await loginAs(page, "ava@meltingpot.dev");
     await openBiologyPot(page);
-    await page.getByText("Osmosis and tonicity").click();
+    // The notification card names the same note; the feed's link is the one
+    // that opens it.
+    await page.getByRole("main").getByRole("link", { name: /^Osmosis and tonicity/ }).first().click();
     await expect(page.getByRole("heading", { name: "Osmosis and tonicity" })).toBeVisible();
     // The definition block names Osmosis, so the body marks it where it recurs.
     await expect(page.locator("mark").first()).toBeVisible();
@@ -87,7 +94,9 @@ test.describe("Notes as study material", () => {
   test("turns a selected passage into a card that belongs to its writer", async ({ page }) => {
     await loginAs(page, "ava@meltingpot.dev");
     await openBiologyPot(page);
-    await page.getByText("Osmosis and tonicity").click();
+    // The notification card names the same note; the feed's link is the one
+    // that opens it.
+    await page.getByRole("main").getByRole("link", { name: /^Osmosis and tonicity/ }).first().click();
     const passage = page.getByText("Salt on a slug pulls water out", { exact: false });
     await expect(passage).toBeVisible();
 

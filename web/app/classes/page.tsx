@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import {
+  CalendarStar,
   Cards,
   ClockCounterClockwise,
   Crown,
@@ -20,26 +21,40 @@ export const metadata: Metadata = {
     "A Pot is one class's shared space. Join with a six-character code, see the vault before you sign up, and study from what your class builds together.",
 };
 
+// Each card carries an id, because section two's bento links a tile straight
+// at the card that describes it: eight tiles used to resolve to three pages
+// and land at the top of each, which told the reader nothing about the
+// feature they had just clicked.
 const INSIDE = [
   {
+    id: "shared-notes",
     icon: Notebook,
     title: "Shared notes, in sections",
-    body: "Everything the class has approved, organized into the sections your course actually follows, with every original one tap away.",
+    body: "Everything the class has approved, filed under the sections your course uses, with every original one tap away.",
   },
   {
+    id: "study",
     icon: Cards,
     title: "Flashcards and practice tests",
-    body: "Built from the shared notes, not from thin air. One deck for the whole class, and tests you set up before you sit them.",
+    body: "Made out of the notes your class already shared, so the questions are about your course. One deck for everyone, and tests you set up before you sit them.",
   },
   {
+    id: "search",
     icon: MagnifyingGlass,
     title: "Search that reaches everything",
     body: "Titles, summaries, note bodies, sections, contributors, and attachments, across every class you belong to.",
   },
   {
+    id: "history",
     icon: ClockCounterClockwise,
     title: "History with names on it",
     body: "Every version of every note stays readable, and everyone who touched it stays credited.",
+  },
+  {
+    id: "calendar",
+    icon: CalendarStar,
+    title: "A calendar for what happened and what is coming",
+    body: "What the class shared, day by day, next to anything due from a course the Pot is linked to. Days are cut in your own time zone.",
   },
 ];
 
@@ -70,13 +85,13 @@ export default async function ClassesPage() {
         <div className="mx-auto w-full max-w-6xl grid lg:grid-cols-[1fr_minmax(0,26rem)] gap-14 lg:gap-24 items-center">
           <div className="space-y-7">
             <h2 className="font-display text-3xl sm:text-4xl font-semibold tracking-tight leading-[1.08] text-ink">
-              Thirty half-finished notebooks become one worth studying from.
+              Half-finished notebooks add up to one worth studying from.
             </h2>
             <p className="text-lg text-ink-muted leading-relaxed max-w-xl">
               Everyone remembers a different half of the lecture. When each
-              person types their half and the class approves what is shared,
-              the Pot ends up more complete than any one notebook could be,
-              and checked by people rather than guesswork.
+              person types up their half and the class signs off on what gets
+              shared, the Pot holds more than any single notebook would, and
+              someone has read every line of it.
             </p>
             <ul className="flex flex-wrap gap-x-8 gap-y-3 pt-1 text-[13px] text-ink-muted">
               <li className="flex items-center gap-2">
@@ -126,7 +141,8 @@ export default async function ClassesPage() {
             {INSIDE.map((item) => (
               <div
                 key={item.title}
-                className="bg-surface border border-edge rounded-(--radius-card) p-8 space-y-4 shadow-(--shadow-card)"
+                id={item.id}
+                className="scroll-mt-24 bg-surface border border-edge rounded-(--radius-card) p-8 space-y-4 shadow-(--shadow-card)"
               >
                 <item.icon className="size-7 text-primary" weight="duotone" aria-hidden />
                 <h3 className="text-lg font-semibold text-ink">{item.title}</h3>
@@ -137,11 +153,14 @@ export default async function ClassesPage() {
         </Reveal>
       </section>
 
-      <section className="px-6 sm:px-10 py-20 sm:py-28 bg-surface border-y border-edge">
+      <section
+        id="roles"
+        className="scroll-mt-24 px-6 sm:px-10 py-20 sm:py-28 bg-surface border-y border-edge"
+      >
         <Reveal className="mx-auto w-full max-w-5xl space-y-12">
           <div className="max-w-xl space-y-3">
             <p className="text-[12px] font-semibold tracking-[0.14em] uppercase text-clay">
-              Two roles, no hierarchy theater
+              Who does what
             </p>
             <h2 className="font-display text-3xl sm:text-4xl font-semibold tracking-tight text-ink">
               Members write. Maintainers keep it right.
@@ -153,8 +172,8 @@ export default async function ClassesPage() {
               <h3 className="text-lg font-semibold text-ink">Members</h3>
               <p className="text-sm text-ink-muted leading-relaxed">
                 Everyone who joins. They write notes, share what they approve,
-                suggest corrections, and study from the vault. Their drafts
-                stay theirs until the moment they say otherwise.
+                suggest corrections, and study from the vault. A draft stays
+                private until they say otherwise.
               </p>
             </div>
             <div className="bg-paper border border-edge rounded-(--radius-card) p-8 space-y-4">

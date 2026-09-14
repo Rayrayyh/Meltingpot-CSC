@@ -24,7 +24,7 @@ A class space is called a Pot. A teacher creates one and gets a six character cl
 
 Organization is the product, not a feature bolted onto it. Rough text is mixed into a structured note, and image attachments are captioned or transcribed when that helps. Every model call runs through authenticated server routes, treats note and attachment contents as untrusted source material, and returns schema-constrained data for normalization before the student sees it. The student's original remains untouched and nothing is shared without approval.
 
-The Pot home is also a study hub: raw notes, a class-wide summary, flashcards, and a practice test generated from shared material. A fast model handles organization, vision, summaries, and cards; a stronger one is reserved for writing practice tests. Both are named in configuration rather than in source. The deterministic organizer remains as a local fallback when neither is configured.
+The Pot home is also a study hub: raw notes, a class-wide summary, flashcards, and a practice test generated from shared material. A fast model handles organization, vision, summaries, cards and practice tests; a stronger one is reserved for the teaching readout, the one call with no rule-based fallback. Both are named in configuration rather than in source. The deterministic organizer remains as a local fallback when neither is configured.
 
 Which engine did the work is always on screen. A note organized by the model says so and names it; a note the rule-based fallback had to finish says that instead, in plain words. The two produce visibly different writing and a reader cannot tell them apart from the output alone, so the app does not make them guess.
 
@@ -58,9 +58,11 @@ Maintainers can take a note out of a Pot with a reason and put it back, delete a
 
 Inside a Pot: a shared feed with section filters, full text search across titles, content, contributors, and attachments, file uploads (images including phone camera HEIC, PDFs, documents) and links that stay connected from draft through publication, version history with the complete attribution trail, and maintainer tools for sections, roles, class code regeneration, and archiving with a way back. Light and dark themes throughout, reduced motion respected, and a landing page whose scroll sequence melts a messy note into an organized one.
 
-Account settings hold the theme (dark by default, light, or follow your device) with a one tap switch in the public header, and, for the people who run a Pot, two-step sign in with an authenticator app such as Google Authenticator. That one is enforced rather than advertised: turning it on adds a code step to every later sign in, and the test suite proves it by playing the authenticator itself.
+Account settings hold the theme (light by default, dark, or follow your device) with a one tap switch in the public header, and, for the people who run a Pot, two-step sign in with an authenticator app such as Google Authenticator. That one is enforced rather than advertised: turning it on adds a code step to every later sign in, and the test suite proves it by playing the authenticator itself.
 
-Sign in is an email and a password, behind a provider seam in `web/lib/auth`: everything the app needs from an identity provider is described in the product's own words, so moving to a hosted provider such as Clerk is an implementation behind that interface rather than a rewrite of every page. `docs/AUTH.md` explains the contract and what a swap actually costs.
+Connected classes bring a person's Google Classroom or Canvas courses in, read-only: assignments, quizzes, discussions, announcements, materials and calendar events, with due dates, kept in sync when someone opens a Pot, the Calendar or Home, and once an hour from the database when nobody does. A student can put a course in their own calendar; a maintainer can link one to a Pot so the whole class sees its Classwork tab. Nothing imported is ever a note: "Start a note from this" opens the ordinary composer with the assignment's words and its links, and sharing is the same act as for any note. Nothing is written back to the school, materials are links rather than downloads, and refresh tokens live encrypted in Supabase Vault behind a server key that never reaches a browser. `docs/CLASSWORK.md` has the setup and the design; `docs/CLASSWORK_VERIFICATION.md` the checklist.
+
+Sign in is an email and a password, behind a provider seam in `web/lib/auth`: everything the app needs from an identity provider is described in the product's own words, so the provider is an implementation behind that interface rather than something every page knows about. On meltingpots.xyz that provider is Clerk, since 2026-09-08; local runs and the test suite still use Supabase Auth behind the same seam. `docs/AUTH.md` explains the contract; `docs/CLERK.md` records the switch.
 
 ## Screenshots
 
@@ -92,13 +94,15 @@ Account settings: theme, and two-step sign in for the person who runs the Pot:
 
 Everything here was designed and written from scratch, starting 17 August 2026. The repo is its own receipt: `docs/PLAN.md` holds the step by step execution plan with per step status, `docs/BUILDLOG.md` records what was built, found, and fixed in order, and `memory/` captures each architectural decision and hard won lesson at the moment it happened. The commit history walks through the whole build, day by day.
 
-Entered in the [Prometheus August AI Challenge](https://august-ai-challenge-31059.devpost.com/). The project is open source under the MIT license (see `LICENSE`), hosted live at the URL above, and the two minute demo video is on the Devpost submission.
+Entered in the [CSC Back-to-School Hackathon](https://csc-back-to-school.devpost.com/). The project is open source under the MIT license (see `LICENSE`), hosted live at the URL above, and the two minute demo video is on the Devpost submission.
 
 ## Under the hood
 
 Next.js 16 (App Router, TypeScript, Tailwind) in `web/`, on Supabase for Postgres, auth, and file storage, hosted on Netlify. Security is enforced in the database, not the client: row level security on every table, privileged transitions through security definer functions that re-validate the caller at time of use, database enforced rate limiting on every sensitive operation (sized so an entire class behind one school network can sign up together), and an API surface closed down to exactly what the app uses. Anonymous visitors can reach two functions: look up a class code and register. Shared notes and their versions can only be written through the reviewed publish paths.
 
-The build is covered by 186 unit tests and 53 Playwright end to end tests over every core flow, plus two adversarial review passes whose confirmed findings, from access control holes to a diff that could hang a browser tab, were all fixed and are documented in the build log. Both study sessions are written as reducers, so how a deck is walked and how a test is marked are unit tests rather than browser tests. A Checks workflow runs lint, types, unit tests, and a production build on every push and pull request.
+Classwork tokens never touch a table: they sit in Supabase Vault, and only definer functions that also demand a server key can read one back. The hourly catch-up is a pg_cron job posting through pg_net to a route that runs as the anonymous role with that key and nothing else.
+
+The build is covered by 372 unit tests and a Playwright suite over the core flows, including the classwork walks against a stub provider, plus adversarial review passes whose confirmed findings, from access control holes to a diff that could hang a browser tab to a ledger trigger that had made every Pot undeletable, were all fixed and are documented in the build log. Both study sessions are written as reducers, so how a deck is walked and how a test is marked are unit tests rather than browser tests. A Checks workflow runs lint, types, unit tests, and a production build on every push and pull request.
 
 ## Running it locally
 
@@ -140,8 +144,8 @@ the AI not being set up at all, so check all three before hunting for a bug.
 
 | Variable | What it drives | Why that tier |
 | --- | --- | --- |
-| `FAST_MODEL` | organizing a note, reading image attachments, class summaries, flashcards | nearly every call goes here, so it wants something fast and cheap |
-| `REASONING_MODEL` | writing practice tests | question quality and the answer keys are where a stronger model earns its keep |
+| `FAST_MODEL` | organizing a note, reading image attachments, class summaries, flashcards, practice tests | nearly every call goes here, so it wants something fast and cheap |
+| `REASONING_MODEL` | the class teaching readout | the one call with no rule-based fallback, where a wrong answer is worse than a slow one |
 
 The code never hardcodes a model name, because provider identifiers change on
 their own schedule. The two above were current when this was written, so if
@@ -165,12 +169,32 @@ you set it only on `production`, deploy previews and branch deploys fall back to
 the deterministic organizer without saying why, which makes for a confusing
 demo. The key is only ever read on the server and never reaches the browser.
 
+## Connecting classes
+
+Google Classroom and Canvas are off until their variables exist, and the
+product says "not set up on this site" rather than showing a broken button.
+The full setup is in `docs/CLASSWORK.md`; the short version:
+
+| Variable | What it is |
+| --- | --- |
+| `APP_ORIGIN` | the site's own origin, which every redirect URI is built from |
+| `CLASSWORK_STATE_SECRET` | signs the OAuth state; 32 random bytes |
+| `CLASSWORK_SERVER_KEY` | the key the database demands before it hands back a token; the same value lives in Vault |
+| `CLASSWORK_SYNC_TRIGGER_SECRET` | the bearer the hourly job sends; the same value lives in Vault |
+| `CLASSROOM_OAUTH_CLIENT_ID`, `CLASSROOM_OAUTH_CLIENT_SECRET` | a Google Cloud web client with the Classroom API on |
+| `CANVAS_OAUTH_CLIENT_ID`, `CANVAS_OAUTH_CLIENT_SECRET`, `CANVAS_INSTANCE_URL` | a developer key from the school's Canvas admin, and the school's host |
+
+Locally, `CLASSWORK_PROVIDER_MODE=stub` with `CLASSWORK_STUB_ORIGIN=http://localhost:3112`
+points both providers at `web/tests/stub-lms/server.mjs`, which the e2e suite starts.
+
 ## Repo map
 
 - `docs/SPEC.md`: the authoritative product spec
 - `docs/PLAN.md`: the execution plan with per step status
 - `docs/BUILDLOG.md`: what was built, found, and fixed, step by step
 - `docs/AUTH.md`: the authentication seam and how to swap the provider
+- `docs/CLASSWORK.md`: Google Classroom and Canvas, from setup to how a sync pass works
+- `docs/CLASSWORK_VERIFICATION.md`: the checklist run on the live site per phase
 - `memory/`: decisions and lessons recorded as they happened
 - `supabase/migrations/`: the full schema, security, and function history
 - `web/`: the app
