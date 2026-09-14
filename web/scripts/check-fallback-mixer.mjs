@@ -20,6 +20,13 @@
 //      seconds on the study route. A model that needs longer will time out
 //      every time, which looks identical to the outage it was meant to fix.
 //
+// The third question is the reason the sample below is large rather than
+// convenient. A one paragraph prompt returns in a couple of seconds from
+// almost anything and proves nothing: the study route sends up to 60,000
+// characters of notes and asks for 12 to 20 cards, and on a reasoning model
+// both the thinking and the writing grow with that. A toy request that passes
+// is how you ship a standby that times out on every real deck.
+//
 // The key is never printed, and nothing is stored.
 
 const apiKey = process.env.FALLBACK_MODEL_API_KEY;
@@ -49,6 +56,27 @@ const schema = {
   },
 };
 
+/**
+ * Roughly what a real Pot sends. Not the 60,000 character ceiling, because a
+ * check that takes a minute does not get run, but far enough past a toy to
+ * show whether the model's thinking scales into the budget.
+ */
+const NOTES = [
+  "Osmosis is the net movement of water across a selectively permeable membrane, from a region of higher water potential to one of lower water potential.",
+  "Tonicity describes what a surrounding solution does to a cell's volume. A hypotonic solution has a lower solute concentration than the cell, so water enters and the cell swells.",
+  "A hypertonic solution has a higher solute concentration, so water leaves and the cell shrinks, a process called plasmolysis in plant cells.",
+  "An isotonic solution has the same effective solute concentration, so there is no net movement and the cell holds its volume.",
+  "Water potential combines solute potential and pressure potential. Adding solute lowers water potential; pressure raises it.",
+  "Plant cells rely on turgor pressure from the cell wall pushing back against the swollen vacuole, which is what keeps a leaf rigid rather than wilted.",
+  "Animal cells have no wall, so a hypotonic surrounding can burst them, which is called lysis, while a hypertonic one leaves them crenated.",
+  "Facilitated diffusion moves solutes down their gradient through channel or carrier proteins, without spending ATP.",
+  "Active transport moves solutes against their gradient and does spend ATP, as in the sodium potassium pump that exchanges three sodium out for two potassium in.",
+  "Aquaporins are channel proteins that let water cross far faster than it could through the lipid bilayer alone, which matters in kidney tubules.",
+].join(" ");
+
+// About 20,000 characters, the shape of a mid sized Pot.
+const material = `${NOTES} `.repeat(Math.ceil(20_000 / (NOTES.length + 1))).slice(0, 20_000);
+
 const started = Date.now();
 const controller = new AbortController();
 // Deliberately generous, so a slow model reports its real time rather than an
@@ -66,16 +94,13 @@ try {
         {
           role: "system",
           content:
-            "Create 2 recall flashcards from the material." +
+            "Create 16 recall flashcards from the material. Avoid duplicates and trivia." +
             `\n\nReply with JSON alone, matching this schema:\n${JSON.stringify(schema)}`,
         },
         {
           role: "user",
           content: [
-            {
-              type: "text",
-              text: "Osmosis is the movement of water across a semipermeable membrane, from lower to higher solute concentration.",
-            },
+            { type: "text", text: material },
           ],
         },
       ],
@@ -131,21 +156,20 @@ try {
   process.exit(1);
 }
 
+const cards = Array.isArray(parsed.cards) ? parsed.cards.length : 0;
 console.log(`OK    HTTP 200 in ${elapsed}ms, JSON parsed.`);
-console.log(`      Keys returned: ${Object.keys(parsed).join(", ") || "(none)"}`);
+console.log(`      ${material.length} characters in, ${cards} cards out.`);
 
 if (elapsed > STANDBY_BUDGET_MS) {
   console.warn(
-    `\nWARN  ${elapsed}ms is over the ${STANDBY_BUDGET_MS}ms the standby gets on the study\n` +
-      "      route, and this was a two card request against one short paragraph.\n" +
-      "      A real deck or a practice test is much larger. This model will\n" +
-      "      probably time out on the rescue it exists for. Pick a faster one,\n" +
-      "      or the failover will trade one failure for another.",
+    `\nWARN  ${elapsed}ms is over the ${STANDBY_BUDGET_MS}ms the standby gets on the\n` +
+      "      study route. This model will time out on the rescue it exists for,\n" +
+      "      which trades one failure for another. Try a faster sibling.",
   );
   process.exit(3);
 }
 
 console.log(
-  `\n      Inside the ${STANDBY_BUDGET_MS}ms standby budget. Note this was a small\n` +
-    "      request: a full deck or test is larger, so leave headroom.",
+  `\n      Inside the ${STANDBY_BUDGET_MS}ms standby budget. The study route can send\n` +
+    "      up to 60,000 characters, three times this, so leave headroom.",
 );
