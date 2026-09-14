@@ -59,6 +59,20 @@ it is needed. The standby gets JSON mode with the schema in the instruction
 instead. Nothing is lost: `lib/mix/contracts.ts` re-checks the shape whichever
 provider answered.
 
+## The model
+
+`gpt-5.6-luna`, chosen by the owner on 2026-09-14. Confirmed as a real chat
+completions identifier by reading the `ChatModel` union in both the Node and
+Python SDKs rather than from memory, which matters because a wrong name makes
+the rescue fail instead of the primary and leaves the class worse off than
+with no standby at all. Its siblings are `gpt-5.6-sol` and `gpt-5.6-terra`,
+with `gpt-6-astra` above them, if it turns out too slow for the budget.
+
+The name is config, not source, so changing it is a Netlify edit.
+`scripts/check-fallback-mixer.mjs` is how a candidate is checked before a class
+depends on it: it sends the same request the app sends and reports the status,
+the latency against the standby's budget, and whether the reply parsed.
+
 ## Files
 
 `lib/mix/providers.ts` holds both wire formats and nothing else.
