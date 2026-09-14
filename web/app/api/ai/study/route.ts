@@ -228,6 +228,10 @@ export async function POST(request: Request) {
     const generated = await generateStructured<unknown>({
       model,
       deadlineAt: startedAt + MIX_DEADLINE_MS,
+      // Summaries, decks and tests are where a full pot is actually felt, so
+      // this is the one route that puts a capacity refusal to the standby
+      // mixer. Organizing and the teaching readout stay on the primary alone.
+      allowFallback: true,
       instruction: [
         task,
         "Use only the supplied class notes. Do not add outside facts.",
