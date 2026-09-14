@@ -16,9 +16,14 @@
 //   2. Does it accept JSON mode on chat completions? Some newer models want a
 //      different surface or refuse the parameter, and the failover path is the
 //      wrong place to discover that.
-//   3. Does it answer inside the budget? The standby gets roughly twelve
-//      seconds on the study route. A model that needs longer will time out
-//      every time, which looks identical to the outage it was meant to fix.
+//   3. Does it answer inside the budget? A model that needs longer will time
+//      out on the rescue, which looks identical to the outage it was meant to
+//      fix. The number below is the floor rather than the budget: the standby
+//      inherits whatever the primary did not spend, and a capacity refusal
+//      comes back in a few hundred milliseconds, so in the case this exists
+//      for it usually has about twenty seconds. Twelve is what is left when
+//      the primary instead accepts the request and stalls to its cap, and a
+//      standby worth having should clear the bad day, not just the good one.
 //
 // The third question is the reason the sample below is large rather than
 // convenient. A one paragraph prompt returns in a couple of seconds from
@@ -40,7 +45,11 @@ if (!apiKey || !model) {
   process.exit(2);
 }
 
-/** The budget the standby actually gets on the study route. */
+/**
+ * The least the standby can be left with, not the most. Checking against the
+ * floor is the point: passing only when the primary failed fast would mean a
+ * standby that works except when it is needed most.
+ */
 const STANDBY_BUDGET_MS = 12_000;
 
 const schema = {
