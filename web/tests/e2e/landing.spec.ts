@@ -103,14 +103,18 @@ test.describe("brand landing", () => {
         const style = getComputedStyle(el);
         return `${style.rotate}|${style.translate}`;
       });
+    // The section lifts 18px into place when it scrolls into view. Hovering
+    // during that slides the card out from under the pointer, the hover drops,
+    // and the assertion reads a resting scrap: this failed once in a full run
+    // and passed on its own. Let the entrance finish before touching anything.
+    await page.waitForTimeout(1_200);
     const resting = await liftOf();
 
     await section
       .getByRole("heading", { name: "Enzyme inhibition, and which line moves" })
       .hover();
-    await page.waitForTimeout(700);
-
-    expect(await liftOf()).not.toBe(resting);
+    // The lift is a 500ms transition, so poll rather than sample once.
+    await expect.poll(liftOf, { timeout: 5_000 }).not.toBe(resting);
   });
 
   // The header once collided with itself on a phone: the wordmark and the nav
@@ -265,6 +269,7 @@ test.describe("brand landing", () => {
         const style = getComputedStyle(el);
         return `${style.rotate}|${style.translate}`;
       });
+    await page.waitForTimeout(1_200);
     const resting = await liftOf();
     await section
       .getByRole("heading", { name: "Enzyme inhibition, and which line moves" })

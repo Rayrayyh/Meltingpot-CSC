@@ -35,7 +35,7 @@ export async function getNoteHistory(
   noteId: string,
 ): Promise<NoteHistory | null> {
   const supabase = await supabaseServer();
-  const { data: note } = await supabase
+  const { data: note, error } = await supabase
     .from("shared_notes")
     .select(
       `id, pot_id, current_version_id, section_id,
@@ -45,6 +45,12 @@ export async function getNoteHistory(
     .eq("id", noteId)
     .eq("pot_id", potId)
     .maybeSingle();
+  // No rows is a real 404; a failed read is not, and history saying a note
+  // never existed is worse than history being briefly unavailable.
+  if (error) {
+    console.error("note history read failed", error.message);
+    throw new Error(`note history read failed: ${error.message}`);
+  }
   if (!note) return null;
 
   const { data: versions } = await supabase

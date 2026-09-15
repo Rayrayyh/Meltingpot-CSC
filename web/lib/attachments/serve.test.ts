@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { claimIsHonest, looksExecutable, safeFileName, sniffMime } from "@/lib/attachments/serve";
+import {
+  claimIsHonest,
+  isPlainStorageKey,
+  looksExecutable,
+  safeFileName,
+  sniffMime,
+} from "@/lib/attachments/serve";
 
 const bytes = (...values: number[]) => new Uint8Array(values);
 const PDF = bytes(0x25, 0x50, 0x44, 0x46, 0x2d, 0x31, 0x2e, 0x37);
@@ -79,5 +85,28 @@ describe("safeFileName", () => {
   it("falls back when nothing usable survives", () => {
     expect(safeFileName("", "attachment")).toBe("attachment");
     expect(safeFileName(null, "attachment")).toBe("attachment");
+  });
+});
+
+describe("isPlainStorageKey", () => {
+  it("accepts the shape a real object key has", () => {
+    expect(
+      isPlainStorageKey(["9f2c", "41ab", "1757900000000.png"]),
+    ).toBe(true);
+  });
+
+  it("refuses a traversal segment, so the checked key and the read object cannot differ", () => {
+    expect(isPlainStorageKey(["9f2c", "..", "41ab", "x.png"])).toBe(false);
+    expect(isPlainStorageKey([".."])).toBe(false);
+    expect(isPlainStorageKey(["9f2c", "."])).toBe(false);
+  });
+
+  it("refuses an empty segment, which collapses on join", () => {
+    expect(isPlainStorageKey(["9f2c", "", "x.png"])).toBe(false);
+    expect(isPlainStorageKey([])).toBe(false);
+  });
+
+  it("leaves a dot inside a name alone", () => {
+    expect(isPlainStorageKey(["9f2c", "41ab", "..hidden.png"])).toBe(true);
   });
 });

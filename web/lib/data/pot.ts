@@ -210,7 +210,7 @@ export function parseBlocks(body: Json): NoteBlock[] {
 
 export async function getNoteDetail(potId: string, noteId: string): Promise<NoteDetail | null> {
   const supabase = await supabaseServer();
-  const { data: note } = await supabase
+  const { data: note, error } = await supabase
     .from("shared_notes")
     .select(
       `id, pot_id, shared_at, section_id, contribution_id,
@@ -227,6 +227,16 @@ export async function getNoteDetail(potId: string, noteId: string): Promise<Note
     .eq("id", noteId)
     .eq("pot_id", potId)
     .maybeSingle();
+  // A row the reader may not see, or one that is not there, comes back as no
+  // rows and no error, and that is a genuine 404. An error is a different
+  // thing: the read did not happen. Returning null for it told a contributor
+  // their own note did not exist, which is the one thing this product must
+  // never say by accident, so it raises and the error boundary says what is
+  // actually true.
+  if (error) {
+    console.error("note read failed", error.message);
+    throw new Error(`note read failed: ${error.message}`);
+  }
   if (!note?.current) return null;
 
   const { data: attachments } = await supabase

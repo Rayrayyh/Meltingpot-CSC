@@ -310,13 +310,23 @@ export function StudyWorkspace({
     firstLook.current = false;
     const timer = setTimeout(
       () => {
-        void load({ peek: true, options }).then((outcome) => {
+        // The failure branch is not decoration. fetch rejects outright when the
+        // connection drops, and without it the key was never marked as looked
+        // up: the setup screen went on saying "Checking what the Pot already
+        // has" for the rest of the session, and the rejection was unhandled. A
+        // lookup that could not be made settles as nothing found, which is
+        // what the reader can see anyway.
+        const settle = (loaded: Loaded | null) => {
           if (!live) return;
-          setPeeked(outcome.loaded ?? null);
+          setPeeked(loaded);
           // A summary and a deck have nothing to configure, so whatever the Pot
           // holds is simply what the page shows.
           setLookedUpKey(optionsKey);
-        });
+        };
+        void load({ peek: true, options }).then(
+          (outcome) => settle(outcome.loaded ?? null),
+          () => settle(null),
+        );
       },
       // The first look is what the page is waiting on, so it goes at once.
       // Later ones are keystrokes and taps, and wait for those to stop.

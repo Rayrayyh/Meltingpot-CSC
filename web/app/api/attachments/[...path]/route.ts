@@ -1,6 +1,7 @@
 import { supabaseServer } from "@/lib/supabase/server";
 import {
   claimIsHonest,
+  isPlainStorageKey,
   looksExecutable,
   safeFileName,
   sniffMime,
@@ -15,10 +16,13 @@ export async function GET(
   context: { params: Promise<{ path: string[] }> },
 ) {
   const { path } = await context.params;
-  const storagePath = path.join("/");
-  if (!storagePath) {
+  // The segments are whatever was in the URL. Nothing but a plain one makes a
+  // key; see isPlainStorageKey for why a "." or a ".." is refused rather than
+  // reasoned about.
+  if (!isPlainStorageKey(path)) {
     return new Response("Not found", { status: 404 });
   }
+  const storagePath = path.join("/");
 
   const supabase = await supabaseServer();
   const { data, error } = await supabase.storage
