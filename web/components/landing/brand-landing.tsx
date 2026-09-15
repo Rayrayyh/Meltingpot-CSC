@@ -5,7 +5,7 @@ import { HeroDashboard } from "@/components/landing/hero-dashboard";
 import { HeroMotion } from "@/components/landing/hero-motion";
 import { RollingText } from "@/components/landing/rolling-text";
 import { NamesOnTheNote } from "@/components/landing/names-on-the-note";
-import { ScrollStopper } from "@/components/landing/scroll-stopper";
+import { PooledNote } from "@/components/landing/pooled-note";
 import { SiteFooter } from "@/components/landing/site-footer";
 import { SiteHeader } from "@/components/landing/site-header";
 import { PRINCIPLES, STEPS } from "@/components/landing/site-content";
@@ -15,8 +15,8 @@ import { Magnetic } from "@/components/ui/magnetic";
 import { RollText } from "@/components/ui/roll-text";
 
 /**
- * The public landing: brand hero up top, the join and create paths one scroll
- * below, then the melt story. Signed-in people are welcome here too, so the
+ * The public landing: brand hero up top, the feature grid one scroll below,
+ * then the reason a Pot exists at all. Signed-in people are welcome here too, so the
  * account calls to action turn into a way back to their dashboard rather than
  * asking them to sign in again.
  */
@@ -118,7 +118,7 @@ export function BrandLanding({ signedIn = false }: { signedIn?: boolean }) {
           CTAs point at /join, the page that still owns a code field. */}
       <section
         id="spaces"
-        className="px-6 sm:px-10 py-16 sm:py-20 bg-surface border-y border-edge scroll-mt-8"
+        className="px-6 sm:px-10 py-16 sm:py-20 bg-surface border-b border-edge scroll-mt-8"
       >
         {/* Layer-cake scanning only works when a heading summarises what sits
             under it, and the old one described the problem while the grid
@@ -145,10 +145,13 @@ export function BrandLanding({ signedIn = false }: { signedIn?: boolean }) {
       </section>
 
       <div id="explore" className="scroll-mt-8">
-        <ScrollStopper />
+        <PooledNote />
       </div>
 
-      <section className="px-6 sm:px-10 py-24 sm:py-36 bg-surface border-y border-edge">
+      <section
+        id="how"
+        className="px-6 sm:px-10 py-24 sm:py-36 bg-surface border-y border-edge scroll-mt-8"
+      >
         <Reveal className="mx-auto w-full max-w-5xl space-y-16">
           <div className="max-w-lg space-y-3">
             <p className="text-[12px] font-semibold tracking-[0.14em] uppercase text-clay">
