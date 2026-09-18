@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { ArrowRight } from "@phosphor-icons/react/dist/ssr";
+import { ArrowRight, Play } from "@phosphor-icons/react/dist/ssr";
+import { DemoVideo } from "@/components/landing/demo-video";
 import { FeatureBento } from "@/components/landing/feature-bento";
 import { HeroDashboard } from "@/components/landing/hero-dashboard";
 import { HeroMotion } from "@/components/landing/hero-motion";
@@ -13,6 +14,7 @@ import { Button } from "@/components/ui/button";
 import { Reveal } from "@/components/ui/reveal";
 import { Magnetic } from "@/components/ui/magnetic";
 import { RollText } from "@/components/ui/roll-text";
+import { demoMedia } from "@/lib/landing/demo-media";
 
 /**
  * The public landing: brand hero up top, the feature grid one scroll below,
@@ -66,15 +68,38 @@ export function BrandLanding({ signedIn = false }: { signedIn?: boolean }) {
                 {signedIn ? "Go to dashboard" : "Join a class"}
               </Button>
             </Magnetic>
+            {/* Watch the demo when there is a demo to watch, and the link
+                this replaced when there is not: a hero that sends people to
+                a section the page did not render is worse than one that
+                never offered.
+
+                The mark leads rather than trails. An arrow after the words
+                means "onwards", which is what the fallback is saying, while
+                a play triangle means "press me", which sits on the left of
+                its label everywhere else a person has met it. Filled,
+                because an outlined triangle at 16px reads as a caret. */}
             <a
-              href="#explore"
+              href={demoMedia ? "#demo" : "#explore"}
               className="group/roll inline-flex items-center gap-2 text-[16px] font-medium text-ink hover:text-primary transition-colors"
             >
-              <RollText>Learn more</RollText>
-              <ArrowRight
-                className="size-4 transition-transform duration-300 group-hover/roll:translate-x-1"
-                aria-hidden
-              />
+              {demoMedia ? (
+                <>
+                  <Play
+                    weight="fill"
+                    className="size-4 transition-transform duration-300 motion-safe:group-hover/roll:scale-110"
+                    aria-hidden
+                  />
+                  <RollText>Watch the demo</RollText>
+                </>
+              ) : (
+                <>
+                  <RollText>Learn more</RollText>
+                  <ArrowRight
+                    className="size-4 transition-transform duration-300 group-hover/roll:translate-x-1"
+                    aria-hidden
+                  />
+                </>
+              )}
             </a>
           </div>
         </div>
@@ -143,6 +168,12 @@ export function BrandLanding({ signedIn = false }: { signedIn?: boolean }) {
         </div>
 
       </section>
+
+      {/* The bento says what a Pot holds; this shows it holding it. It goes
+          above the reframe so the page answers "does it work" before it
+          starts arguing about why it should exist, and above Names on the
+          note so two demonstrations do not land back to back. */}
+      <DemoVideo />
 
       <div id="explore" className="scroll-mt-8">
         <PooledNote />
