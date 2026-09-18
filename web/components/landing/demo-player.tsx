@@ -266,9 +266,15 @@ export function DemoPlayer({
           // be an empty box: no loop, no poster, nothing.
           !started && previewSrc && "invisible motion-reduce:visible",
         )}
-        src={src}
+        // With a poster there is nothing to fetch until somebody presses
+        // play. Without one the frame would be an empty box, so the film is
+        // asked for its own first frame instead: a media fragment makes the
+        // browser seek there and paint it, and preload="metadata" fetches
+        // only the moov atom and the frames around it rather than the file.
+        // Losing the first tenth of a second is the whole cost.
+        src={poster ? src : `${src}#t=0.1`}
         poster={poster}
-        preload="none"
+        preload={poster ? "none" : "metadata"}
         playsInline
         onClick={() => {
           if (!started) return;

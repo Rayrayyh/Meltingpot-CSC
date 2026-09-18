@@ -64,9 +64,14 @@ for. Three things came out of building it that are worth keeping:
 promise. A section that renders a dead frame, and a hero that sends people to
 it, is worse than a page that never offered.
 
-`next.config.ts` therefore checks which of `demo.mp4`, `demo-poster.png`,
-`demo.vtt` and `demo-preview.mp4` exist and inlines the answer as
-`process.env.DEMO_MEDIA`; `lib/landing/demo-media.ts` parses it. Without the
+`next.config.ts` therefore resolves what is in `public/` and inlines the
+answer as `process.env.DEMO_MEDIA`; `lib/landing/demo-media.ts` parses it.
+
+The film is found rather than named. `demo.mp4` wins if it is there, and
+otherwise a single mp4 in `public/` is taken to be it. The owner's export is
+`Meltingpot-v3-web-1080p60.mp4`, and a version in the filename would mean a
+code change on every re-export. Several mp4s with no `demo.mp4` is genuinely
+ambiguous, so it picks none and the build log says to rename one. Without the
 film the section returns null and the hero link reverts to "Learn more"
 pointing at `#explore`. Both paths were checked against a real production
 server, not reasoned about.
@@ -79,8 +84,23 @@ bundle, and `public/` is deployed as static assets rather than as code, so
 section that should be showing.
 
 Only the film is required. The poster, the captions and the ambient preview
-loop each switch on a feature when they appear, so the owner can commit
-`demo.mp4` alone and add the rest later with no code change.
+loop each switch on a feature when they appear, so the owner can commit the
+film alone and add the rest later with no code change.
+
+Without a poster the resting frame would be an empty box, so the film is
+asked for its own first frame instead: `src` carries a `#t=0.1` media
+fragment and `preload` becomes `metadata`, which makes the browser seek there
+and paint it while fetching only the moov atom and the frames around it. A
+real `demo-poster.png` is still better, because it costs no request at all
+and can be a frame somebody chose rather than whatever sits at 0.1s.
+
+A note for anyone verifying this in the dev container: the film is H.264 with
+AAC audio, which is the right choice for the web and plays everywhere, but
+the container's Chromium is the open source build with no proprietary codecs.
+`canPlayType` returns nothing for every avc1 and mp4a variant there, so the
+film cannot be decoded, screenshotted or played locally. The player's own
+behavior was verified against a VP8 placeholder, which exercises the same
+code paths.
 
 ## The heading
 

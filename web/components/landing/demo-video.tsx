@@ -31,13 +31,14 @@ import { demoMedia } from "@/lib/landing/demo-media";
  * rather than in feature names. The word "watch" is deliberately absent,
  * because the hero link and the pill on the frame both already say it.
  *
- * The files this wants in public/: demo.mp4, the demo-poster.png the frame
- * rests on, demo.vtt for the captions button to have something to turn on,
- * and optionally demo-preview.mp4, a few seconds of silent loop that makes
- * the resting frame move. Only the film is required; the rest each add a
- * piece when they show up. Without the film there is nothing honest to put
- * here, so the section renders nothing at all rather than a dead frame, and
- * the hero drops its link to it. See lib/landing/demo-media.ts.
+ * What this wants in public/: the film, plus demo-poster.png for the frame
+ * to rest on, demo.vtt for the captions button to have something to turn on,
+ * and demo-preview.mp4, a few seconds of silent loop that makes the resting
+ * frame move. Only the film is required; the rest each add a piece when they
+ * show up. The film is found rather than named, so whatever the export is
+ * called works without a code change. Without it there is nothing honest to
+ * put here, so the section renders nothing at all rather than a dead frame,
+ * and the hero drops its link to it. See lib/landing/demo-media.ts.
  */
 export function DemoVideo() {
   if (!demoMedia) return null;
