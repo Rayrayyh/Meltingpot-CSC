@@ -2,6 +2,8 @@
 
 import { useEffect } from "react";
 
+import { PLAY_HOOK } from "@/components/landing/demo-player";
+
 /**
  * Sends "Watch the demo" to the film rather than to the section.
  *
@@ -17,6 +19,9 @@ import { useEffect } from "react";
  * short window the film fills what there is, and on a tall one it sits in the
  * middle with its own heading still above it. That is a measurement only the
  * browser can make, which is why this is script rather than a class.
+ *
+ * Following the link also starts the film, so the hero's "Watch the demo"
+ * does what it says rather than putting a second click on the pill.
  *
  * It stays a progressive enhancement. Without JavaScript the anchor still
  * works and still lands on the section, which is the ordinary behavior this
@@ -78,6 +83,13 @@ export function DemoFocus() {
       if (!link) return;
       if (!center(still.matches ? "instant" : "smooth")) return;
       event.preventDefault();
+      // Press the pill rather than waiting for the scroll to land. A film
+      // may only play with sound off the back of a user activation, and this
+      // handler is inside the one the person just gave; a play deferred to
+      // the end of a half second glide is not, and Safari refuses it.
+      // Starting now also means the film is already running by the time they
+      // arrive, which is what following the link asked for.
+      document.querySelector<HTMLButtonElement>(`[${PLAY_HOOK}]`)?.click();
       // The hash is what makes the link shareable and what the back button
       // reads, so it still gets written; replaceState rather than assignment
       // because assigning it would jump the page we just scrolled.

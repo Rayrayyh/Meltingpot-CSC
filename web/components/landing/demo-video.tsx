@@ -60,7 +60,7 @@ export function DemoVideo() {
             From what you typed to what the class studies.
           </h2>
           <p className="text-lg text-ink-muted leading-relaxed text-balance">
-            Two minutes: a rough paragraph, organized, approved by the
+            Under a minute: a rough paragraph, organized, approved by the
             person who wrote it, corrected by somebody else, then turned into
             a practice test.
           </p>

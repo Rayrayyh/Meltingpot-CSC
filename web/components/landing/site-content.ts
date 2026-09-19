@@ -65,9 +65,9 @@ export const MAKERS: { name: string; avatar: string; href: string }[] = [
     href: "https://github.com/metabender",
   },
   {
-    name: "cozbrozdevarc",
-    avatar: "/credits/cozbrozdevarc.jpg",
-    href: "https://github.com/cozbrozdevarc",
+    name: "thecozbroz",
+    avatar: "/credits/thecozbroz.jpg",
+    href: "https://github.com/thecozbroz",
   },
   {
     name: "AnonymousDev",

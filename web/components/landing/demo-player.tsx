@@ -49,6 +49,29 @@ const SPEEDS = [0.75, 1, 1.25, 1.5, 2] as const;
 /** Hides the bar once a film is running and nobody is reaching for it. */
 const IDLE_MS = 2_600;
 
+/**
+ * Where to find the still, in seconds, when no poster file is supplied.
+ *
+ * A media fragment makes the browser seek here and paint it, which is the
+ * whole resting picture. 0.1 got whatever the film opens on; 2 is the title
+ * card the owner picked. Playback still starts from the beginning, because
+ * start() rewinds first: this number chooses a thumbnail, not an in point.
+ */
+const STILL_AT = 2;
+
+/**
+ * Marks the pill, so the hero's link can press it.
+ *
+ * The hero is a server component three files away and cannot hold a callback
+ * to this one. A custom event would be the other seam, but the listener has
+ * to live in a hook, and starting the film mutates the element through a
+ * ref, which the compiler's immutability pass refuses inside a hook and
+ * allows from an event. Pressing the real button keeps the work in the
+ * handler that already does it, and keeps the user activation that lets a
+ * film play with sound.
+ */
+export const PLAY_HOOK = "data-demo-play";
+
 export function DemoPlayer({
   src,
   /** The frame it rests on. Without one the frame is blank until play. */
@@ -124,6 +147,12 @@ export function DemoPlayer({
     setStarted(true);
     node.muted = false;
     setMuted(false);
+    // The still is a frame from part way in, so the film is sitting at
+    // STILL_AT rather than at the top. Rewind before playing: choosing a
+    // thumbnail should not cost the opening of the film.
+    if (!poster && node.currentTime > 0 && node.currentTime <= STILL_AT + 0.5) {
+      node.currentTime = 0;
+    }
     // This runs inside a click, so the autoplay policy is already satisfied
     // and the realistic rejection is an AbortError: somebody pressed pause,
     // or seeked, before the first frame arrived. Putting the pill back there
@@ -144,8 +173,9 @@ export function DemoPlayer({
     setStarted(false);
     setAt(0);
     // `at` is our number; this is the element's. Without it the pill comes
-    // back over the last frame rather than over the poster.
-    if (node) node.currentTime = 0;
+    // back over the last frame rather than over the resting picture, and the
+    // resting picture is the still, not frame zero.
+    if (node) node.currentTime = poster ? 0 : STILL_AT;
     // The whole bar is about to unmount, so no blur handler inside it will
     // run. Clearing this by hand keeps a film that ended under a focused
     // control from pinning the bar open for the rest of the page's life.
@@ -173,12 +203,18 @@ export function DemoPlayer({
     setAt(to);
   };
 
+  // Captions have one owner, and it is this state: the button writes both it
+  // and the track, and nothing reads the track's mode back. The first
+  // version read it as well, to pick up a preference a browser had restored,
+  // which meant the two had to be kept reconciled and gave the compiler a
+  // value crossing a hook boundary and then being mutated, which it refuses.
+  // The write stays in the handler for the same reason: reaching through the
+  // ref to mutate is allowed from an event and not from inside a hook.
   const toggleCaptions = () => {
-    const node = film.current;
-    const track = node?.textTracks?.[0];
-    if (!track) return;
+    const tracks = film.current?.textTracks;
+    if (!tracks?.length) return;
     const next = !captionsOn;
-    track.mode = next ? "showing" : "hidden";
+    tracks[0]!.mode = next ? "showing" : "hidden";
     setCaptionsOn(next);
   };
 
@@ -200,7 +236,7 @@ export function DemoPlayer({
   };
 
   /**
-   * Pull the duration and the caption state off the element.
+   * Pull the duration off the element.
    *
    * Wired to the events and called from a ref callback, because with
    * preload="metadata" the browser has often finished loading metadata
@@ -215,21 +251,14 @@ export function DemoPlayer({
     const node = film.current;
     if (!node) return;
     if (Number.isFinite(node.duration) && node.duration > 0) setLength(node.duration);
-    // The track's mode is the truth about whether captions are on; this
-    // state only labels a button. A browser that restores a caption
-    // preference would otherwise have the button announcing the opposite of
-    // what the film is doing.
-    const track = node.textTracks[0];
-    if (track) setCaptionsOn(track.mode === "showing");
   }, []);
 
-  const holdFilm = useCallback(
-    (node: HTMLVideoElement | null) => {
-      film.current = node;
-      if (node) readMetadata();
-    },
-    [readMetadata],
-  );
+  // Ask the element once we are mounted. This is the other half of the
+  // hydration race described above: the event may already have fired, but
+  // the duration is still sitting on the element, so it only has to be read.
+  useEffect(() => {
+    readMetadata();
+  }, [readMetadata, started]);
 
   // Invisible is not stopped. A loop left running keeps decoding under the
   // film, and if the viewer unmuted it before pressing play it keeps its
@@ -285,7 +314,7 @@ export function DemoPlayer({
       ) : null}
 
       <video
-        ref={holdFilm}
+        ref={film}
         className={cn(
           "block w-full bg-paper object-contain",
           // A forced 16:9 box is right in the page and wrong in fullscreen.
@@ -315,11 +344,10 @@ export function DemoPlayer({
         )}
         // With a poster there is nothing to fetch until somebody presses
         // play. Without one the frame would be an empty box, so the film is
-        // asked for its own first frame instead: a media fragment makes the
+        // asked for a frame of itself instead: a media fragment makes the
         // browser seek there and paint it, and preload="metadata" fetches
         // only the moov atom and the frames around it rather than the file.
-        // Losing the first tenth of a second is the whole cost.
-        src={poster ? src : `${src}#t=0.1`}
+        src={poster ? src : `${src}#t=${STILL_AT}`}
         poster={poster}
         preload={poster ? "none" : "metadata"}
         playsInline
@@ -376,6 +404,7 @@ export function DemoPlayer({
           <button
             ref={pill}
             type="button"
+            {...{ [PLAY_HOOK]: "" }}
             onClick={start}
             className="group/cta absolute inset-0 grid place-items-center focus-visible:outline-none"
           >
