@@ -1,3 +1,4 @@
+import { DemoFocus } from "@/components/landing/demo-focus";
 import { DemoPlayer } from "@/components/landing/demo-player";
 import { demoMedia } from "@/lib/landing/demo-media";
 
@@ -65,7 +66,13 @@ export function DemoVideo() {
           </p>
         </div>
 
-        <DemoPlayer className="mt-10" {...demoMedia} />
+        {/* The id the hero aims at is on the frame, not on the section:
+            DemoFocus centers this rather than letting the anchor top the
+            section and leave the film below the fold. */}
+        <div id="demo-frame">
+          <DemoPlayer className="mt-10" {...demoMedia} />
+        </div>
+        <DemoFocus />
       </div>
     </section>
   );

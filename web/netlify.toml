@@ -30,6 +30,16 @@
 # four are public, static and carry nothing to leak. Documents and
 # attachments keep same-origin, which is where that header does real work.
 # A more specific rule wins over /* for the same header name.
+# The demo film is 4.3 MB and Netlify's default for a static asset is
+# must-revalidate, so every visit pays a round trip before playback can start.
+# The filename carries its export version, so a new cut arrives at a new URL
+# and nothing stale can be served for it. Re-exporting under the same name is
+# the one thing this rule cannot survive: bump the version when you do.
+[[headers]]
+  for = "/*.mp4"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
 [[headers]]
   for = "/opengraph-image.png"
   [headers.values]

@@ -54,3 +54,40 @@ element's state are two different truths":
 - Resetting your own `currentTime` state on `ended` does not rewind the
   element. The poster does not come back, so the resting frame is the last
   frame of the film.
+
+## And the one that only appears once you stop using preload="none"
+
+`onLoadedMetadata` is a React prop, so it only catches the event if React has
+hydrated before the event fires. With `preload="none"` nothing loads until
+somebody presses play, which is always after hydration, so the prop is enough
+and the bug is invisible. Switch to `preload="metadata"`, as a player without
+a poster has to, and the browser often finishes loading metadata during the
+page load, before hydration. The event fires into nothing and `duration` is
+never read.
+
+What that looked like: `length` stayed 0, so the scrubber's `max` fell back to
+`Math.max(length, 0.1)`. Its fill read as 100 per cent at every moment,
+dragging did nothing useful, arrow key seeking clamped every target to zero,
+and the screen reader was told a two minute film was 0:00 long. Nothing threw,
+and the element's own `duration` was correct the whole time.
+
+The fix is to ask the element rather than wait to be told. A callback ref
+reads `duration` the moment there is a node, and `loadedmetadata` plus
+`durationchange` cover the case where it is not known yet:
+
+```tsx
+const readMetadata = useCallback(() => {
+  const node = film.current;
+  if (!node) return;
+  if (Number.isFinite(node.duration) && node.duration > 0) setLength(node.duration);
+}, []);
+
+const holdFilm = useCallback((node: HTMLVideoElement | null) => {
+  film.current = node;
+  if (node) readMetadata();
+}, [readMetadata]);
+```
+
+The general shape: any DOM element that reports state through events can have
+fired them all before React attached. If the state is also readable as a
+property, read it on attach and treat the events as updates.

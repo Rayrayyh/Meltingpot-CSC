@@ -199,6 +199,38 @@ export function DemoPlayer({
     requestAnimationFrame(() => gear.current?.focus({ preventScroll: true }));
   };
 
+  /**
+   * Pull the duration and the caption state off the element.
+   *
+   * Wired to the events and called from a ref callback, because with
+   * preload="metadata" the browser has often finished loading metadata
+   * before React hydrates, and an event that fired before the handler was
+   * attached is simply lost. That left `length` at 0, which made the
+   * scrubber's max 0.1s: the fill read as full at every moment, dragging did
+   * nothing useful, arrow keys clamped to zero and the screen reader was told
+   * the film was 0:00 long. A prop alone cannot see that, so the element is
+   * asked directly the moment there is one.
+   */
+  const readMetadata = useCallback(() => {
+    const node = film.current;
+    if (!node) return;
+    if (Number.isFinite(node.duration) && node.duration > 0) setLength(node.duration);
+    // The track's mode is the truth about whether captions are on; this
+    // state only labels a button. A browser that restores a caption
+    // preference would otherwise have the button announcing the opposite of
+    // what the film is doing.
+    const track = node.textTracks[0];
+    if (track) setCaptionsOn(track.mode === "showing");
+  }, []);
+
+  const holdFilm = useCallback(
+    (node: HTMLVideoElement | null) => {
+      film.current = node;
+      if (node) readMetadata();
+    },
+    [readMetadata],
+  );
+
   // Invisible is not stopped. A loop left running keeps decoding under the
   // film, and if the viewer unmuted it before pressing play it keeps its
   // audio too, so two soundtracks play at once.
@@ -236,7 +268,10 @@ export function DemoPlayer({
           aria-hidden
           tabIndex={-1}
           className={cn(
-            "absolute inset-0 h-full w-full object-contain motion-reduce:hidden",
+            // Frosted for the same reason as the film below it, and by the
+            // same amount, so swapping one resting picture for the other
+            // changes nothing a visitor can see.
+            "absolute inset-0 h-full w-full scale-[1.06] object-contain blur-[14px] motion-reduce:hidden",
             started && "invisible",
           )}
           poster={poster}
@@ -250,7 +285,7 @@ export function DemoPlayer({
       ) : null}
 
       <video
-        ref={film}
+        ref={holdFilm}
         className={cn(
           "block w-full bg-paper object-contain",
           // A forced 16:9 box is right in the page and wrong in fullscreen.
@@ -265,6 +300,18 @@ export function DemoPlayer({
           // exception here both would be hidden and the resting frame would
           // be an empty box: no loop, no poster, nothing.
           !started && previewSrc && "invisible motion-reduce:visible",
+          // Frosted until somebody asks for it. A sharp frame invites you to
+          // read it and then disappoints, because one frame of a film is not
+          // a picture of anything; blurred, it reads as a surface with
+          // something behind it, which is what the pill is for. It also
+          // stops mattering which frame it is, and the frame we get is
+          // whatever sits at 0.1s rather than one anybody chose.
+          //
+          // Scaled up because a blur samples past the element's edge and
+          // would otherwise show a soft fringe of the frame's own
+          // background all the way round.
+          !started && "scale-[1.06] blur-[14px]",
+          "transition-[filter,scale] duration-500 ease-out",
         )}
         // With a poster there is nothing to fetch until somebody presses
         // play. Without one the frame would be an empty box, so the film is
@@ -289,15 +336,8 @@ export function DemoPlayer({
           if (barHidden) wake();
           else toggle();
         }}
-        onLoadedMetadata={(e) => {
-          setLength(e.currentTarget.duration);
-          // The track's mode is the truth about whether captions are on;
-          // this state only labels a button. A browser that restores a
-          // caption preference would otherwise have the button announcing
-          // the opposite of what the film is doing.
-          const track = e.currentTarget.textTracks[0];
-          if (track) setCaptionsOn(track.mode === "showing");
-        }}
+        onLoadedMetadata={readMetadata}
+        onDurationChange={readMetadata}
         onVolumeChange={(e) => setMuted(e.currentTarget.muted)}
         onError={() => {
           // The one case where the pill should come back: the file will not
