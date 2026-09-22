@@ -6,6 +6,11 @@ record, and nothing here has been scoped, sequenced or costed. Items are kept
 close to the owner's own words rather than rewritten into specs, so that a
 later reading is of what was asked for rather than of what somebody inferred.
 
+A larger list, pulled from the original teacher meeting, is in
+`docs/MEETING_BACKLOG.md`. The two overlap in places and neither supersedes
+the other: that one is what a room discussed, this one is what the owner
+asked for directly.
+
 One item from the original list is not here. "Need overview of school
 hackathon (criteria, application process, themes)" was already done and the
 owner marked it to be disregarded.
