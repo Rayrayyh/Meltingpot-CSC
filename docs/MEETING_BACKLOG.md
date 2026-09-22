@@ -21,7 +21,7 @@ meeting**, not what the code does:
 
 An "Existing" label is therefore a claim made in a room, not a verified fact
 about this repository. `docs/MEETING_AUDIT.md` holds the check of those claims
-against the code.
+against the code, and corrects several of them.
 
 The owner's own shorter list of what they want next is in `docs/BACKLOG.md`.
 The two overlap in places and neither supersedes the other.
