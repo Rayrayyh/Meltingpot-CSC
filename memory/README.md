@@ -18,7 +18,7 @@ This directory is the project's knowledge base. It makes the repo, not chat hist
 
 ## Index
 
-Every note on disk is listed: 56 decisions and 22 lessons, regenerated 2026-09-21.
+Every note on disk is listed: 56 decisions and 23 lessons, regenerated 2026-09-21, lesson 023 added 2026-10-02.
 
 Some numbers are shared by two files, from days when two notes were written in parallel. They are not renumbered, because other documents cite them by number:
 
@@ -110,3 +110,4 @@ Some numbers are shared by two files, from days when two notes were written in p
 - 020 This repo lints without types, so run the typed rules by hand
 - 021 A rejected play() is usually an abort, not a refusal
 - 022 A zip deploy uploads web/, and must carry no .git
+- 023 A production build only talks to the production Supabase, so a local stack goes through the rewrite
