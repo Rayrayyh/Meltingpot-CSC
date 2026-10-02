@@ -494,3 +494,8 @@ Known follow-ups, documented not built (feature gaps or minor polish, no securit
 - `docs/BACKLOG.md` records eleven things the owner wants next, in their own words rather than rewritten into specs, because several are genuinely ambiguous and a rewrite would only be a guess. It is not a plan and nothing in it is scoped or sequenced.
 - The owner asked whether progress is recorded, which was worth checking rather than answering from memory. `memory/README.md` claimed "Every note on disk is listed: 51 decisions and 19 lessons" when there were 56 and 22, and none of 049 to 053 or lessons 020 to 022 appeared. Three of those omissions were mine, from this session. The index is regenerated and now verified against disk.
 - This entry closes a gap of its own: the build log stopped at 2026-09-15 and the two sessions above were written from the commit history afterwards rather than as they happened.
+
+## The class's own names reach section three (2026-10-02)
+
+- Section three's pooled note still said "Maya, Dev and Ava wrote this", and the collaboration tile in the bento showed a Maya between Rayyan and Paul. The owner chose six names on 2026-09-04 (Rayyan, Ibrahim, Adam, Ahmad, Paul and Amy) and asked again today for those instead of placeholders. The pooled note now carries Ahmad, Paul and Amy, the three that `NamesOnTheNote` doesn't use, so the two stories still share no one, as decision 052 wants. The bento's Maya became Ibrahim, who already posts in that tile's messages.
+- Text only. `tests/e2e/landing.spec.ts` asserts the new strings. Not deployed: the live landing changes when the owner asks for a deploy.

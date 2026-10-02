@@ -658,7 +658,7 @@ function CollaborationTile() {
         </div>
         <div aria-hidden className="flex shrink-0 items-center">
           <div className="flex" style={{ marginRight: u(8) }}>
-            {["Rayyan", "Maya", "Paul"].map((n, i) => (
+            {["Rayyan", "Ibrahim", "Paul"].map((n, i) => (
               <span
                 key={n}
                 className="inline-block rounded-full ring-2 ring-white"

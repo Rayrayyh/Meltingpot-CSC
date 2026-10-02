@@ -36,7 +36,7 @@ One reframe on the left, one artifact on the right.
 
 The artifact is a single shared note with three names on it and the raw scrap
 it came from still lying behind it. The line that does the persuading is the
-last one on the card: a question Dev asked that nobody has answered, left on
+last one on the card: a question Paul asked that nobody has answered, left on
 the note. That is the product rule made visible rather than asserted, and no
 competitor puts an open question on their landing page.
 
@@ -44,6 +44,11 @@ Deliberately not the correction story. `NamesOnTheNote` further down the page
 is about a sentence being challenged, reviewed and kept in version one; this
 one is about the gap, meaning what no single person in the room wrote down.
 Different claims, different evidence, no overlap in names.
+
+The three names were Maya, Dev and Ava when this shipped. On 2026-10-02 the
+owner asked for the names they chose on 2026-09-04 everywhere, so the note now
+carries Ahmad, Paul and Amy: the three of the six that `NamesOnTheNote` does not
+use (it has Rayyan, Ibrahim and Adam), which keeps the two stories apart.
 
 The clay tinted block inside the card uses clay rather than the diff tokens:
 nothing there was added to an existing note, so `added` and `removed` would be

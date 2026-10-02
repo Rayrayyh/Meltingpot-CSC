@@ -67,8 +67,8 @@ test.describe("brand landing", () => {
     await expect(
       section.getByRole("heading", { name: "Enzyme inhibition, and which line moves" }),
     ).toBeVisible();
-    await expect(section.getByText("Maya, Dev and Ava wrote this, Tuesday")).toBeVisible();
-    await expect(section.getByText("Only Ava wrote this down")).toBeVisible();
+    await expect(section.getByText("Ahmad, Paul and Amy wrote this, Tuesday")).toBeVisible();
+    await expect(section.getByText("Only Amy wrote this down")).toBeVisible();
 
     // The open question is the point of the section. If it ever gets tidied
     // away the section is back to claiming what every notes tool claims.
@@ -94,7 +94,7 @@ test.describe("brand landing", () => {
   test("hovering the pooled note lifts the scrap it came from", async ({ page }) => {
     await page.goto("/");
     const section = page.getByTestId("pooled-note");
-    const scrap = section.getByText("Dev, 2:16pm").locator("..");
+    const scrap = section.getByText("Paul, 2:16pm").locator("..");
     await scrap.scrollIntoViewIfNeeded();
 
     // Tailwind v4 writes these as their own properties, not into `transform`.
@@ -263,7 +263,7 @@ test.describe("brand landing", () => {
 
     // The scrap's lift is the section's only motion, and the preference is
     // meant to switch it off rather than shorten it.
-    const scrap = section.getByText("Dev, 2:16pm").locator("..");
+    const scrap = section.getByText("Paul, 2:16pm").locator("..");
     const liftOf = () =>
       scrap.evaluate((el) => {
         const style = getComputedStyle(el);

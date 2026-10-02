@@ -28,7 +28,7 @@ import { Reveal } from "@/components/ui/reveal";
  */
 
 /** The three who each had a piece of it, in the order they wrote. */
-const WROTE_IT = ["Maya", "Dev", "Ava"] as const;
+const WROTE_IT = ["Ahmad", "Paul", "Amy"] as const;
 
 export function PooledNote() {
   return (
@@ -95,7 +95,7 @@ export function PooledNote() {
               hangs off the left edge into the column gap. */}
           <div className="relative z-0 -mb-3 ml-1 w-[17rem] max-w-full -rotate-2 rounded-(--radius-card) border border-edge bg-sunken px-4 py-3.5 shadow-(--shadow-card) transition-[translate,rotate,scale,box-shadow] duration-500 ease-out motion-safe:group-hover:-translate-y-2.5 motion-safe:group-hover:-rotate-[5.5deg] motion-safe:group-hover:scale-[1.03] motion-safe:group-hover:shadow-(--shadow-raised) lg:absolute lg:-left-28 lg:-top-14 xl:-left-36 lg:mb-0 lg:ml-0 lg:-rotate-3 lg:motion-safe:group-hover:-translate-x-2">
             <p className="text-[9.5px] font-semibold uppercase tracking-[0.09em] text-ink-faint/80">
-              Dev, 2:16pm
+              Paul, 2:16pm
             </p>
             <p className="mt-2 font-mono text-[11.5px] leading-[1.7] text-ink-faint">
               ok so for non competitive Vmax drops and Km stays same?? more
@@ -119,7 +119,7 @@ export function PooledNote() {
                 ))}
               </span>
               <p className="text-[13px] text-ink-muted">
-                Maya, Dev and Ava wrote this, Tuesday
+                Ahmad, Paul and Amy wrote this, Tuesday
               </p>
             </div>
 
@@ -138,7 +138,7 @@ export function PooledNote() {
                 something untrue about the state of it. */}
             <div className="mt-5 rounded-r-lg border-l-2 border-clay/45 bg-clay-soft/40 px-4 py-3.5">
               <p className="text-[10.5px] font-semibold uppercase tracking-[0.1em] text-primary">
-                Only Ava wrote this down
+                Only Amy wrote this down
               </p>
               <p className="mt-1.5 font-serif text-[15.5px] leading-[1.7] text-ink">
                 On a Lineweaver-Burk plot, competitive moves the x intercept
@@ -149,7 +149,7 @@ export function PooledNote() {
 
             <p className="mt-6 border-t border-edge pt-4 text-[12.5px] leading-[1.7] text-ink-faint">
               <span className="font-semibold text-ink-muted">Still open.</span>{" "}
-              Dev asked whether substrate ever rescues non competitive
+              Paul asked whether substrate ever rescues non competitive
               inhibition. Nobody has answered yet, so it stays on the note.
             </p>
           </article>
