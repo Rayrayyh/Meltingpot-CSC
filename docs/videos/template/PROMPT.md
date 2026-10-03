@@ -104,6 +104,10 @@ Pinned and tested here: hyperframes 0.8.112 (Apache-2.0, Node 22 or later), gsap
   - Build the timeline after the fonts load (`window.__hf.buildReady[name] = Promise.all(document.fonts.load(...)).then(build)`), so positions can be measured. Lint's `gsap_callback_dom_measurement` warning is a false positive when the driver only reads the clock.
   - Check a dense render's free disk first; reviewers' frame dumps fill it fast.
   - GSAP drops a unitless value when the property's computed start is a keyword: `tl.set(el, { maxWidth: 537 })` from `none` does nothing. Pass `"537px"`.
+  - FluidSynth releases every voice on a key at that key's note-off. If a note ends after its key is struck again, the new strike goes silent. End each note at the next strike of its key.
+  - A block-wise envelope follower needs coefficients per block, not per sample. Otherwise a 30 ms attack takes 1.9 s, and bus "glue" quietly flattens the whole arc.
+  - Tune pitched booms and kick tails to the chord they land on, and keep the bass and sub in their real octave, under the left hand.
+  - Do not read pitch off ffmpeg's `showspectrumpic` with `fscale=log` at large sizes: it drew a 73 Hz tone at about 550 Hz. Draw your own log axis.
   - Count the lines a text wraps to in a still. Don't trust arithmetic: in meltingpot's film, a card sized "to stay on two lines" was 3 px short and wrapped its last word to a third.
 - **Audio**: HyperFrames muxes `<audio id="score" src="assets/audio/score.wav" data-start="0" data-duration="...">` itself, in sync within 1 ms (measured). Feed it WAV so there is one AAC encode. Master the score to a true peak of about -2 dBFS, because AAC adds about 1 dB. Measure loudness and true peak on the final MP4.
 
