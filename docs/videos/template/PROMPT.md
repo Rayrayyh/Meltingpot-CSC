@@ -103,6 +103,8 @@ Pinned and tested here: hyperframes 0.8.112 (Apache-2.0, Node 22 or later), gsap
   - A whole-screen element fading in over another is a cross-dissolve. Clear the old screen in about 0.2 s first, then bring in the new one; it reads as a page change.
   - Build the timeline after the fonts load (`window.__hf.buildReady[name] = Promise.all(document.fonts.load(...)).then(build)`), so positions can be measured. Lint's `gsap_callback_dom_measurement` warning is a false positive when the driver only reads the clock.
   - Check a dense render's free disk first; reviewers' frame dumps fill it fast.
+  - GSAP drops a unitless value when the property's computed start is a keyword: `tl.set(el, { maxWidth: 537 })` from `none` does nothing. Pass `"537px"`.
+  - Count the lines a text wraps to in a still. Don't trust arithmetic: in meltingpot's film, a card sized "to stay on two lines" was 3 px short and wrapped its last word to a third.
 - **Audio**: HyperFrames muxes `<audio id="score" src="assets/audio/score.wav" data-start="0" data-duration="...">` itself, in sync within 1 ms (measured). Feed it WAV so there is one AAC encode. Master the score to a true peak of about -2 dBFS, because AAC adds about 1 dB. Measure loudness and true peak on the final MP4.
 
 ### Step 3. 21st.dev components
@@ -191,7 +193,7 @@ The skeleton is the Tabbit film's, measured. The slots change per product; the t
 
 | # | Seconds | Slot | Tabbit (example) |
 |---|---|---|---|
-| 1 | 0 to 2.5 | Hook: a count of the clutter that equals the world shown, in sentence case with a full stop | "Fourteen tabs, and counting." |
+| 1 | 0 to 2.5 | Hook: the problem in a few plain words, in sentence case with a full stop, and no counts (PART 4) | "Fourteen tabs, and counting." (Tabbit's; a count, which this template no longer asks for) |
 | 2 | 2.5 to 5 | The world forms; the product arrives | 14 tabs drop into the strip; the panel docks |
 | 3 | 5 to 7.5 | Quick action: the fastest real input | a voice command with the keys held |
 | 4 | 7.5 to 10 | The world reacts; the real reply | "Muted 13 tabs." |
@@ -218,13 +220,14 @@ With more abilities to show off than beats 3 to 12 hold, two abilities may share
 - Record every decision the owner makes, in their words, and every deviation from this text with its reason, before acting on it.
 - Label every result by how it was checked: measured, ran, fetched, looked, or inferred. Never present an inference as a pass.
 - Commercially usable licences only, read on the author's own page.
+- No counts for flavour in the film's own words or the product's marketing copy ("six notes from four classmates", "join 2,000 students"). Specific numbers read as generated filler. A number appears only as the product's own data on screen, or as a rule the viewer needs.
 - Stop at each gate: references, storyboards (then wait for "start"), stills, draft.
 
 ## PART 5. Checklist before step 4
 
 - [ ] Every PART 1 slot is filled or `none`.
 - [ ] Each ability to show off works in today's build on fictional data, or is swapped for one that does.
-- [ ] The hook's count equals the world shown.
+- [ ] The film's own words (hook, headline, verbs, tagline, sub-line) carry no counts.
 - [ ] Text on `--night` passes 4.5:1, and the mark's colour is used only for the mark.
 - [ ] The references' pages still exist.
 - [ ] `kit/hyperframes/setup.sh` passes on the machine that will render.

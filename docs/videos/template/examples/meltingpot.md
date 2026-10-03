@@ -14,12 +14,14 @@ The first fill-in of `../PROMPT.md`. Each answer cites the owner's decision in m
 | P8 References | Tone: **Mercury Books**, https://whatships.com/videos/mercury-books/ [36]. Structure: **Manus 2.0, opencode and Higgsfield Astra** (whatships.com) [39]. Beat references: none [36]. Also in hand: the Tabbit film, measured (`examples/tabbit-measured.md`) |
 | P9 Format | 16:9, 1920x1080, 30 fps, **37.5 s = 15 beats of 2.5 s** [29, 36] |
 | P10 Sound | No voice-over; music composed in code to fit; no captions unless needed [34]. C minor, 96 BPM; "bold, innovative, emotional" [5] |
-| P11 Type | "No generic fonts, let the references inspire and influence, and potentially decide" [34]. Chosen from the references [40]: **Instrument Sans** for the film's words and **Fragment Mono** for the "You type" card and key caps (both OFL 1.1, bundled); the screens keep the app's own fonts |
+| P11 Type | "No generic fonts, let the references inspire and influence, and potentially decide" [34]. Chosen from the references [40]: **Instrument Sans** for the film's words and **Fragment Mono** for the "You type" card and key caps (both OFL 1.1, bundled); the screens keep the app's own fonts. Open: four concepts are with the owner (Instrument Sans, Schibsted Grotesk, Bricolage Grotesque, Instrument Serif) [45] |
 | P12 Repo | `Rayrayyh/meltingpot-csc`, branch `claude/csc-back-to-school`. The film's folder `docs/videos/launch/` stays uncommitted until the owner says [7]. This template and this file are committed [35]. Decisions: `docs/videos/launch/DECISIONS.md` |
 
 ## Where the remake stands
 
 Built and delivered on 2026-10-03 (decisions 39 to 43): storyboard B in HyperFrames, screens rebuilt from the app's own parts with every product word checked against a real run, the frameless style sheet (`docs/videos/launch/remake/STYLE.md`), the end card's address meltingpots.xyz [42], and three review rounds with skeptics (stills; motion; the draft with sound). The final is `docs/videos/launch/remake/out/final.mp4`, made with `kit/hyperframes/tools/final.sh`. What it taught the template is in step 2's gotchas and step 6.
+
+After delivery the owner ruled out counts in the film's words and the website ("a vibe coded habit"). The hook "Six notes from four classmates." became "Everyone takes notes." [44], and that rule is now in PART 4. Four type concepts of the whole film are with the owner [45].
 
 ## Where the earlier attempt stands
 
