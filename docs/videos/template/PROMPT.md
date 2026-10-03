@@ -84,18 +84,25 @@ Pinned and tested here: hyperframes 0.8.112 (Apache-2.0, Node 22 or later), gsap
   - Lint: `$HF lint`
   - Gate: `$HF check`
   - Stills: `$HF snapshot --at t1,t2 --no-end --timeout 20000 --describe false -o stills`
-  - Draft: `$HF_OFFLINE $HF render --strict --fps 30 --workers 4 --quality draft -o renders/draft.mp4`
-  - Final: the same with `--quality delivery`
-  Always pass `--workers 4`; "auto" picked 2 on 4 cores.
+  - Quick check (motion only): `$HF_OFFLINE $HF render --strict --fps 30 --workers 4 --quality draft -o renders/check.mp4`
+  - Draft for review: the same with `--workers 1 --quality looks`
+  - Final: `bash kit/hyperframes/tools/final.sh` (lossless PNG frames with one worker, then x264 at CRF 14 with the score)
+  Never leave `--workers` on "auto" (it picked 2 on 4 cores). Use one worker for anything checked for stillness or delivered: with 4 workers, some text layers came out 1 px off on every fourth frame, a 7.5 Hz shimmer in holds (measured on meltingpot's remake).
 - **Never run** `publish`, `feedback` (including `--file-issue`), `cloud`, `lambda`, `cloudrun`, `auth`, `capture`, `tts`, `transcribe`, `models install`, `catalog --on-device`, `skills update`, or `snapshot` without `--describe false`. They upload or call paid APIs.
 - **Measured behaviour**:
-  - Output is byte-identical across runs, worker counts and network on or off.
-  - About 0.17 s a frame for a light composition with 4 workers.
+  - Output is byte-identical across runs and with the network on or off. It is not always identical across worker counts (see Commands).
+  - About 0.17 s a frame for a light composition with 4 workers; about 0.085 s a frame for meltingpot's remake with one worker (95 s for 37.5 s), and about 0.33 s a frame on the lossless PNG path.
+  - The mp4 path captures each frame as a JPEG (quality 80) whatever `--quality` or `--crf` says, which about doubled the banding in a dark glow. The PNG path (`--format png-sequence`) avoids it, but its pre-flight check wants about 10.4 GB free for 37.5 s at 1080p, though the frames take about 0.5 GB.
   - A full-resolution Paper Shaders grain costs about 1.26 s a frame, so about 22 minutes for 37.5 s. Budget for it, or draft with a half-resolution shader (0.39 s a frame; the grain looks different) and keep full resolution for the final.
 - **Craft gotchas**:
   - Text with no transform renders with coloured subpixel edges, and a tween that settles at `x: 0` flips to that look and visibly pops. Put `will-change: transform` on the stage.
   - Put sound-synced events on the 30 fps grid (`t = round(t*30)/30`). An event between frames shows on the next frame, up to 33 ms after its sound.
   - Mark deliberate off-canvas layers (light, grain) with `data-layout-allow-overflow`.
+  - An SVG filter on HTML (a one-axis motion blur, say) needs `color-interpolation-filters="sRGB"`; the default filters in linear light, shifts dark colours, and pops when the filter comes off.
+  - Tweening `clip-path`: give GSAP an explicit start (`fromTo`). Chrome normalises a computed `inset(0px round 20px)` to two numbers, and GSAP then pairs the radius with the wrong slot.
+  - A whole-screen element fading in over another is a cross-dissolve. Clear the old screen in about 0.2 s first, then bring in the new one; it reads as a page change.
+  - Build the timeline after the fonts load (`window.__hf.buildReady[name] = Promise.all(document.fonts.load(...)).then(build)`), so positions can be measured. Lint's `gsap_callback_dom_measurement` warning is a false positive when the driver only reads the clock.
+  - Check a dense render's free disk first; reviewers' frame dumps fill it fast.
 - **Audio**: HyperFrames muxes `<audio id="score" src="assets/audio/score.wav" data-start="0" data-duration="...">` itself, in sync within 1 ms (measured). Feed it WAV so there is one AAC encode. Master the score to a true peak of about -2 dBFS, because AAC adds about 1 dB. Measure loudness and true peak on the final MP4.
 
 ### Step 3. 21st.dev components
@@ -159,6 +166,8 @@ Build the composition for the chosen storyboard and render a still per beat at i
 - **Motion.**
   - Push-ins of 1.15 to 1.55x on `power3.inOut` over 0.8 to 1.2 s. Moves shorter than 0.7 s read as jerks.
   - Blur dissolves of 8 to 16 px; no hard cuts; letters arrive with a short blur.
+  - Motion blur from the camera's own displacement, capped at about 5 px: on zooms the frame's corners move far faster than the subject, so a higher cap smears the text being pushed in on.
+  - Every key line needs reading time: about 0.6 s for a label, 0.25 s a word for a sentence. Check each beat's key line in the frames, not the code.
 - **Score**, composed in code by `kit/audio/compose.py` (seeded, numpy and scipy; its music is the Tabbit film's, measured identical):
   - C minor (or P10's key via `TRANSPOSE`), 96 BPM, one bar per 2.5 s beat.
   - Its parts: heartbeat and arp under the opening; drums from beat 3; a breakdown under the headline; a drop at beat 9; a hit on each verb; bells on the mark.
@@ -168,7 +177,7 @@ Build the composition for the chosen storyboard and render a still per beat at i
   - a tick per typed letter, 17 to 19 dB under the music;
   - a click per press at about the music's level, with its release 0.11 s later and 9 dB down;
   - ticks on drops, whooshes on sheets, pops on replies, a stutter as the UI arrives, bells on the mark.
-  The music never ducks (Tabbit measured: within 0.1 dB).
+  The music never ducks (Tabbit measured: within 0.1 dB). `compose.py` levels each whoosh against the music under it, because a fixed gain is buried by a dense drop. `kit/audio/events.py` exports the events from the composition's `window.__events`.
 - **Draft.** Render a draft and send it (a preview under 20 MB if the full file is too big to send).
 - **Review the draft** with a multi-agent workflow: motion in beat ranges, every frame; sound and sync, measured; product truth; and reference fidelity. Verify every finding independently, then fix.
 - **Final and notes.** Render the final. Then take director's notes in camera words ("slow every zoom to 0.7x", "push in on the button"): change only what each note names, re-render, and keep a changelog.
@@ -228,6 +237,8 @@ With more abilities to show off than beats 3 to 12 hold, two abilities may share
 | `kit/hyperframes/tools/offline.sh` | Runs a command with no network |
 | `kit/hyperframes/tools/framehash.sh`, `sync_check.py` | Determinism and A/V sync checks |
 | `kit/audio/compose.py` | The score and effects, reading `assets/audio/events.json` |
+| `kit/audio/events.py` | Exports the composition's sound events (`window.__events`) to `assets/audio/events.json` |
+| `kit/hyperframes/tools/final.sh` | The final from lossless frames: PNG render with one worker, then x264 and the score |
 | `kit/audio/grain.py` | The seeded static grain tile |
 | `kit/reference/appendix1-capture.mjs` | Captures a web app's real UI per moment (states, text, boxes) |
 | `kit/reference/appendix2-ui-to-video.mjs` | Turns captures into replayable states (route c) |

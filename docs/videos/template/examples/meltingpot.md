@@ -11,11 +11,15 @@ The first fill-in of `../PROMPT.md`. Each answer cites the owner's decision in m
 | P5 UI route | **(b) Simplified and stylised** [35]. Screens are built from components, cleaner and with fewer elements, reading like motion graphics. Every word comes from the real app's visible text in the local run |
 | P6 Brand | Mark: `web/public/brand/pot-logo.png` [10]. Wordmark: lowercase "meltingpot" as `web/components/shell/wordmark.tsx` draws it (Baloo 2 semibold) [31]. Palette [12]: `--night` #0c0a09, `--ink` #faf7f2, `--ink-2` #bdb5ad, `--accent` #f19a44 (the product's dark primary), `--deep` #c2410c, light stops #7c2d12, #c2410c, #f19a44. Icons: Phosphor. Product fonts: Inter (UI), Fraunces (display), Source Serif 4 (note bodies), Baloo 2 (wordmark). The repo's copy rules hold on screen: sentence case, no emojis, no em dashes, no purple AI branding, no chatbot look, no likes or leaderboards |
 | P7 People | Amy, Rayyan, Ibrahim, Adam, Ahmad and Paul, the repo's fictional seed users renamed [9, 14] |
-| P8 References | Tone: **Mercury Books**, https://whatships.com/videos/mercury-books/ [36]. Structure: **open**, the owner is sending links [36]. Beat references: none [36]. Also in hand: the Tabbit film, measured (`examples/tabbit-measured.md`) |
+| P8 References | Tone: **Mercury Books**, https://whatships.com/videos/mercury-books/ [36]. Structure: **Manus 2.0, opencode and Higgsfield Astra** (whatships.com) [39]. Beat references: none [36]. Also in hand: the Tabbit film, measured (`examples/tabbit-measured.md`) |
 | P9 Format | 16:9, 1920x1080, 30 fps, **37.5 s = 15 beats of 2.5 s** [29, 36] |
 | P10 Sound | No voice-over; music composed in code to fit; no captions unless needed [34]. C minor, 96 BPM; "bold, innovative, emotional" [5] |
-| P11 Type | "No generic fonts, let the references inspire and influence, and potentially decide" [34]. **Open** until the structure reference is chosen; shortlist only fonts with an open licence that can be bundled locally |
+| P11 Type | "No generic fonts, let the references inspire and influence, and potentially decide" [34]. Chosen from the references [40]: **Instrument Sans** for the film's words and **Fragment Mono** for the "You type" card and key caps (both OFL 1.1, bundled); the screens keep the app's own fonts |
 | P12 Repo | `Rayrayyh/meltingpot-csc`, branch `claude/csc-back-to-school`. The film's folder `docs/videos/launch/` stays uncommitted until the owner says [7]. This template and this file are committed [35]. Decisions: `docs/videos/launch/DECISIONS.md` |
+
+## Where the remake stands
+
+Built and delivered on 2026-10-03 (decisions 39 to 43): storyboard B in HyperFrames, screens rebuilt from the app's own parts with every product word checked against a real run, the frameless style sheet (`docs/videos/launch/remake/STYLE.md`), the end card's address meltingpots.xyz [42], and three review rounds with skeptics (stills; motion; the draft with sound). The final is `docs/videos/launch/remake/out/final.mp4`, made with `kit/hyperframes/tools/final.sh`. What it taught the template is in step 2's gotchas and step 6.
 
 ## Where the earlier attempt stands
 

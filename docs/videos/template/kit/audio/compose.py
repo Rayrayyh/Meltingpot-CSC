@@ -4,12 +4,15 @@
 What changed from Appendix 3, and nothing else:
 - The music is generated exactly as the appendix writes it (same seed, same order), so it is the same music.
 - The music never ducks under the effects (Tabbit measured: within +-0.1 dB where the appendix would duck 3.6 dB).
-- Every effect sits on one of the film's own events, exported from the timeline (tools/render.mjs events ->
+- Every effect sits on one of the film's own events, exported from the timeline (kit/audio/events.py ->
   assets/audio/events.json): a tick per typed letter or key cap, the appendix's click() per press with a second
   transient 0.11 s later and 9 dB down, a tick per drop, whooshes on sheets and arrivals, pops on replies, a stutter as
   the UI arrives, two bells on the accepted notice, and the appendix's bells on the mark.
 - Effects with no meltingpot counterpart (the listening bell, the spoken reply, Saturday's bells, the folder, the
   clock) are gone, and their slots stay silent.
+- Measured on meltingpot's remake (2026-10-03): whooshes are levelled against the music under them by masking, so the
+  dense second half does not bury them; letters that show on the same frame share that frame instead of stacking on
+  one sample; a pop may carry its own gain ("g") where it lands on a hook note; a whoosh may carry its length ("dur").
 
 Original description:
 
@@ -42,7 +45,7 @@ MARK = 32.95  # the mark lands (index.html: lockup 32.95, mark 33.0)
 rng = np.random.default_rng(20261001)
 HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT = os.path.join(HERE, "assets", "audio")
-# The film's sound events (js/film.js sound(); exported by tools/render.mjs events).
+# The film's sound events (the composition's sound(); exported by kit/audio/events.py).
 EVENTS = json.load(open(os.path.join(OUT, "events.json")))["events"]
 at = lambda kind: [e for e in EVENTS if e["kind"] == kind]
 T = np.arange(N) / SR
@@ -407,9 +410,15 @@ def mouse(press=True):
 
 
 sfx = np.zeros(N)
-KEY_GAIN, CLICK_GAIN = 0.23, 0.6  # set by measurement: keys 17-19 dB under the music (10 ms peak), clicks about 0 dB
-for e in at("key"):  # one tick per letter (or key cap) as it shows; no thinning (Tabbit: none at 34 a second)
-    place(sfx, tick(1.0), e["t"], KEY_GAIN * rng.uniform(0.85, 1.0))
+KEY_GAIN, CLICK_GAIN = 0.27, 0.6  # set by measurement against the final mix's music: keys 17-19 dB under, clicks about 0 dB
+KEY_COUNT = {}
+for e in at("key"):
+    KEY_COUNT[e["t"]] = KEY_COUNT.get(e["t"], 0) + 1
+KEY_SEEN = {}
+for e in at("key"):  # one tick per letter (or key cap) as it shows; letters that share a frame share it evenly
+    j = KEY_SEEN.get(e["t"], 0)
+    KEY_SEEN[e["t"]] = j + 1
+    place(sfx, tick(1.0), e["t"] + j / (30 * KEY_COUNT[e["t"]]), KEY_GAIN * rng.uniform(0.85, 1.0))
 for e in at("click"):  # the appendix's click() at the press, and its release 0.11 s later, 9 dB down
     place(sfx, click(), e["t"], CLICK_GAIN)
     place(sfx, click(), e["t"] + 0.11, CLICK_GAIN * 10 ** (-9 / 20))
@@ -421,10 +430,44 @@ for e in at("drop"):  # a card, a row or a chip drops in
 for e in at("stutter"):  # the UI arrives: a pitched stutter
     for k in range(6):
         place(ui, pop(1100 + 150 * k)[: int(SR * 0.03)], e["t"] + k * 0.045, 0.22)
-for e in at("pop"):  # a reply lands
-    place(ui, pop(e["f"]), e["t"], 0.25)
+for e in at("pop"):  # a reply lands (an event may carry its own gain where it shares a hook note)
+    place(ui, pop(e["f"]), e["t"], e.get("g", 0.25))
+# Whooshes are levelled against the music under them (the music never ducks), so a move sounds the same in the quiet
+# first act and the dense drop. The measure is masking: in third-octave bands from 200 Hz to 12.8 kHz, over the cells
+# where the whoosh is within 10 dB of its own peak, the median whoosh-to-music ratio. Each whoosh gets the first act's
+# up-whooshes' median at their gain of 0.2 (the music here is the mix's own parts at the mix's gains, before reverb).
+from scipy.signal import stft as _stft
+pump_ = 1 - 0.6 * np.clip(lp(kick_env, 40, 1), 0, 1)
+music_ = (bus["bed"][0] * pump_ * 0.18 + bus["lead"][0] * 0.28 + bus["choir"][0] * 0.07  # the mix's part gains (MIX below)
+          + mono["bass"] * (0.45 + 0.55 * pump_) * 0.12 + mono["drums"] * 0.32 + mono["fx"] * 0.3)
+_CENT = [200 * 2 ** (k / 3) for k in range(19)]
+
+
+def masked_db(w, t0):
+    """Median ratio (dB) of the whoosh w (at unit gain, starting at t0) to the music, over its own active cells."""
+    i0 = int(round(t0 * SR))
+    seg = np.zeros(len(w) + 2048)
+    seg[: len(w)] = w
+    mus = music_[i0: i0 + len(seg)]
+    mus = np.pad(mus, (0, len(seg) - len(mus)))
+    f, _, W = _stft(seg, SR, nperseg=2048, noverlap=1536)
+    _, _, M = _stft(mus, SR, nperseg=2048, noverlap=1536)
+    Wb = np.array([(np.abs(W[(f >= c / 2 ** (1 / 6)) & (f < c * 2 ** (1 / 6))]) ** 2).sum(axis=0) for c in _CENT])
+    Mb = np.array([(np.abs(M[(f >= c / 2 ** (1 / 6)) & (f < c * 2 ** (1 / 6))]) ** 2).sum(axis=0) for c in _CENT])
+    act = Wb >= Wb.max() / 10
+    return float(np.median(10 * np.log10(Wb[act] / (Mb[act] + 1e-15))))
+
+
+WH = []
 for e in at("whoosh"):  # a sheet rises (up) or a page settles (down)
-    place(ui, whoosh(0.42 if e["up"] else 0.5, e["up"]), e["t"], 0.2)
+    w = whoosh(e.get("dur", 0.42 if e["up"] else 0.5), e["up"])
+    WH.append((e, w, masked_db(w, e["t"])))
+TARGET = float(np.median([m + 20 * np.log10(0.2) for e, w, m in WH if e["up"] and e["t"] < 15]))
+for e, w, m in WH:
+    g = float(np.clip(10 ** ((TARGET - m) / 20), 0.2, 0.9))
+    place(ui, w, e["t"], g)
+    e["gain"] = g
+print("whoosh gains:", " ".join(f"{e['t']:.2f}:{20 * np.log10(e['gain'] / 0.2):+.1f}dB" for e, _, _ in WH))
 for e in at("bells"):  # the accepted notice (the appendix's notification bells, G5 then C6)
     place(bells, bell(79, 1.6), e["t"], 0.3)
     place(bells, bell(84, 1.8), e["t"] + 0.13, 0.3)
