@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en" data-resolution="landscape">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, height=1080" />
+    <!--
+      MeltingPot walkthrough film (1920x1080, 30 fps, 120 s), light mode, for the CSC Back-to-School Hackathon.
+      Product screens are rebuilt in HTML from the app's own light tokens, icons and words (notes/UI-SPEC.md), with the
+      fictional Biology 101 class from the repository's seed data. Motion follows the owner's references Motionfly V2
+      and Cua Spaces (notes/STYLE.md); the story follows the landing film plus the AI organizer and the teaching readout
+      (notes/STORYBOARD.md). Typing and click sounds are cut from the Tabbit launch film at the owner's direction
+      (notes/DECISIONS.md, assets/audio/sfx/catalog.json).
+
+      Contract (docs/videos/template/PROMPT.md step 2): one stage, one paused window.__timelines["main"], every
+      time-derived state driven by the single apply(t) driver in assets/film.js. Scenes live in scenes/*.js; each calls
+      FILM.scene({ id, t0, t1, build(F) }) and schedules its tweens at absolute times on F.tl.
+    -->
+    <script src="assets/vendor/gsap.min.js"></script>
+    <link rel="stylesheet" href="assets/ui-light.css" />
+    <link rel="stylesheet" href="assets/film.css" />
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-duration="120" data-width="1920" data-height="1080">
+      <div id="bg" class="clip" data-start="0" data-duration="120" data-layout-allow-overflow><div id="dots"></div></div>
+      <div id="floaters" class="clip" data-start="0" data-duration="120" data-layout-allow-overflow><div id="props"></div></div>
+      <div id="stage" class="clip" data-start="0" data-duration="120">
+        <div id="win" class="win">
+          <div class="win-bar">
+            <div class="win-dots"><i></i><i></i><i></i></div>
+            <div class="win-url"><span class="pill"><span id="lock"></span><span id="url">meltingpots.xyz</span></span></div>
+            <div class="win-spacer"></div>
+          </div>
+          <div class="win-vp" id="vp"></div>
+        </div>
+        <div id="cap" class="cap"></div>
+        <div id="extras"></div>
+      </div>
+      <div id="heads" class="clip" data-start="0" data-duration="120" data-layout-allow-overflow></div>
+      <div id="cursor-layer" class="clip" data-start="0" data-duration="120" data-layout-allow-overflow></div>
+      <div id="fade" class="clip" data-start="0" data-duration="120"></div>
+      <audio id="score" src="assets/audio/score.wav" data-start="0" data-duration="120" data-track-index="9" data-volume="1"></audio>
+    </div>
+
+    <script src="assets/icons.js"></script>
+    <script src="assets/film.js"></script>
+    <script src="assets/parts.js"></script>
+    <script src="scenes/a.js"></script>
+    <script src="scenes/b.js"></script>
+    <script src="scenes/c.js"></script>
+    <script src="scenes/d.js"></script>
+    <script>
+      window.__hf = window.__hf || {};
+      window.__hf.buildReady = window.__hf.buildReady || {};
+      window.__timelines = window.__timelines || {};
+      window.__timelines["main"] = FILM.tl;
+      window.__hf.buildReady["walkthrough"] = FILM.ready();
+    </script>
+  </body>
+</html>

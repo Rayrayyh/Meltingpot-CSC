@@ -1,5 +1,16 @@
 import "server-only";
 
+import {
+  errorDetail,
+  fallbackProvider,
+  primaryProvider,
+  type MixPart,
+  type MixProvider,
+} from "@/lib/mix/providers";
+
+export { fallbackConfigured } from "@/lib/mix/providers";
+export type { MixPart } from "@/lib/mix/providers";
+
 /**
  * Which model answers which task. Both are deployment config rather than
  * source: a model identifier belongs to the provider, changes on their
@@ -20,10 +31,6 @@ export class MixError extends Error {
     this.name = "MixError";
   }
 }
-
-type MixPart =
-  | { type: "text"; text: string }
-  | { type: "image"; data: string; mime_type: string };
 
 /** One try, plus three more. */
 export const MAX_ATTEMPTS = 4;
@@ -55,6 +62,33 @@ const TOTAL_BUDGET_MS = 24_000;
  * caller can fall back instead of waiting for an abort it cannot use.
  */
 const MIN_ATTEMPT_MS = 6_000;
+
+/**
+ * How much of the budget the first mixer may spend when a standby exists.
+ *
+ * This is the price of asking the busy provider first. The standby cannot
+ * start with four seconds left, so the primary has to be cut off while there
+ * is still a real call's worth of time behind it. Just under half leaves both
+ * sides above MIN_ATTEMPT_MS on the study route's 22 second budget: about ten
+ * seconds to be told the pot is full, about twelve to actually cook.
+ *
+ * Capacity refusals come back in a few hundred milliseconds, so in the case
+ * this exists for the primary spends almost none of its share and the standby
+ * gets nearly the whole budget. The slow case is the primary accepting the
+ * request and then stalling, which is why the share is a ceiling and not a
+ * target.
+ */
+const PRIMARY_SHARE_WITH_FALLBACK = 0.45;
+
+/**
+ * Attempts the primary gets when a standby exists.
+ *
+ * Four rounds of backoff against a full pot is the right answer when there is
+ * nowhere else to go. With somewhere else to go it is the wrong one: every
+ * extra round is time taken from a mixer that would have answered. Two is
+ * enough to ride out a single unlucky refusal.
+ */
+const PRIMARY_ATTEMPTS_WITH_FALLBACK = 2;
 
 /**
  * Worth another go, or worth giving up on.
@@ -96,34 +130,30 @@ export function honourRetryAfter(header: string | null, now = Date.now()): numbe
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
-export async function generateStructured<T>({
-  model,
+/**
+ * One mixer, asked until it answers or its share of the budget runs out.
+ *
+ * Throws the last MixError. The caller decides whether that is worth trying
+ * somebody else about.
+ */
+async function askOneMixer<T>({
+  provider,
   instruction,
   parts,
   schema,
-  deadlineAt,
+  deadline,
+  maxAttempts,
 }: {
-  model: string;
+  provider: MixProvider;
   instruction: string;
   parts: MixPart[];
   schema: unknown;
-  /**
-   * When this call must be finished by, as an absolute time.
-   *
-   * A request that makes more than one call has to share one budget between
-   * them, or the first spends everything and the platform kills the function
-   * before the second runs. Organizing a note with images is exactly that
-   * shape: reading the pictures, then writing the note.
-   */
-  deadlineAt?: number;
+  deadline: number;
+  maxAttempts: number;
 }): Promise<T> {
-  const apiKey = process.env.MODEL_API_KEY;
-  if (!apiKey || !model) throw new MixError("Mixing is not configured", 503);
-
-  const deadline = deadlineAt ?? Date.now() + TOTAL_BUDGET_MS;
   let lastError: MixError = new MixError("The mixer could not be reached", 502);
 
-  for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt += 1) {
+  for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
     const remaining = deadline - Date.now();
     // A first attempt always runs: without it a slow start would return the
     // placeholder error having called nothing at all. Later attempts need
@@ -134,34 +164,15 @@ export async function generateStructured<T>({
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), remaining);
     try {
-      const response = await fetch("https://generativelanguage.googleapis.com/v1beta/interactions", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-goog-api-key": apiKey,
-          "Api-Revision": "2026-05-20",
-        },
-        body: JSON.stringify({
-          model,
-          store: false,
-          system_instruction: instruction,
-          input: parts,
-          response_format: { type: "text", mime_type: "application/json", schema },
-        }),
-        signal: controller.signal,
-      });
+      const response = await provider.send({ instruction, parts, schema, signal: controller.signal });
       const payload = (await response.json().catch(() => null)) as Record<string, unknown> | null;
 
       if (!response.ok) {
-        const detail =
-          payload && typeof payload.error === "object" && payload.error
-            ? String(
-                (payload.error as Record<string, unknown>).message ||
-                  "The mixer could not be reached",
-              )
-            : "The mixer could not be reached";
-        lastError = new MixError(detail, response.status);
-        if (attempt < MAX_ATTEMPTS && isWorthRetrying(response.status)) {
+        lastError = new MixError(
+          errorDetail(payload) ?? "The mixer could not be reached",
+          response.status,
+        );
+        if (attempt < maxAttempts && isWorthRetrying(response.status)) {
           const asked = honourRetryAfter(response.headers.get("retry-after"));
           const wait = Math.max(asked ?? 0, waitBeforeRetry(attempt));
           // Only wait if there is still budget to use the time for.
@@ -174,16 +185,9 @@ export async function generateStructured<T>({
         throw lastError;
       }
 
-      const steps = Array.isArray(payload?.steps) ? payload.steps : [];
-      for (let index = steps.length - 1; index >= 0; index -= 1) {
-        const step = steps[index] as Record<string, unknown>;
-        if (step.type !== "model_output" || !Array.isArray(step.content)) continue;
-        for (const part of step.content as Array<Record<string, unknown>>) {
-          if (part.type === "text" && typeof part.text === "string") {
-            return JSON.parse(part.text) as T;
-          }
-        }
-      }
+      const text = provider.read(payload);
+      if (text !== null) return JSON.parse(text) as T;
+
       // A reply that arrived but says nothing usable is not a capacity
       // problem, and asking again would spend a whole generation to find that
       // out. The caller falls back to the deterministic organizer instead.
@@ -195,7 +199,7 @@ export async function generateStructured<T>({
       }
       // The connection itself failed. Worth another go while there is budget.
       lastError = new MixError("The mixer's reply could not be read", 502);
-      if (attempt < MAX_ATTEMPTS) {
+      if (attempt < maxAttempts) {
         const wait = waitBeforeRetry(attempt);
         if (Date.now() + wait < deadline) {
           clearTimeout(timeout);
@@ -210,4 +214,99 @@ export async function generateStructured<T>({
   }
 
   throw lastError;
+}
+
+/**
+ * Worth asking the other mixer about.
+ *
+ * The same test as retrying, and for the same reason: a full pot, a restart or
+ * a dropped connection is somebody else's to answer, while a rejected key or a
+ * malformed body is ours and would fail identically over there. Failing over
+ * on those would hide a mistake behind a second bill.
+ *
+ * A reply that arrived and was unusable is deliberately not here either. It is
+ * a 502 like the rest, but it means the mixer worked and the content did not,
+ * which the deterministic fallback handles better than another generation.
+ */
+function isWorthAskingElsewhere(error: MixError): boolean {
+  if (error.message === "The mixer returned nothing usable") return false;
+  return isWorthRetrying(error.status);
+}
+
+export async function generateStructured<T>({
+  model,
+  instruction,
+  parts,
+  schema,
+  deadlineAt,
+  allowFallback = false,
+}: {
+  model: string;
+  instruction: string;
+  parts: MixPart[];
+  schema: unknown;
+  /**
+   * When this call must be finished by, as an absolute time.
+   *
+   * A request that makes more than one call has to share one budget between
+   * them, or the first spends everything and the platform kills the function
+   * before the second runs. Organizing a note with images is exactly that
+   * shape: reading the pictures, then writing the note.
+   */
+  deadlineAt?: number;
+  /**
+   * Whether a capacity refusal should be put to the standby mixer.
+   *
+   * Off by default, so a caller that has not thought about the budget split
+   * keeps the behaviour it always had. The study route turns it on, because
+   * that is where a full pot is actually being felt.
+   */
+  allowFallback?: boolean;
+}): Promise<T> {
+  const primary = primaryProvider(model);
+  if (!primary) throw new MixError("Mixing is not configured", 503);
+
+  const deadline = deadlineAt ?? Date.now() + TOTAL_BUDGET_MS;
+  const standby = allowFallback ? fallbackProvider() : null;
+
+  // With nowhere to fall back to, the primary gets the whole budget and every
+  // attempt, exactly as before. The split only exists to make room.
+  const primaryDeadline = standby
+    ? Math.min(deadline, Date.now() + (deadline - Date.now()) * PRIMARY_SHARE_WITH_FALLBACK)
+    : deadline;
+  const primaryAttempts = standby ? PRIMARY_ATTEMPTS_WITH_FALLBACK : MAX_ATTEMPTS;
+
+  try {
+    return await askOneMixer<T>({
+      provider: primary,
+      instruction,
+      parts,
+      schema,
+      deadline: primaryDeadline,
+      maxAttempts: primaryAttempts,
+    });
+  } catch (error) {
+    const failure = error instanceof MixError ? error : new MixError("Mixing failed", 502);
+    if (!standby || !isWorthAskingElsewhere(failure)) throw failure;
+    if (deadline - Date.now() < MIN_ATTEMPT_MS) throw failure;
+
+    console.warn(
+      `[mix] ${primary.label} refused (${failure.status ?? "no status"}): ${failure.message}. Asking ${standby.label}.`,
+    );
+
+    try {
+      return await askOneMixer<T>({
+        provider: standby,
+        instruction,
+        parts,
+        schema,
+        deadline,
+        maxAttempts: MAX_ATTEMPTS,
+      });
+    } catch (second) {
+      // Report the standby's failure, since it is the one that had the time
+      // and the last word. The primary's refusal is already in the log above.
+      throw second instanceof MixError ? second : failure;
+    }
+  }
 }

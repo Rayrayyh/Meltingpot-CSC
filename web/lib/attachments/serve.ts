@@ -93,3 +93,20 @@ export function claimIsHonest(declared: string | null, sniffed: string | null): 
   }
   return false;
 }
+
+/**
+ * Whether these URL segments can be joined into a storage key.
+ *
+ * The download route takes a catch-all path and hands the joined string to
+ * Storage, and its whole premise is that storage RLS reads the first segment
+ * as a Pot id. A "." or ".." among them would let the key that gets checked
+ * and the object that gets read be two different things, so they are refused
+ * rather than reasoned about. A real key is
+ * `<potId>/<contributionId>/<timestamp><ext>`, which none of this touches.
+ */
+export function isPlainStorageKey(segments: string[]): boolean {
+  if (segments.length === 0) return false;
+  return segments.every(
+    (segment) => segment !== "" && segment !== "." && segment !== "..",
+  );
+}

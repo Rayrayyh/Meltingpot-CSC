@@ -47,21 +47,26 @@ export function ClassworkAutoSync({ linkIds }: { linkIds: string[] }) {
     const pending = key.split(",").filter((id) => !recently(id, now)).slice(0, PER_MOUNT);
     if (pending.length === 0) return;
 
-    (async () => {
+    void (async () => {
       let changed = false;
       for (const linkId of pending) {
-        remember(linkId, now);
         try {
           const response = await fetch("/api/classwork/sync", {
             method: "POST",
             headers: { "content-type": "application/json" },
             body: JSON.stringify({ linkId }),
           });
+          // Remembered once the server has answered, whatever it said. Doing
+          // it before the call meant a sync that never left the tab, on a
+          // dropped connection, still counted as done and was skipped for the
+          // next four minutes.
+          remember(linkId, Date.now());
           if (!response.ok) continue;
           const outcome = (await response.json()) as { inserted?: number; changed?: number; removed?: number };
           if ((outcome.inserted ?? 0) + (outcome.changed ?? 0) + (outcome.removed ?? 0) > 0) changed = true;
         } catch {
-          // The next open tries again; nothing to say here.
+          // The connection failed, so this one is not remembered and the next
+          // open tries it again. The database throttles anything too soon.
         }
         if (cancelled) return;
       }

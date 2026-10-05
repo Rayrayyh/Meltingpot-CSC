@@ -32,15 +32,26 @@ gsap.registerPlugin(useGSAP, ScrollTrigger);
  */
 export function RollingText({
   text,
-  speed = 0.055,
-  duration = 1.15,
+  speed = 0.03,
+  duration = 0.65,
   loop = false,
   hold = 2.2,
   className,
 }: {
   /** One phrase to turn over in place, or several to cycle through. */
   text: string | string[];
-  /** Seconds between one letter starting and the next. */
+  /**
+   * Seconds between one letter starting and the next.
+   *
+   * With the duration below this sets how long the whole line takes: the
+   * outermost letter starts at half the line's length times this, and then
+   * still has to turn over. The first pass used 0.055 and 1.15, which on a
+   * twenty character line is about 1.7 seconds from the first letter moving
+   * to the last one settling. The owner read that as the letters lagging
+   * behind the animation rather than performing it, which is what a roll
+   * that outlasts the eye's patience for it looks like. Just under a second
+   * is the same motion at a speed that reads as deliberate.
+   */
   speed?: number;
   /** How long a single letter takes to turn over and settle. */
   duration?: number;

@@ -1,5 +1,44 @@
+import { existsSync, readdirSync } from "node:fs";
+import path from "node:path";
 import type { NextConfig } from "next";
 import { clerkPolicyOrigins } from "./lib/auth/clerk-frontend-api";
+
+// The landing page's demo film and its optional companions, resolved here
+// because this file runs on the build machine, where public/ certainly
+// exists; a serverless function only reliably gets what the tracer put in its
+// bundle, and public/ is deployed as static assets rather than as code. See
+// lib/landing/demo-media.ts for what reads it.
+//
+// The film is found rather than named. demo.mp4 wins if it is there, and
+// otherwise a single mp4 in public/ is taken to be the film, because the one
+// the owner exports carries a version in its name and would need a code
+// change on every re-export. More than one mp4 and no demo.mp4 is genuinely
+// ambiguous, so it picks none and says why.
+const publicDir = path.join(process.cwd(), "public");
+const has = (file: string) => existsSync(path.join(publicDir, file));
+const films = existsSync(publicDir)
+  ? readdirSync(publicDir).filter((f) => f.toLowerCase().endsWith(".mp4") && f !== "demo-preview.mp4")
+  : [];
+const film = has("demo.mp4")
+  ? "demo.mp4"
+  : films.length === 1
+    ? films[0]
+    : null;
+
+if (!film) {
+  console.warn(
+    films.length > 1
+      ? `[landing] public/ holds ${films.length} mp4 files and none is demo.mp4, so the demo section is omitted. Rename the film to demo.mp4.`
+      : "[landing] no demo film in public/, so the demo section and the hero link to it are omitted.",
+  );
+}
+
+const demoMedia = JSON.stringify({
+  src: film,
+  poster: has("demo-poster.png") ? "demo-poster.png" : null,
+  captions: has("demo.vtt") ? "demo.vtt" : null,
+  preview: has("demo-preview.mp4") ? "demo-preview.mp4" : null,
+});
 
 // In this development container, outbound TLS from browsers is blocked by the
 // egress policy while server-side Node traffic passes. Setting
@@ -46,6 +85,7 @@ const csp = [
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
+  env: { DEMO_MEDIA: demoMedia },
   experimental: {
     // Keep visited pages in the browser's router cache. Without this, every
     // page in the app is dynamic, so clicking back to a tab you were just on

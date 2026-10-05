@@ -1,0 +1,370 @@
+{
+ "source": "tabbit.mp4 (2b591a98) minus tabbit1.mp4 (d42db48f): same music, so the difference is the sound effects alone",
+ "sr": 48000,
+ "samples": [
+  {
+   "file": "key_01.wav",
+   "kind": "key",
+   "source_t": 10.305,
+   "dur_ms": 50,
+   "peak_dbfs": -2.9
+  },
+  {
+   "file": "key_02.wav",
+   "kind": "key",
+   "source_t": 10.355,
+   "dur_ms": 70,
+   "peak_dbfs": -4.2
+  },
+  {
+   "file": "key_03.wav",
+   "kind": "key",
+   "source_t": 10.425,
+   "dur_ms": 55,
+   "peak_dbfs": -2.3
+  },
+  {
+   "file": "key_04.wav",
+   "kind": "key",
+   "source_t": 10.48,
+   "dur_ms": 70,
+   "peak_dbfs": -4.9
+  },
+  {
+   "file": "key_05.wav",
+   "kind": "key",
+   "source_t": 10.55,
+   "dur_ms": 164,
+   "peak_dbfs": -3.1
+  },
+  {
+   "file": "key_06.wav",
+   "kind": "key",
+   "source_t": 10.73,
+   "dur_ms": 120,
+   "peak_dbfs": -2.9
+  },
+  {
+   "file": "key_07.wav",
+   "kind": "key",
+   "source_t": 10.85,
+   "dur_ms": 115,
+   "peak_dbfs": -4.2
+  },
+  {
+   "file": "key_08.wav",
+   "kind": "key",
+   "source_t": 10.965,
+   "dur_ms": 125,
+   "peak_dbfs": -4.6
+  },
+  {
+   "file": "key_09.wav",
+   "kind": "key",
+   "source_t": 11.09,
+   "dur_ms": 140,
+   "peak_dbfs": -2.4
+  },
+  {
+   "file": "key_10.wav",
+   "kind": "key",
+   "source_t": 11.23,
+   "dur_ms": 135,
+   "peak_dbfs": -4.0
+  },
+  {
+   "file": "key_11.wav",
+   "kind": "key",
+   "source_t": 11.365,
+   "dur_ms": 105,
+   "peak_dbfs": -3.7
+  },
+  {
+   "file": "key_12.wav",
+   "kind": "key",
+   "source_t": 11.47,
+   "dur_ms": 145,
+   "peak_dbfs": -3.1
+  },
+  {
+   "file": "key_13.wav",
+   "kind": "key",
+   "source_t": 11.615,
+   "dur_ms": 120,
+   "peak_dbfs": -5.0
+  },
+  {
+   "file": "key_14.wav",
+   "kind": "key",
+   "source_t": 11.735,
+   "dur_ms": 135,
+   "peak_dbfs": -2.2
+  },
+  {
+   "file": "key_15.wav",
+   "kind": "key",
+   "source_t": 11.87,
+   "dur_ms": 100,
+   "peak_dbfs": -3.5
+  },
+  {
+   "file": "key_16.wav",
+   "kind": "key",
+   "source_t": 11.97,
+   "dur_ms": 95,
+   "peak_dbfs": -1.2
+  },
+  {
+   "file": "key_17.wav",
+   "kind": "key",
+   "source_t": 20.545,
+   "dur_ms": 125,
+   "peak_dbfs": -3.6
+  },
+  {
+   "file": "key_18.wav",
+   "kind": "key",
+   "source_t": 20.67,
+   "dur_ms": 120,
+   "peak_dbfs": -3.7
+  },
+  {
+   "file": "key_19.wav",
+   "kind": "key",
+   "source_t": 20.79,
+   "dur_ms": 145,
+   "peak_dbfs": -4.3
+  },
+  {
+   "file": "key_20.wav",
+   "kind": "key",
+   "source_t": 20.935,
+   "dur_ms": 105,
+   "peak_dbfs": -3.2
+  },
+  {
+   "file": "key_21.wav",
+   "kind": "key",
+   "source_t": 21.04,
+   "dur_ms": 145,
+   "peak_dbfs": -3.5
+  },
+  {
+   "file": "key_22.wav",
+   "kind": "key",
+   "source_t": 21.185,
+   "dur_ms": 100,
+   "peak_dbfs": -3.6
+  },
+  {
+   "file": "key_23.wav",
+   "kind": "key",
+   "source_t": 21.285,
+   "dur_ms": 145,
+   "peak_dbfs": -3.9
+  },
+  {
+   "file": "key_24.wav",
+   "kind": "key",
+   "source_t": 21.43,
+   "dur_ms": 140,
+   "peak_dbfs": -4.4
+  },
+  {
+   "file": "key_25.wav",
+   "kind": "key",
+   "source_t": 21.57,
+   "dur_ms": 115,
+   "peak_dbfs": -3.4
+  },
+  {
+   "file": "key_26.wav",
+   "kind": "key",
+   "source_t": 21.685,
+   "dur_ms": 105,
+   "peak_dbfs": -3.4
+  },
+  {
+   "file": "key_27.wav",
+   "kind": "key",
+   "source_t": 21.79,
+   "dur_ms": 135,
+   "peak_dbfs": -3.5
+  },
+  {
+   "file": "shortcut_01.wav",
+   "kind": "key-heavy",
+   "source_t": 5.35,
+   "dur_ms": 80,
+   "peak_dbfs": -4.5
+  },
+  {
+   "file": "shortcut_02.wav",
+   "kind": "key-heavy",
+   "source_t": 5.43,
+   "dur_ms": 50,
+   "peak_dbfs": -2.4
+  },
+  {
+   "file": "shortcut_03.wav",
+   "kind": "key-heavy",
+   "source_t": 5.48,
+   "dur_ms": 75,
+   "peak_dbfs": -2.2
+  },
+  {
+   "file": "shortcut_04.wav",
+   "kind": "key-heavy",
+   "source_t": 5.555,
+   "dur_ms": 105,
+   "peak_dbfs": -8.1
+  },
+  {
+   "file": "click_01.wav",
+   "kind": "click",
+   "source_t": 14.28,
+   "dur_ms": 670,
+   "peak_dbfs": -2.1
+  },
+  {
+   "file": "click_02.wav",
+   "kind": "click",
+   "source_t": 24.33,
+   "dur_ms": 670,
+   "peak_dbfs": -1.4
+  },
+  {
+   "file": "enter_01.wav",
+   "kind": "enter",
+   "source_t": 12.06,
+   "dur_ms": 344,
+   "peak_dbfs": -10.7
+  },
+  {
+   "file": "enter_02.wav",
+   "kind": "enter",
+   "source_t": 22.3,
+   "dur_ms": 404,
+   "peak_dbfs": -2.6
+  },
+  {
+   "file": "tick_01.wav",
+   "kind": "tick",
+   "source_t": 2.62,
+   "dur_ms": 100,
+   "peak_dbfs": -26.3
+  },
+  {
+   "file": "tick_02.wav",
+   "kind": "tick",
+   "source_t": 2.72,
+   "dur_ms": 100,
+   "peak_dbfs": -26.4
+  },
+  {
+   "file": "tick_03.wav",
+   "kind": "tick",
+   "source_t": 2.82,
+   "dur_ms": 100,
+   "peak_dbfs": -25.7
+  },
+  {
+   "file": "tick_04.wav",
+   "kind": "tick",
+   "source_t": 2.92,
+   "dur_ms": 100,
+   "peak_dbfs": -29.4
+  },
+  {
+   "file": "tick_05.wav",
+   "kind": "tick",
+   "source_t": 3.02,
+   "dur_ms": 100,
+   "peak_dbfs": -27.4
+  },
+  {
+   "file": "tick_06.wav",
+   "kind": "tick",
+   "source_t": 3.12,
+   "dur_ms": 100,
+   "peak_dbfs": -27.8
+  },
+  {
+   "file": "tick_07.wav",
+   "kind": "tick",
+   "source_t": 3.22,
+   "dur_ms": 104,
+   "peak_dbfs": -27.0
+  },
+  {
+   "file": "tick_08.wav",
+   "kind": "tick",
+   "source_t": 3.42,
+   "dur_ms": 100,
+   "peak_dbfs": -27.6
+  },
+  {
+   "file": "tick_09.wav",
+   "kind": "tick",
+   "source_t": 3.52,
+   "dur_ms": 100,
+   "peak_dbfs": -27.5
+  },
+  {
+   "file": "tick_10.wav",
+   "kind": "tick",
+   "source_t": 3.62,
+   "dur_ms": 100,
+   "peak_dbfs": -27.3
+  },
+  {
+   "file": "tick_11.wav",
+   "kind": "tick",
+   "source_t": 3.72,
+   "dur_ms": 100,
+   "peak_dbfs": -28.2
+  },
+  {
+   "file": "tick_12.wav",
+   "kind": "tick",
+   "source_t": 3.82,
+   "dur_ms": 100,
+   "peak_dbfs": -28.1
+  },
+  {
+   "file": "tick_13.wav",
+   "kind": "tick",
+   "source_t": 3.92,
+   "dur_ms": 104,
+   "peak_dbfs": -27.8
+  },
+  {
+   "file": "hit_01.wav",
+   "kind": "hit",
+   "source_t": 0.26,
+   "dur_ms": 1329,
+   "peak_dbfs": -3.0
+  },
+  {
+   "file": "hit_02.wav",
+   "kind": "hit",
+   "source_t": 17.7,
+   "dur_ms": 573,
+   "peak_dbfs": 0.1
+  },
+  {
+   "file": "hit_03.wav",
+   "kind": "hit",
+   "source_t": 33.37,
+   "dur_ms": 1530,
+   "peak_dbfs": -0.4
+  },
+  {
+   "file": "hit_04.wav",
+   "kind": "hit",
+   "source_t": 35.29,
+   "dur_ms": 1610,
+   "peak_dbfs": 0.1
+  }
+ ]
+}

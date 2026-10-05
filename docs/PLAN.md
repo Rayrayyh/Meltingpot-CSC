@@ -123,3 +123,31 @@ ONE production deploy to meltingpot.netlify.app or nearest available. Env: Supab
 - Netlify x Next 16 runtime: verify the official runtime supports 16 before the single deploy; if not, pin the app down to the supported Next major in a dedicated commit.
 - Deterministic organizer must never look fake: honest progress states, real failure path.
 - Hackathon requires meaningful AI: provider seam + review assist make the Claude upgrade a config change (step 13 decision point).
+
+---
+
+## This plan is finished
+
+Steps 0 to 13 are the MVP build and all of them are done. The plan is kept as
+a record of what was planned and what each step actually delivered, not as a
+statement of where the project is now.
+
+Everything after Step 13 was directed by the owner in conversation rather than
+governed by this document: the Clerk switch, the live domain, the classwork
+integration, the landing rebuild, the bento, section three, the study tools,
+the demo film and its player. None of it was planned here, so none of it was
+added here, because retrofitting steps onto work that never had them would
+make this file look like a plan that was followed when it is a plan that was
+completed and then left behind.
+
+Where the record actually lives:
+
+- `docs/BUILDLOG.md` is the running narrative, session by session, with the
+  verification evidence.
+- `memory/decisions/` holds every architectural or scope decision and why it
+  was made. `memory/README.md` indexes both directories.
+- `memory/lessons/` holds what was learned the hard way, which is the first
+  place to look when something breaks.
+- `git log` is the densest source of all. The commit messages carry the
+  reasoning, the rejected alternatives and what was verified.
+- `docs/BACKLOG.md` is what the owner wants next. It is a list, not a plan.

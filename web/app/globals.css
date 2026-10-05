@@ -1405,3 +1405,41 @@ html[data-card-face="sky"] {
   content: attr(data-face);
   white-space: pre;
 }
+
+/* The demo player's scrubber (components/landing/demo-player.tsx). A real
+   range input carries the keyboard, the screen reader and the pointer, and
+   only its skin is ours; the thumb is the one part no utility can reach, so
+   it is drawn here. The filled part of the track is painted by the inline
+   background-size the component sets, which is why currentColor is the
+   color the thumb takes too: one value moves both. */
+.mp-scrub::-webkit-slider-thumb {
+  /* Safari still needs the prefix on the thumb specifically; without it the
+     native thumb survives and the dot never shows. */
+  -webkit-appearance: none;
+  appearance: none;
+  width: 11px;
+  height: 11px;
+  border-radius: 999px;
+  background: currentColor;
+  border: none;
+  /* The track is 4px; the thumb centers on it without changing its height. */
+  margin-top: 0;
+}
+
+.mp-scrub::-moz-range-thumb {
+  width: 11px;
+  height: 11px;
+  border-radius: 999px;
+  background: currentColor;
+  border: none;
+}
+
+.mp-scrub:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 3px;
+}
+
+/* Safari paints its own focus ring on a range and hides the outline above. */
+.mp-scrub:focus-visible::-webkit-slider-thumb {
+  box-shadow: 0 0 0 3px rgb(255 255 255 / 0.55);
+}

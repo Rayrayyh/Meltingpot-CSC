@@ -20,7 +20,7 @@ Warm off-white paper, white surfaces, charcoal ink, deep forest green primary *(
 
 ## Motion
 
-One orchestrated moment per flow, honoring prefers-reduced-motion: the organizing stage checklist (honest, stepped), the shared-success settle, and later the landing scroll stopper (raw note reorganizing into a clean card). Everything else is 150ms color/opacity transitions. No ambient animation.
+One orchestrated moment per flow, honoring prefers-reduced-motion: the organizing stage checklist (honest, stepped), the shared-success settle, and on the landing the hero headline roll and the bento's entrance lift. Section three's pinned melt was removed in decision 052; what stands there now moves only under the pointer, lifting the raw scrap behind the shared note. Everything else is 150ms color/opacity transitions. No ambient animation.
 
 ## Copy voice
 

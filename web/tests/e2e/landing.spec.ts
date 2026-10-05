@@ -52,34 +52,69 @@ test.describe("brand landing", () => {
     await expect(page.getByLabel("Enter class code")).toHaveValue("ZZZZZZ");
   });
 
-  test("scrolling pins the melt and builds the organized note", async ({ page }) => {
+  // Section three used to be the melt: a pinned before and after that cost
+  // 1700px of scroll to claim a tool tidies text. What replaced it makes the
+  // claim only a Pot can make, so the test checks the argument is on the page
+  // and that the pin did not come back with it.
+  test("section three pools one note out of three people", async ({ page }) => {
     await page.goto("/");
-    const stopper = page.getByTestId("scroll-stopper");
-    const takeaway = page.getByText("The exam loves asking for ATP counts.");
+    const section = page.getByTestId("pooled-note");
 
-    // Before scrolling, the organized card's pieces are hidden by the timeline.
-    await expect(takeaway).not.toBeVisible();
-
-    const stopperY = await stopper.evaluate(
-      (el) => el.getBoundingClientRect().top + window.scrollY,
+    await expect(section.getByRole("heading", { level: 2 })).toContainText(
+      "Nobody in that room took a complete set of notes.",
     );
+    await expect(section.getByText("Together, they did.")).toBeVisible();
+    await expect(
+      section.getByRole("heading", { name: "Enzyme inhibition, and which line moves" }),
+    ).toBeVisible();
+    await expect(section.getByText("Ahmad, Paul and Amy wrote this, Tuesday")).toBeVisible();
+    await expect(section.getByText("Only Amy wrote this down")).toBeVisible();
 
-    // Mid-scroll: the section is pinned (still on screen well past its top).
-    await page.evaluate(({ y }) => window.scrollTo(0, y), { y: stopperY + 900 });
-    await page.waitForTimeout(400);
-    await expect(page.getByText("Rough thoughts go in. Real notes come out.")).toBeInViewport();
-    await expect(page.getByRole("heading", { name: "How cells make ATP" })).toBeVisible();
+    // The open question is the point of the section. If it ever gets tidied
+    // away the section is back to claiming what every notes tool claims.
+    await expect(section.getByText(/Nobody has answered yet/)).toBeVisible();
 
-    // Deep scroll: the whole organized note has melted in.
-    await page.evaluate(({ y }) => window.scrollTo(0, y), { y: stopperY + 1680 });
-    await page.waitForTimeout(400);
-    await expect(takeaway).toBeVisible();
-    await expect(page.getByText("Only you can approve what gets shared.")).toBeVisible();
+    // One screen, not a scroll span. The pinned version stood at roughly
+    // 2400px tall; anything near that means the pattern crept back.
+    const height = await section.evaluate((el) => el.getBoundingClientRect().height);
+    expect(height).toBeLessThan(1400);
 
-    // Past the pin, the page continues to the steps section.
+    // The quiet link goes to the steps section rather than nowhere.
+    await section.getByRole("link", { name: "See how a note gets made" }).click();
+    await expect(page).toHaveURL(/#how$/);
+    await expect(page.getByText("As easy as typing what you know.")).toBeInViewport();
+
     await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
     await page.waitForTimeout(400);
     await expect(page.getByText("Start your Pot tonight.")).toBeVisible();
+  });
+
+  // The only motion left in the section: the raw scrap lifts under the
+  // pointer, which is how the finished note says where it came from.
+  test("hovering the pooled note lifts the scrap it came from", async ({ page }) => {
+    await page.goto("/");
+    const section = page.getByTestId("pooled-note");
+    const scrap = section.getByText("Paul, 2:16pm").locator("..");
+    await scrap.scrollIntoViewIfNeeded();
+
+    // Tailwind v4 writes these as their own properties, not into `transform`.
+    const liftOf = () =>
+      scrap.evaluate((el) => {
+        const style = getComputedStyle(el);
+        return `${style.rotate}|${style.translate}`;
+      });
+    // The section lifts 18px into place when it scrolls into view. Hovering
+    // during that slides the card out from under the pointer, the hover drops,
+    // and the assertion reads a resting scrap: this failed once in a full run
+    // and passed on its own. Let the entrance finish before touching anything.
+    await page.waitForTimeout(1_200);
+    const resting = await liftOf();
+
+    await section
+      .getByRole("heading", { name: "Enzyme inhibition, and which line moves" })
+      .hover();
+    // The lift is a 500ms transition, so poll rather than sample once.
+    await expect.poll(liftOf, { timeout: 5_000 }).not.toBe(resting);
   });
 
   // The header once collided with itself on a phone: the wordmark and the nav
@@ -162,7 +197,7 @@ test.describe("brand landing", () => {
     expect(ratio).toBeCloseTo(1672 / 941, 2);
   });
 
-  test("anchors scroll to their sections, including back up past the pin", async ({ page }) => {
+  test("anchors and calls to action reach their destinations", async ({ page }) => {
     await page.goto("/");
 
     // The nav now navigates to real pages; the landing's own join anchor
@@ -220,9 +255,28 @@ test.describe("brand landing", () => {
     await expect(page.locator("html")).not.toHaveClass(/(^|\s)lenis(\s|$)/);
 
     // Everything is readable immediately, no scroll choreography required.
-    await expect(page.getByRole("heading", { name: "How cells make ATP" })).toBeVisible();
-    await expect(page.getByText("The exam loves asking for ATP counts.")).toBeVisible();
-    await expect(page.getByText("Only you can approve what gets shared.")).toBeVisible();
+    const section = page.getByTestId("pooled-note");
+    await expect(
+      section.getByRole("heading", { name: "Enzyme inhibition, and which line moves" }),
+    ).toBeVisible();
+    await expect(section.getByText(/Nobody has answered yet/)).toBeVisible();
+
+    // The scrap's lift is the section's only motion, and the preference is
+    // meant to switch it off rather than shorten it.
+    const scrap = section.getByText("Paul, 2:16pm").locator("..");
+    const liftOf = () =>
+      scrap.evaluate((el) => {
+        const style = getComputedStyle(el);
+        return `${style.rotate}|${style.translate}`;
+      });
+    await page.waitForTimeout(1_200);
+    const resting = await liftOf();
+    await section
+      .getByRole("heading", { name: "Enzyme inhibition, and which line moves" })
+      .hover();
+    await page.waitForTimeout(700);
+    expect(await liftOf()).toBe(resting);
+
     await context.close();
   });
 });

@@ -18,6 +18,7 @@ import {
   type DueEntry,
 } from "@/lib/data/classwork";
 import { readerZone } from "@/lib/data/streak";
+import { getAuthUser } from "@/lib/auth/server";
 import { supabaseServer } from "@/lib/supabase/server";
 import { cn } from "@/lib/cn";
 
@@ -82,10 +83,18 @@ export default async function CalendarPage({ searchParams }: PageProps<"/calenda
         </Button>
       );
     } else {
+      // Scoped to the reader's own rows on purpose. The memberships policy is
+      // is_pot_member(pot_id), so an unfiltered read returns every member of
+      // every Pot the reader belongs to: the right Pot came back, but only
+      // after pulling the whole class list of each one to find it (lesson 005).
+      const user = await getAuthUser();
       const supabase = await supabaseServer();
-      const { data: memberships } = await supabase
-        .from("memberships")
-        .select("pot_id, pots(archived_at)");
+      const { data: memberships } = user
+        ? await supabase
+            .from("memberships")
+            .select("pot_id, pots(archived_at)")
+            .eq("user_id", user.id)
+        : { data: null };
       const firstActivePotId =
         (memberships ?? []).find((m) => m.pots && !m.pots.archived_at)?.pot_id ?? null;
       emptyAction = firstActivePotId ? (

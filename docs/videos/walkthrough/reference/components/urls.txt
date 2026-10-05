@@ -1,0 +1,17 @@
+# Original sources for assets/parts.js, fetched 2026-10-05 without an account (HTTP 200). Licence texts in licences/.
+# name                        source                                               licence (read at)
+magicui-text-animate          https://magicui.design/r/text-animate.json           MIT (licences/magicuidesign_magicui-LICENSE.md, github.com/magicuidesign/magicui LICENSE.md)
+magicui-typing-animation      https://magicui.design/r/typing-animation.json       MIT (same)
+magicui-pointer               https://magicui.design/r/pointer.json                MIT (same)
+magicui-dot-pattern           https://magicui.design/r/dot-pattern.json            MIT (same)
+magicui-orbiting-circles      https://magicui.design/r/orbiting-circles.json       MIT (same)
+magicui-animated-list         https://magicui.design/r/animated-list.json          MIT (same)
+magicui-highlighter           https://magicui.design/r/highlighter.json            MIT (same; it depends on rough-notation, MIT, whose code is not used)
+magicui-safari                https://magicui.design/r/safari.json                 MIT (same)
+magicui-iphone                https://magicui.design/r/iphone.json                 MIT (same)
+magicui-word-rotate           https://magicui.design/r/word-rotate.json            MIT (same)
+magicui-morphing-text         https://magicui.design/r/morphing-text.json          MIT (same)
+kibo-cursor                   https://www.kibo-ui.com/r/cursor.json                MIT, copyright shadcnblocks (licences/haydenbleasel_kibo.txt)
+mp-text-shimmer               https://motion-primitives.com/c/text-shimmer.json    MIT by README only (licences/ibelick_motion-primitives_README.md)
+watermelon-list-stack         https://ui.watermelon.sh/r/list-stack.json           MIT (licences/WatermelonCorp_watermelon-platform-LICENSE.txt, github.com/WatermelonCorp/watermelon-platform LICENSE)
+# Read but not used: React Bits (licences/DavidHDev_react-bits-LICENSE.md, MIT + Commons Clause). See notes/COMPONENTS.md.

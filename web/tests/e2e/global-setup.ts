@@ -66,14 +66,12 @@ export default async function globalSetup() {
     // removed and never restored, a proposal decided. The next suite then
     // fails somewhere unrelated to whatever broke it, which costs far more
     // time than reseeding would have.
-    const potId = await lookupSeedPot(origin, anonKey);
+    const potId = await seedPotId(origin, anonKey, access_token);
     if (!potId) {
       throw new Error(
-        `e2e reseed refused (${reseedResponse.status}) and 5R22AX does not ` +
-          "answer. Either the seed is absent, or an earlier run regenerated " +
-          "the class code and the seed is there under a code nobody knows. " +
-          "Either way: run select public.dev_seed(); as service_role, then " +
-          "run the suite.",
+        `e2e reseed refused (${reseedResponse.status}) and the Biology 101 seed ` +
+          "is not there for maya@meltingpot.dev. Run select public.dev_seed(); " +
+          "as service_role, then run the suite.",
       );
     }
     const dirty = await seedLooksUsed(origin, anonKey, access_token, potId);
@@ -88,25 +86,39 @@ export default async function globalSetup() {
   }
 }
 
-/** The seeded Pot's id, or null when the seed is not there at all. */
-async function lookupSeedPot(
+/**
+ * The seeded Pot's id, read as a member.
+ *
+ * This used to ask lookup_pot_by_code for 5R22AX, which cannot answer it:
+ * that RPC is the pre-auth preview and deliberately returns a title and some
+ * counts, never an id, precisely so a stranger holding a class code cannot
+ * get one. So the lookup fell through to its "present" placeholder on every
+ * run, and seedLooksUsed returned on its first line without checking
+ * anything. Every run since printed "present and pristine" having verified
+ * only that the code answered, which is how the correction spec came to pass
+ * on a fresh seed and fail on the run after it.
+ *
+ * Maya owns Biology 101, so a plain authenticated read by title gets the id
+ * under row level security and needs no new function.
+ */
+async function seedPotId(
   origin: string,
   anonKey: string,
+  token: string,
 ): Promise<string | null> {
-  const response = await fetch(`${origin}/rest/v1/rpc/lookup_pot_by_code`, {
-    method: "POST",
-    headers: { apikey: anonKey, "Content-Type": "application/json" },
-    body: JSON.stringify({ p_code: "5R22AX" }),
-  });
+  const response = await fetch(
+    `${origin}/rest/v1/pots?select=id,class_code&title=eq.Biology%20101&limit=1`,
+    {
+      headers: {
+        apikey: anonKey,
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    },
+  );
   if (!response.ok) return null;
-  const body = (await response.text()).trim();
-  if (body === "null" || body === "") return null;
-  try {
-    const pot = JSON.parse(body) as { id?: string } | null;
-    return pot?.id ?? "present";
-  } catch {
-    return "present";
-  }
+  const rows = (await response.json()) as Array<{ id?: string }>;
+  return rows[0]?.id ?? null;
 }
 
 /** Shared notes dev_seed writes into Biology 101 (0006 onwards). */
@@ -123,7 +135,6 @@ async function seedLooksUsed(
   token: string,
   potId: string,
 ): Promise<string | null> {
-  if (potId === "present") return null;
   const headers = {
     apikey: anonKey,
     Authorization: `Bearer ${token}`,
@@ -165,6 +176,18 @@ async function seedLooksUsed(
   if (pending.ok) {
     const rows = (await pending.json()) as unknown[];
     if (rows.length !== 1) return `${rows.length} pending proposal(s) where the seed writes 1`;
+  }
+  // settings.spec.ts rotates the class code and does not put it back, and
+  // half the specs type 5R22AX. Nothing was watching for this, so the repair
+  // was done by hand every time somebody noticed.
+  const pot = await fetch(
+    `${origin}/rest/v1/pots?select=class_code&id=eq.${potId}`,
+    { headers },
+  );
+  if (pot.ok) {
+    const rows = (await pot.json()) as Array<{ class_code?: string }>;
+    const code = rows[0]?.class_code;
+    if (code && code !== "5R22AX") return `the class code is ${code}, not 5R22AX`;
   }
   return null;
 }

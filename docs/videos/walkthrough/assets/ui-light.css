@@ -1,0 +1,276 @@
+/* meltingpot light theme for the walkthrough film, at the app's own 1x sizes.
+   Tokens: copied from web/app/globals.css :root (the light theme; there is no separate :root[data-theme="light"] block,
+   light is the bare :root). Sizes: from the Tailwind classes in web/components/ui/*.tsx and web/components/shell/*.tsx,
+   cross-checked against run 4's measured boxes (capture-log.json, 1280 x 800 viewport). Scale with a wrapper
+   (transform: scale(1.25 to 1.5)); do not edit the numbers here.
+   Every word placed on these parts must come from web/ source or a capture log (see notes/UI-SPEC.md). */
+
+@font-face { font-family: "MP Inter"; src: url("fonts/Inter-Variable.woff2") format("woff2"); font-weight: 100 900; font-display: block; }
+@font-face { font-family: "MP Fraunces"; src: url("fonts/Fraunces-Variable.woff2") format("woff2"); font-weight: 100 900; font-display: block; }
+@font-face { font-family: "MP Baloo"; src: url("fonts/Baloo2-Variable.woff2") format("woff2"); font-weight: 400 800; font-display: block; }
+@font-face { font-family: "MP Serif"; src: url("fonts/SourceSerif4-Variable.woff2") format("woff2"); font-weight: 200 900; font-display: block; }
+
+:root {
+  /* Surfaces and ink (globals.css :root, exact). */
+  --paper: #faf4e6;
+  --surface: #fffdf6;
+  --surface-raised: #ffffff;
+  --sunken: #f2e9d4;
+  --ink: #24222c;
+  --ink-muted: #5c5952;
+  --ink-faint: #756f5e;
+  --edge: #ede3cc;
+  --edge-strong: #dbcfaf;
+  /* Brand. */
+  --primary: #ab5a14;
+  --primary-hover: #964f11;
+  --primary-active: #84460f;
+  --primary-soft: #fbead3;
+  --on-primary: #fff8ee;
+  --clay: #c36514;
+  --clay-soft: #f8e5c8;
+  --on-clay: #fff8ec;
+  --focus-ring: #e0761a;
+  /* Functional colour only. */
+  --success: #43804c;
+  --success-soft: #e6f1e0;
+  --warning: #9a6a16;
+  --warning-soft: #f8ecd0;
+  --danger: #bf4b2b;
+  --danger-soft: #f9e4d9;
+  --pending: #9a6a16;
+  --pending-soft: #f8ecd0;
+  --added: #43804c;
+  --added-soft: #e6f1e0;
+  --removed: #bf4b2b;
+  --removed-soft: #f9e4d9;
+  /* Avatar tints: decorative identity only, picked by a hash of the display name (components/ui/avatar.tsx). */
+  --avatar-1: #c2610f; --avatar-1-soft: #fae2c6;
+  --avatar-2: #b04a2a; --avatar-2-soft: #f8ddd2;
+  --avatar-3: #8f6a12; --avatar-3-soft: #f7eccb;
+  --avatar-4: #5f7038; --avatar-4-soft: #e8eed6;
+  --avatar-5: #2f6f6a; --avatar-5-soft: #d9ebe8;
+  --avatar-6: #9c4557; --avatar-6-soft: #f7dee3;
+  /* Flashcard face (globals.css: the default card face, before a settings choice). */
+  --card-face: #f7dfc6;
+  /* Radii and elevation. */
+  --r-card: 14px;      /* --radius-card: 0.875rem */
+  --r-control: 10px;   /* --radius-control: 0.625rem */
+  --r-pill: 9999px;
+  --shadow-card: 0 1px 2px rgba(36, 34, 44, 0.05);
+  --shadow-raised: 0 4px 16px rgba(36, 34, 44, 0.08);
+  --shadow-hero: drop-shadow(0 2px 2px rgba(62, 45, 45, 0.1)) drop-shadow(0 34px 30px rgba(62, 45, 45, 0.17));
+  /* The app's motion curves (globals.css and components). */
+  --ease-out-expo: cubic-bezier(0.22, 1, 0.36, 1);   /* mp-enter, Reveal, Settle, mp-lift, selection offer */
+  --ease-flip: cubic-bezier(0.32, 0.72, 0, 1);       /* flashcard turn, 0.44 s */
+  --ease-nav: cubic-bezier(0.075, 0.82, 0.165, 1);   /* sidebar collapse 1 s, alert rows 0.35 s */
+  --ease-score: cubic-bezier(0.16, 1, 0.3, 1);       /* score flourish 1.1 s */
+}
+
+/* ---------- Base ---------- */
+.ui { font-family: "MP Inter", ui-sans-serif, system-ui, sans-serif; font-feature-settings: "cv11"; color: var(--ink); -webkit-font-smoothing: antialiased; font-size: 14px; line-height: 1.5; }
+.ui, .ui * { box-sizing: border-box; }
+.ui.page { background: var(--paper); }
+.ui p, .ui h1, .ui h2, .ui h3 { margin: 0; }
+.ui .display { font-family: "MP Fraunces", "MP Serif", Georgia, serif; font-weight: 600; letter-spacing: -0.025em; line-height: 1.08; }
+.ui .serif { font-family: "MP Serif", Georgia, serif; }
+.ui .wordmark { font-family: "MP Baloo", "MP Inter", sans-serif; font-weight: 600; letter-spacing: -0.025em; text-transform: lowercase; font-size: 20px; color: var(--ink); }
+.ui .eyebrow { font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-faint); }
+.ui .h1 { font-size: 24px; font-weight: 600; letter-spacing: -0.025em; line-height: 1.33; }   /* text-2xl font-semibold tracking-tight */
+.ui .h2 { font-size: 16px; font-weight: 600; letter-spacing: -0.01em; }
+.ui .h3 { font-size: 16px; font-weight: 600; }
+.ui .muted { color: var(--ink-muted); }
+.ui .faint { color: var(--ink-faint); }
+.ui .small { font-size: 13px; }
+.ui .tiny { font-size: 12px; }
+.ui .num { font-variant-numeric: tabular-nums; }
+.ui .icon { width: 18px; height: 18px; flex: none; display: inline-block; }
+.ui .icon svg, .ui svg.icon { width: 100%; height: 100%; fill: currentColor; }
+.ui .row { display: flex; align-items: center; gap: 8px; }
+.ui .stack > * + * { margin-top: 12px; }
+
+/* ---------- App shell (components/shell/app-shell.tsx, top-bar.tsx, main-nav.tsx, pot-tabs.tsx) ---------- */
+.ui .shell { display: grid; grid-template-columns: 240px 1fr; grid-template-rows: 56px 1fr; background: var(--paper); min-height: 100%; }
+.ui .topbar { grid-column: 1 / -1; height: 56px; display: flex; align-items: center; gap: 16px; padding: 0 24px; background: var(--surface); border-bottom: 1px solid var(--edge); }
+.ui .brand { display: inline-flex; align-items: center; gap: 8px; color: var(--ink); }
+.ui .brand .potmark { width: 32px; height: 32px; flex: none; }
+.ui .sidebar { background: var(--surface); border-right: 1px solid var(--edge); display: flex; flex-direction: column; }
+.ui .nav { display: flex; flex-direction: column; gap: 2px; padding: 12px; }
+.ui .nav-search { display: flex; align-items: center; gap: 8px; height: 36px; padding: 0 12px; margin-bottom: 16px; border-radius: var(--r-control); border: 1px solid var(--edge); background: var(--sunken); color: var(--ink-faint); font-size: 14px; }
+.ui .nav-row { display: flex; align-items: center; gap: 8px; height: 36px; padding: 0 12px; border-radius: var(--r-control); color: var(--ink-muted); font-size: 14px; white-space: nowrap; }
+.ui .nav-row .icon { margin-inline-end: 2px; }
+.ui .nav-row.hover { color: var(--ink); background: var(--sunken); }
+.ui .nav-row.active { background: var(--primary-soft); color: var(--primary); font-weight: 500; }
+.ui .nav-pots { display: flex; flex-direction: column; gap: 2px; padding: 4px 0 0 16px; }
+.ui .nav-pot { display: flex; align-items: center; height: 36px; padding: 0 12px; border-radius: var(--r-control); font-size: 13px; color: var(--ink-muted); }
+.ui .nav-pot.active { background: var(--primary-soft); color: var(--primary); font-weight: 500; }
+.ui .nav-kbd { margin-left: auto; padding: 2px 6px; border-radius: 6px; font-size: 11px; color: var(--ink-muted); background: var(--sunken); }
+.ui .nav-alerts { padding: 8px; }
+.ui .nav-alert { display: block; padding: 8px 10px; border-radius: var(--r-control); }
+.ui .nav-alert .t { font-size: 13px; font-weight: 500; color: var(--ink); }
+.ui .nav-alert .m { font-size: 12px; color: var(--ink-muted); }
+.ui .nav-profile { margin-top: auto; border-top: 1px solid var(--edge); padding: 8px; display: flex; align-items: center; gap: 10px; }
+.ui .nav-profile .name { font-size: 14px; font-weight: 500; }
+.ui .nav-profile .email { font-size: 12px; color: var(--ink-muted); }
+.ui .main { min-width: 0; }
+.ui .content { max-width: 768px; margin: 0 auto; padding: 32px 24px; }  /* measured: h1 at x 400, w 720 in a 1280 viewport */
+.ui .pot-tabs { border-bottom: 1px solid var(--edge); display: flex; gap: 4px; padding: 0 24px; }
+.ui .pot-tab { margin-bottom: -1px; display: flex; align-items: center; gap: 6px; padding: 12px 12px 10px; border-bottom: 2px solid transparent; font-size: 13px; font-weight: 500; color: var(--ink-muted); white-space: nowrap; }
+.ui .pot-tab.active { border-color: var(--primary); color: var(--primary); }
+.ui .pot-tab .count { display: inline-flex; align-items: center; justify-content: center; height: 18px; min-width: 18px; padding: 0 6px; border-radius: 999px; background: var(--pending-soft); color: var(--pending); font-size: 11px; font-weight: 600; }
+
+/* ---------- Card (components/ui/card.tsx) ---------- */
+.ui .card { background: var(--surface); border: 1px solid var(--edge); border-radius: var(--r-card); box-shadow: var(--shadow-card); }
+.ui .card > .section, .ui .card-section { padding: 20px; }
+.ui .card.hover { border-color: var(--edge-strong); }
+.ui .card.lift { transform: translateY(-2px); box-shadow: var(--shadow-raised); }
+.ui .card.raised { background: var(--surface-raised); box-shadow: var(--shadow-raised); }
+.ui .card.sunken { background: var(--sunken); box-shadow: none; }
+.ui .card.soft { background: var(--primary-soft); border-color: rgba(171, 90, 20, 0.3); }
+.ui .card.dashed { border-style: dashed; border-color: var(--edge-strong); box-shadow: none; }
+.ui .stat { padding: 16px 20px; }
+.ui .stat .value { margin-top: 6px; font-size: 24px; font-weight: 600; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
+
+/* ---------- Buttons (components/ui/button.tsx: rounded-full, font-medium, gap 8) ---------- */
+.ui .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 40px; padding: 0 20px; border-radius: var(--r-pill); font-size: 14px; font-weight: 500; white-space: nowrap; border: 1px solid transparent; }
+.ui .btn.sm { height: 32px; padding: 0 14px; font-size: 13px; }
+.ui .btn.lg { height: 48px; padding: 0 28px; font-size: 15px; }
+.ui .btn .icon { width: 16px; height: 16px; }
+.ui .btn.primary { background: var(--primary); color: var(--on-primary); }
+.ui .btn.primary.hover { background: var(--primary-hover); }
+.ui .btn.primary.pressed { background: var(--primary-active); }
+.ui .btn.secondary { background: var(--surface); color: var(--ink); border-color: var(--edge-strong); }
+.ui .btn.secondary.hover { background: var(--sunken); }
+.ui .btn.ghost, .ui .btn.quiet { background: transparent; color: var(--ink-muted); }
+.ui .btn.ghost.hover, .ui .btn.quiet.hover { color: var(--ink); background: var(--sunken); }
+.ui .btn.clay { background: var(--clay); color: var(--on-clay); }
+.ui .btn.disabled { opacity: 0.5; }
+.ui .link { color: var(--primary); font-weight: 500; }
+
+/* ---------- Status pill / badge (components/ui/pills.tsx StatusPill) ---------- */
+.ui .badge { display: inline-flex; align-items: center; gap: 4px; height: 22px; padding: 0 10px; border-radius: var(--r-pill); font-size: 11px; font-weight: 600; letter-spacing: 0.025em; white-space: nowrap; background: var(--sunken); color: var(--ink-muted); }
+.ui .badge.success { background: var(--success-soft); color: var(--success); }
+.ui .badge.warning { background: var(--warning-soft); color: var(--warning); }
+.ui .badge.danger { background: var(--danger-soft); color: var(--danger); }
+.ui .badge.pending { background: var(--pending-soft); color: var(--pending); }
+.ui .badge.primary { background: var(--primary-soft); color: var(--primary); }
+.ui .badge.clay { background: var(--clay-soft); color: var(--clay); }   /* RolePill "Owner" */
+
+/* ---------- Chip (pills.tsx Chip: section filters, deck tags, "What seems off?" reasons, search kinds) ---------- */
+.ui .chip { display: inline-flex; align-items: center; gap: 6px; height: 28px; padding: 0 12px; border-radius: var(--r-pill); border: 1px solid var(--edge); background: var(--surface); color: var(--ink-muted); font-size: 13px; font-weight: 500; white-space: nowrap; }
+.ui .chip.selected { background: var(--primary-soft); border-color: rgba(171, 90, 20, 0.3); color: var(--primary); }
+.ui .chip .n { font-variant-numeric: tabular-nums; opacity: 0.8; }
+
+/* ---------- Inputs (components/ui/input.tsx, class-code-input.tsx) ---------- */
+.ui .label { display: block; font-size: 13px; font-weight: 500; color: var(--ink); margin-bottom: 6px; }
+.ui .hint { font-size: 13px; color: var(--ink-muted); margin-top: 6px; }
+.ui .input { display: flex; align-items: center; gap: 8px; width: 100%; height: 40px; padding: 0 14px; background: var(--surface); border: 1px solid var(--edge-strong); border-radius: var(--r-control); color: var(--ink); font-size: 14px; }
+.ui .input.focus, .ui .textarea.focus, .ui .code-input.focus { border-color: var(--primary); }
+.ui .input .placeholder, .ui .textarea .placeholder { color: var(--ink-faint); }
+.ui .textarea { width: 100%; min-height: 220px; padding: 14px; background: var(--surface); border: 1px solid var(--edge-strong); border-radius: var(--r-control); font-size: 14px; line-height: 1.625; color: var(--ink); white-space: pre-wrap; }
+.ui .code-input { width: 100%; height: 56px; display: flex; align-items: center; justify-content: center; background: var(--surface); border: 1px solid var(--edge-strong); border-radius: var(--r-card); font-family: "MP Mono", monospace; font-weight: 600; font-size: 22px; letter-spacing: 0.35em; color: var(--ink); }
+.ui .code-input .placeholder { color: var(--ink-faint); }
+/* The app draws its own caret (components/ui/smooth-caret.tsx, .mp-caret-bar): a 2 px primary bar. */
+.ui .caret { display: inline-block; width: 2px; height: 1.15em; vertical-align: -0.2em; margin-left: 1px; background: var(--primary); border-radius: 1px; }
+
+/* ---------- Tabs (components/ui/pill-tabs.tsx: segmented, thumb springs to the target) ---------- */
+.ui .seg { position: relative; display: inline-flex; padding: 2px; border-radius: var(--r-pill); border: 1px solid var(--edge); background: var(--sunken); }
+.ui .seg .thumb { position: absolute; top: 2px; bottom: 2px; border-radius: var(--r-pill); background: var(--surface); box-shadow: var(--shadow-card); }
+.ui .seg .tab { position: relative; z-index: 1; height: 30px; padding: 0 14px; display: inline-flex; align-items: center; border-radius: var(--r-pill); font-size: 13px; font-weight: 500; color: var(--ink-muted); }
+.ui .seg .tab.active { color: var(--ink); }
+
+/* ---------- Avatar (components/ui/avatar.tsx: Phosphor User, weight fill, in the tint pair) ---------- */
+.ui .avatar { display: inline-flex; align-items: center; justify-content: center; border-radius: 50%; flex: none; width: 32px; height: 32px; }
+.ui .avatar svg { width: 18px; height: 18px; }
+.ui .avatar.sm { width: 24px; height: 24px; } .ui .avatar.sm svg { width: 14px; height: 14px; }
+.ui .avatar.lg { width: 48px; height: 48px; } .ui .avatar.lg svg { width: 24px; height: 24px; }
+.ui .avatar.t1 { background: var(--avatar-1-soft); color: var(--avatar-1); }
+.ui .avatar.t2 { background: var(--avatar-2-soft); color: var(--avatar-2); }
+.ui .avatar.t3 { background: var(--avatar-3-soft); color: var(--avatar-3); }
+.ui .avatar.t4 { background: var(--avatar-4-soft); color: var(--avatar-4); }
+.ui .avatar.t5 { background: var(--avatar-5-soft); color: var(--avatar-5); }
+.ui .avatar.t6 { background: var(--avatar-6-soft); color: var(--avatar-6); }
+.ui .avatar svg { fill: currentColor; }
+.ui .person { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.ui .person .n { font-size: 14px; font-weight: 500; color: var(--ink); }
+.ui .person .m { font-size: 12px; color: var(--ink-muted); }
+
+/* ---------- List rows (feed note card, calendar rows, home lists) ---------- */
+.ui .list { display: flex; flex-direction: column; gap: 8px; }
+.ui .list-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 20px; background: var(--surface); border: 1px solid var(--edge); border-radius: var(--r-card); box-shadow: var(--shadow-card); }
+.ui .list-row .t { font-size: 14px; font-weight: 500; color: var(--ink); }
+.ui .list-row .m { font-size: 12px; color: var(--ink-faint); }
+.ui .list-row .r { font-size: 12px; color: var(--ink-muted); font-variant-numeric: tabular-nums; flex: none; }
+.ui .list-row.hover .t { color: var(--primary); }
+.ui .note-card { padding: 20px; }
+.ui .note-card .title { font-size: 16px; font-weight: 600; letter-spacing: -0.01em; color: var(--ink); }
+.ui .note-card .summary { margin-top: 6px; font-size: 14px; color: var(--ink-muted); line-height: 1.55; }
+.ui .note-card .meta { margin-top: 10px; display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--ink-faint); }
+.ui .note-card .actions { margin-left: auto; display: flex; gap: 12px; font-size: 12px; }
+.ui .divider { border: 0; border-top: 1px solid var(--edge); margin: 0; }
+
+/* ---------- Progress (components/ui/progress-steps.tsx) ---------- */
+.ui .step-head { display: flex; justify-content: space-between; font-size: 12px; font-weight: 500; color: var(--ink-muted); margin-bottom: 6px; }
+.ui .bar { height: 4px; border-radius: 999px; background: var(--sunken); overflow: hidden; }
+.ui .bar > i { display: block; height: 100%; border-radius: 999px; background: var(--primary); }
+.ui .stages { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 12px; }
+.ui .stage { display: flex; align-items: flex-start; gap: 12px; }
+.ui .stage .dot { margin-top: 2px; width: 20px; height: 20px; flex: none; border-radius: 50%; border: 1px solid var(--edge-strong); display: inline-flex; align-items: center; justify-content: center; color: transparent; }
+.ui .stage .dot svg { width: 12px; height: 12px; fill: currentColor; }
+.ui .stage.done .dot { background: var(--success-soft); border-color: rgba(67, 128, 76, 0.3); color: var(--success); }
+.ui .stage.active .dot { border-color: rgba(171, 90, 20, 0.4); color: var(--primary); }
+.ui .stage .label { font-size: 14px; font-weight: 500; color: var(--ink); }
+.ui .stage.waiting .label { color: var(--ink-faint); }
+.ui .stage .detail { font-size: 12px; color: var(--ink-muted); }
+
+/* ---------- Notice and toast (components/ui/notice-banner.tsx; the app has no toast library, confirmations are banners) ---------- */
+.ui .notice { display: flex; align-items: flex-start; gap: 12px; padding: 14px 16px; border: 1px solid var(--edge); border-radius: var(--r-card); background: var(--surface); }
+.ui .notice .icon { width: 20px; height: 20px; margin-top: 2px; }
+.ui .notice .t { font-size: 14px; font-weight: 600; }
+.ui .notice .b { font-size: 14px; color: var(--ink-muted); }
+.ui .notice.success { background: var(--success-soft); border-color: rgba(67, 128, 76, 0.3); } .ui .notice.success .icon { color: var(--success); }
+.ui .notice.warning { background: var(--warning-soft); border-color: rgba(154, 106, 22, 0.3); } .ui .notice.warning .icon { color: var(--warning); }
+.ui .notice.pending { background: var(--pending-soft); border-color: rgba(154, 106, 22, 0.3); } .ui .notice.pending .icon { color: var(--pending); }
+.ui .notice.primary { background: var(--primary-soft); border-color: rgba(171, 90, 20, 0.3); } .ui .notice.primary .icon { color: var(--primary); }
+.ui .toast { display: inline-flex; align-items: center; gap: 10px; padding: 12px 16px; background: var(--surface-raised); border: 1px solid var(--edge); border-radius: var(--r-card); box-shadow: var(--shadow-raised); font-size: 14px; }
+
+/* ---------- Diff marks (correct/diff-view.tsx: functional colours) ---------- */
+.ui del { color: var(--removed); background: var(--removed-soft); text-decoration: line-through; border-radius: 4px; padding: 0 2px; }
+.ui ins { color: var(--added); background: var(--added-soft); text-decoration: none; border-radius: 4px; padding: 0 2px; }
+.ui .panel-before { background: var(--removed-soft); border: 1px solid rgba(191, 75, 43, 0.25); border-radius: var(--r-card); padding: 16px; }
+.ui .panel-after { background: var(--added-soft); border: 1px solid rgba(67, 128, 76, 0.25); border-radius: var(--r-card); padding: 16px; }
+
+/* ---------- Note body (Source Serif 4 for long-form note bodies) ---------- */
+.ui .note-body { font-family: "MP Serif", Georgia, serif; font-size: 17px; line-height: 1.7; color: var(--ink); }
+.ui .note-body ul { margin: 8px 0; padding-left: 20px; }
+.ui .note-body .term { font-family: "MP Inter", sans-serif; font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-faint); }
+.ui ::selection, .ui .selected-text { background: var(--primary-soft); color: var(--ink); }
+/* Vocabulary highlights in a note body (pot/note-body.tsx: rounded-[3px] bg-clay-soft/70 px-0.5 text-ink). */
+.ui mark, .ui .highlight { background: rgba(248, 229, 200, 0.7); color: var(--ink); border-radius: 3px; padding: 0 2px; }
+/* The "Make a flashcard" offer that rises over a selection (pot/selection-to-card.tsx, 0.15 s, y -4 to 0). */
+.ui .offer { display: inline-flex; align-items: center; gap: 6px; height: 32px; padding: 0 14px; border-radius: var(--r-pill); background: var(--surface); border: 1px solid var(--edge-strong); box-shadow: var(--shadow-raised); font-size: 13px; font-weight: 500; color: var(--ink); }
+.ui .offer .icon { width: 16px; height: 16px; color: var(--primary); }
+
+/* ---------- Flashcard (study/flashcard-session.tsx: rotateX, perspective 1600 px, h 288 / 320) ---------- */
+.ui .fc-frame { perspective: 1600px; }
+.ui .fc { position: relative; height: 320px; transform-style: preserve-3d; }
+.ui .fc-face { position: absolute; inset: 0; backface-visibility: hidden; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; padding: 32px; text-align: center; background: var(--card-face); border: 1px solid var(--edge); border-radius: var(--r-card); --ink-faint: #665f50; --primary: #964d10; }
+.ui .fc-face.back { transform: rotateX(180deg); }
+.ui .fc-face .q { font-family: "MP Serif", Georgia, serif; font-size: 20px; line-height: 1.625; }
+.ui .fc-face .a { font-family: "MP Serif", Georgia, serif; font-size: 17px; line-height: 1.625; }
+
+/* ---------- Calendar (app/calendar/page.tsx) ---------- */
+.ui .cal { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
+.ui .cal .dow { padding-bottom: 4px; text-align: center; font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-faint); }
+.ui .cal .day { min-height: 64px; padding: 6px; border: 1px solid var(--edge); border-radius: var(--r-control); text-align: left; }
+.ui .cal .day.empty { border-color: transparent; }
+.ui .cal .day.busy { background: var(--sunken); }
+.ui .cal .day.today { border-color: var(--primary); }
+.ui .cal .day .d { font-size: 12px; color: var(--ink-muted); font-variant-numeric: tabular-nums; }
+.ui .cal .day.today .d { font-weight: 600; color: var(--primary); }
+.ui .cal .day .notes { margin-top: 4px; display: block; font-size: 11px; line-height: 1.25; color: var(--ink); }
+.ui .cal .day .due { margin-top: 2px; display: block; font-size: 11px; line-height: 1.25; font-weight: 600; color: var(--primary); }
+
+/* ---------- Film-only helpers (not app UI): the cursor the film moves ---------- */
+.ui .cursor { position: absolute; width: 22px; height: 22px; pointer-events: none; z-index: 50; filter: drop-shadow(0 1px 1px rgba(36, 34, 44, 0.25)); }
+@font-face { font-family: "MP Mono"; src: url("fonts/LiberationMono-Bold.ttf") format("truetype"); font-weight: 700; font-display: block; }

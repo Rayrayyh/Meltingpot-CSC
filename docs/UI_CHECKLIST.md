@@ -93,9 +93,9 @@ this pass. **N/A** does not apply to this product.
 
 | # | Rule | Status | Evidence |
 |---|---|---|---|
-| R49 | Motion serves clarity | Pass | Entrance lift and the scroll stopper; nothing decorative |
+| R49 | Motion serves clarity | Pass | Entrance lift, the hero roll, and section three's hover lifting the scrap a note came from; nothing decorative |
 | R50 | Direction carries meaning | Pass | Content lifts on entry |
-| R51 | Scroll jacking sparing | Pass | One scroll sequence, on the landing, that a reader can scroll straight past |
+| R51 | Scroll jacking sparing | Pass | None. The landing's one pinned sequence went with decision 052 |
 | R52 | Load more beats infinite scroll | Pass | No infinite scroll anywhere; the footer is always reachable |
 | R53 | Respect reduced motion | Pass | Global `prefers-reduced-motion` block in `globals.css` |
 

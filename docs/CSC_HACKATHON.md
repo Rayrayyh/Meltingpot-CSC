@@ -5,7 +5,7 @@ context window, not as marketing. Everything here was read off the Devpost page 
 than remembered.
 
 **Devpost:** https://csc-back-to-school.devpost.com/
-**Authoritative text:** `CSC_Hackathon-Rules.txt` at the repository root. Where this file
+**Authoritative text:** `docs/reference/hackathon/CSC_Hackathon-Rules.txt`. Where this file
 and the Devpost page disagree, the rules file wins; it is fuller.
 
 ## The brief
@@ -100,8 +100,8 @@ Gold $250, Silver $100, Bronze $50, plus sponsor credits, and five honourable me
 Every award requires the team to **opt in** and agree to six terms. Two of them are worth
 knowing before submission day:
 
-1. "The project must be open source or publicly viewable after submission." This one is
-   already satisfied: MIT licence, public repository.
+1. "The project must be open source or publicly viewable after submission." The licence is
+   MIT; the repository has to be public on GitHub for this to hold.
 2. CSC may feature and promote the project on its own channels, and may contact the team
    afterwards about sharing it more widely. Ownership stays with the creators.
 
@@ -158,6 +158,6 @@ README was rewritten for this hackathon and the screenshots want re-shooting rat
 importing. `memory/decisions/049` records what came across and why, and which of the four
 repositories sharing this name holds the originals.
 
-Also still present here, and deleted from the other repository: `404 Page.dc.html`, two
-ChatGPT PNGs, `Meltingpot Palette.pdf`, and `Prometheus August AI Challenge.txt`. That last
-one names the previous hackathon at the repository root.
+Removed from the repository root on 2026-10-05: the brand concepts and the palette moved to
+`docs/reference/brand/` (the ChatGPT concepts keep "chatgpt" in their names), the rules text
+moved to `docs/reference/hackathon/`, and `404 Page.dc.html` was deleted.

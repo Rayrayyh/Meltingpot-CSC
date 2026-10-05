@@ -18,7 +18,7 @@ This directory is the project's knowledge base. It makes the repo, not chat hist
 
 ## Index
 
-Every note on disk is listed: 51 decisions and 19 lessons, regenerated 2026-09-12.
+Every note on disk is listed: 56 decisions and 23 lessons, regenerated 2026-09-21, lesson 023 added 2026-10-02.
 
 Some numbers are shared by two files, from days when two notes were written in parallel. They are not renumbered, because other documents cite them by number:
 
@@ -80,6 +80,11 @@ Some numbers are shared by two files, from days when two notes were written in p
 - 046 Section two is the bento reference sheet, reproduced
 - 047 The landing fits the screen, and moves on purpose
 - 048 The hero headline rolls, and the hero stops waiting on things it does not need
+- 049 Eight tiles, eight destinations, and the fixes the older repository already had
+- 050 The extra pages sound like a person
+- 051 A standby mixer, for the study route only
+- 052 Section three is the note nobody wrote alone
+- 053 The demo film sits after the bento, in a player we drew
 
 ### Lessons
 
@@ -102,3 +107,7 @@ Some numbers are shared by two files, from days when two notes were written in p
 - 017 A social card swapped in place stays stale, however many times you deploy
 - 018 A vendor's own component can be rendered on the live origin
 - 019 React preloads every eager image, and Next preloads every font you declare
+- 020 This repo lints without types, so run the typed rules by hand
+- 021 A rejected play() is usually an abort, not a refusal
+- 022 A zip deploy uploads web/, and must carry no .git
+- 023 A production build only talks to the production Supabase, so a local stack goes through the rewrite

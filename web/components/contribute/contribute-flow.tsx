@@ -374,23 +374,33 @@ export function ContributeFlow({
   useEffect(() => {
     if (pendingLinks.length === 0 || !contributionId || prefillAttached.current) return;
     prefillAttached.current = true;
-    (async () => {
+    void (async () => {
       for (const link of pendingLinks) {
-        // The chip comes off the pending list as the row goes in, so the
-        // list never shows the same link twice.
-        setPendingLinks((prev) => prev.filter((p) => p.url !== link.url));
-        await attachLink(link.url, link.title);
+        // The chip comes off only once the row is in. It used to come off
+        // first, which read well and lost the link outright whenever the
+        // insert did not land: attachLink returns quietly when there is no
+        // row or no session, a throw ended the loop with the rest of the
+        // links still unattached, and the guard above meant nothing tried
+        // again. A link left on the list is one the person can still add.
+        let landed = false;
+        try {
+          landed = await attachLink(link.url, link.title);
+        } catch {
+          landed = false;
+        }
+        if (landed) setPendingLinks((prev) => prev.filter((p) => p.url !== link.url));
       }
     })();
     // attachLink is recreated each render; the ref makes this run once.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [contributionId, pendingLinks]);
 
-  async function attachLink(url: string, label?: string) {
+  /** True when the attachment row landed. The caller decides what a false means. */
+  async function attachLink(url: string, label?: string): Promise<boolean> {
     // Check the link before anything is written, so an empty or malformed
     // one never creates a draft row on its own.
     const trimmedUrl = url.trim();
-    if (!trimmedUrl) return;
+    if (!trimmedUrl) return false;
     let name = label?.trim() || trimmedUrl;
     if (!label?.trim()) {
       try {
@@ -401,9 +411,9 @@ export function ContributeFlow({
       }
     }
     const id = await ensureContribution();
-    if (!id) return;
+    if (!id) return false;
     const userId = await getClientAuth().getUserId();
-    if (!userId) return;
+    if (!userId) return false;
     dirty.current = true;
     const { data, error } = await supabase
       .from("attachments")
@@ -417,14 +427,18 @@ export function ContributeFlow({
       })
       .select("id, name, kind")
       .single();
-    if (data) setAttachments((prev) => [...prev, data]);
-    else if (error) {
+    if (data) {
+      setAttachments((prev) => [...prev, data]);
+      return true;
+    }
+    if (error) {
       setErrorNote(
         /url|check|invalid/i.test(error.message)
           ? "That link couldn't be attached. It needs to start with http:// or https://."
           : "That link couldn't be attached. Check your connection and try again.",
       );
     }
+    return false;
   }
 
   async function attachFile(file: File) {

@@ -11,7 +11,7 @@ import {
 /** Shared copy for the public pages, so the landing and the standalone
  *  pages describe the product in exactly the same words. */
 
-export const REPO_URL = "https://github.com/Rayrayyh/Melting-Pot";
+export const REPO_URL = "https://github.com/Rayrayyh/Meltingpot-CSC";
 
 export const STEPS: { number: string; icon: Icon; title: string; body: string }[] = [
   {
@@ -65,9 +65,9 @@ export const MAKERS: { name: string; avatar: string; href: string }[] = [
     href: "https://github.com/metabender",
   },
   {
-    name: "cozbrozdevarc",
-    avatar: "/credits/cozbrozdevarc.jpg",
-    href: "https://github.com/cozbrozdevarc",
+    name: "thecozbroz",
+    avatar: "/credits/thecozbroz.jpg",
+    href: "https://github.com/thecozbroz",
   },
   {
     name: "AnonymousDev",
