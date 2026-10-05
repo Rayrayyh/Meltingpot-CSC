@@ -1,0 +1,96 @@
+/* The film's own layer: the stage, the window, captions, headlines, the cursor and the props.
+   Values come from notes/STYLE.md (section numbers in comments). App parts inside the window use assets/ui-light.css. */
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { width: 1920px; height: 1080px; overflow: hidden; background: var(--paper); }
+#root { position: relative; width: 1920px; height: 1080px; overflow: hidden; background: var(--paper); }
+#root > .clip { position: absolute; inset: 0; }
+#stage { transform-origin: 960px 470px; }
+
+/* ---------- Ground (STYLE 5): paper, a faint drifting dot grid only behind the opening and closing lines ---------- */
+#bg { background: var(--paper); }
+#dots { position: absolute; left: -120px; top: -120px; width: 2160px; height: 1320px; opacity: 0;
+  background-image: radial-gradient(circle, var(--edge-strong) 1.6px, transparent 1.9px); background-size: 28px 28px; }
+
+/* ---------- Props (STYLE 1, Cua keycaps): cream note cards and icon keycaps around the window ---------- */
+#props { position: absolute; inset: 0; }
+.prop { position: absolute; left: 0; top: 0; }
+.prop.note { width: 240px; padding: 16px 18px; border-radius: 14px; background: var(--surface); border: 1px solid var(--edge);
+  box-shadow: 0 10px 30px rgba(62, 45, 30, 0.10), 0 2px 6px rgba(36, 34, 44, 0.05);
+  font: 400 17px/1.4 "MP Inter", sans-serif; color: var(--ink-muted); }
+.prop.note b { display: block; font-weight: 600; color: var(--ink); font-size: 15px; margin-bottom: 6px; }
+.prop.key { width: 92px; height: 92px; border-radius: 22px; background: var(--sunken); border: 1px solid var(--edge-strong);
+  box-shadow: 0 12px 28px rgba(62, 45, 30, 0.12), inset 0 -6px 0 rgba(62, 45, 30, 0.06);
+  display: flex; align-items: center; justify-content: center; color: var(--ink-muted); }
+.prop.key svg { width: 40px; height: 40px; }
+.prop.key.clay { background: var(--clay); border-color: #a9560f; color: var(--on-clay); }
+
+/* ---------- The window (STYLE 1 Cua, 5): centred, warm chrome, app surface inside ---------- */
+.win { position: absolute; left: 323px; top: 92px; width: 1274px; height: 760px; border-radius: 18px; overflow: hidden;
+  background: var(--sunken); border: 1px solid var(--edge);
+  box-shadow: 0 24px 60px rgba(62, 45, 30, 0.10), 0 2px 6px rgba(36, 34, 44, 0.06); opacity: 0; }
+.win-bar { position: absolute; left: 0; top: 0; right: 0; height: 40px; display: flex; align-items: center; padding: 0 16px; }
+.win-dots { display: flex; gap: 8px; width: 120px; }
+.win-dots i { width: 12px; height: 12px; border-radius: 50%; background: var(--edge-strong); display: block; }
+.win-url { flex: 1; display: flex; justify-content: center; }
+.win-url span.pill { display: inline-flex; align-items: center; gap: 8px; height: 26px; padding: 0 16px; border-radius: 999px;
+  background: rgba(255, 253, 246, 0.7); border: 1px solid var(--edge); font: 500 14px/1 "MP Inter", sans-serif; color: var(--ink-muted); min-width: 360px; justify-content: center; }
+.win-url svg { width: 13px; height: 13px; color: var(--ink-faint); }
+.win-spacer { width: 120px; }
+/* The viewport: the app drawn at 1.5x so its 14 px body reads at 21 px (STYLE 4). 846 x 480 logical px -> 1269 x 720. The
+   window shows the app's focused view: a slim top bar, the collapsed 72 px nav rail and the content column. */
+.win-vp { position: absolute; left: 2px; top: 40px; width: 846px; height: 480px; transform: scale(1.5); transform-origin: 0 0;
+  overflow: hidden; background: var(--paper); border-radius: 0 0 11px 11px; }
+.page { position: absolute; left: 0; top: 0; width: 846px; height: 480px; overflow: hidden; opacity: 0; }
+.page .scroller { position: absolute; left: 0; top: 0; width: 100%; }
+
+/* ---------- Captions under the window (STYLE 1 Cua, 4) ---------- */
+.cap { position: absolute; left: 0; right: 0; top: 884px; height: 120px; text-align: center; }
+.cap-line { position: absolute; left: 0; right: 0; top: 0; display: flex; justify-content: center; align-items: center; gap: 14px;
+  font: 500 38px/1.2 "MP Inter", sans-serif; color: var(--ink-muted); letter-spacing: -0.01em; opacity: 0; }
+.cap-line .ic { width: 34px; height: 34px; color: var(--primary); display: inline-flex; }
+.cap-line .ic svg { width: 34px; height: 34px; }
+.cap-line b { font-weight: 700; color: var(--ink); }
+.cap-line .part { display: inline-block; white-space: pre; }
+
+/* ---------- Headlines (STYLE 4) ---------- */
+.headline { position: absolute; left: 0; right: 0; top: 0; height: 1080px; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  text-align: center; pointer-events: none; }
+.headline .l { font-family: "MP Fraunces", Georgia, serif; font-weight: 600; font-size: 104px; line-height: 1.12; letter-spacing: -0.015em; color: var(--ink);
+  font-variation-settings: "opsz" 144; white-space: nowrap; }
+.headline .l.hero { font-size: 150px; letter-spacing: -0.02em; }
+.headline .l.muted { color: var(--ink-muted); }
+.headline .w { display: inline-block; white-space: pre; }
+.headline .kicker { font: 600 30px/1 "MP Inter", sans-serif; letter-spacing: 0.06em; color: var(--primary); margin-bottom: 22px; }
+.tcaret { display: inline-block; width: 3px; height: 0.9em; margin-left: 4px; background: var(--primary); vertical-align: -0.08em; }
+
+/* ---------- Brand ---------- */
+.lockup { display: flex; align-items: center; gap: 24px; }
+.lockup img { width: 150px; height: 150px; object-fit: contain; }
+.lockup .wm { font-family: "MP Baloo", sans-serif; font-weight: 700; font-size: 150px; letter-spacing: -0.03em; color: var(--ink); line-height: 1; }
+.urlpill { display: inline-flex; align-items: center; height: 64px; padding: 0 34px; border-radius: 999px; background: var(--primary); color: var(--on-primary);
+  font: 600 30px/1 "MP Inter", sans-serif; }
+
+/* ---------- The cursor (STYLE 3) ---------- */
+#cursor { position: absolute; left: 0; top: 0; width: 52px; height: 52px; opacity: 0; z-index: 50; }
+#cursor svg { position: absolute; left: 0; top: 0; width: 52px; height: 52px; filter: drop-shadow(0 2px 3px rgba(36, 34, 44, 0.22)); }
+#cursor .hand { opacity: 0; }
+
+/* ---------- Fade ---------- */
+#fade { background: var(--paper); opacity: 0; }
+
+/* ---------- The app shell in the window's focused view (logical px; the viewport is 846 x 480 at 1.5x) ---------- */
+.fshell { position: absolute; inset: 0; background: var(--paper); }
+.ftop { position: absolute; left: 0; top: 0; right: 0; height: 40px; display: flex; align-items: center; gap: 8px; padding: 0 14px;
+  background: var(--surface); border-bottom: 1px solid var(--edge); }
+.ftop img { width: 22px; height: 22px; object-fit: contain; }
+.ftop .wordmark { font-family: "MP Baloo", sans-serif; font-weight: 600; font-size: 17px; letter-spacing: -0.025em; color: var(--ink); line-height: 1; }
+.frail { position: absolute; left: 0; top: 40px; bottom: 0; width: 56px; background: var(--surface); border-right: 1px solid var(--edge);
+  display: flex; flex-direction: column; align-items: center; gap: 6px; padding-top: 12px; }
+.frail-i { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: var(--ink-muted); }
+.frail-i svg { width: 19px; height: 19px; }
+.frail-i.active { background: var(--primary-soft); color: var(--primary); }
+.fmain { position: absolute; left: 56px; top: 40px; right: 0; bottom: 0; overflow: hidden; }
+.fmain > .scroller { position: absolute; left: 0; top: 0; right: 0; }
+.ftabs { display: flex; gap: 4px; padding: 0 24px; border-bottom: 1px solid var(--edge); background: var(--paper); }
+.fcol { width: 640px; margin: 0 auto; padding: 18px 0 48px; }

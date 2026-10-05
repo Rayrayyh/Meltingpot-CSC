@@ -1,0 +1,11 @@
+{
+  "name": "walkthrough",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "lint": "/home/user/meltingpot-csc/docs/videos/template/kit/hyperframes/cli/node_modules/.bin/hyperframes lint",
+    "check": "/home/user/meltingpot-csc/docs/videos/template/kit/hyperframes/cli/node_modules/.bin/hyperframes check",
+    "snapshot": "/home/user/meltingpot-csc/docs/videos/template/kit/hyperframes/cli/node_modules/.bin/hyperframes snapshot --no-end --timeout 20000 --describe false",
+    "render": "/home/user/meltingpot-csc/docs/videos/template/kit/hyperframes/cli/node_modules/.bin/hyperframes render --fps 30 --workers 4"
+  }
+}

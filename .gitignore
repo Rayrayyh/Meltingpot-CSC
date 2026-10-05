@@ -38,3 +38,4 @@ docs/videos/launch/
 docs/videos/demo/renders/
 *.wav
 __pycache__/
+docs/videos/walkthrough/renders/
