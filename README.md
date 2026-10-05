@@ -34,7 +34,7 @@ Generated material is stored per Pot and keyed by a fingerprint of the notes it 
 
 Flashcards and the practice test are learning flows, not lists. Cards come one at a time, flip on a click or the space bar, move with the arrow keys, and get marked known or still learning; the round ends on a summary that offers the hard ones again. Cards carry tags, and the deck filters by them.
 
-A practice test is set up before it is written: five to twenty questions, three difficulties, the sections to draw from, and anything to concentrate on in your own words. It asks one question at a time with a navigator and answers you can change, reveals nothing until you hand it in, then marks with the correct answer, your answer, the explanation, and the note each question came from, and offers the ones you missed again. Nothing about how you are doing is written down anywhere.
+A practice test is set up before it is written: five to twenty questions, three difficulties, the sections to draw from, and anything to concentrate on in your own words. It asks one question at a time with a navigator and answers you can change, reveals nothing until you hand it in, then marks with the correct answer, your answer, the explanation, and the note each question came from, and offers the ones you missed again. Answers are recorded so the people who run the Pot can see each member's results and the teaching readout can read the class, and the study pages say so.
 
 Reading a note is study too. Notes highlight the terms they define or emphasise, worked out from the note itself rather than asked of a model, and selecting any passage offers to turn it into a flashcard that belongs to whoever wrote it.
 
