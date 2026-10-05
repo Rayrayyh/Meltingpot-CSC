@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="en" data-resolution="landscape">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, height=1080" />
+    <!--
+      MeltingPot's demo video for the CSC Back-to-School Hackathon (1920x1080, 30 fps, 97.5 s).
+      Every product screen is a real screenshot of the app (run 4: the production build on a local copy with the
+      repository's fictional seed data; the model's replies were prepared in advance so the run is repeatable,
+      docs/videos/launch/NOTICES.md). Headlines follow the owner's demo reference (web/public/Meltingpot-v3-web-1080p60.mp4).
+    -->
+    <script src="assets/vendor/gsap.min.js"></script>
+    <style>
+      @font-face { font-family: "MP Display"; src: url("assets/fonts/Fraunces-Variable.woff2") format("woff2"); font-weight: 100 900; }
+      @font-face { font-family: "MP Inter"; src: url("assets/fonts/Inter-Variable.woff2") format("woff2"); font-weight: 100 900; }
+      @font-face { font-family: "MP Baloo"; src: url("assets/fonts/Baloo2-Variable.woff2") format("woff2"); font-weight: 400 800; }
+      :root { --night: #0c0a09; --ink: #faf7f2; --ink-2: #bdb5ad; --ink-3: #8a8178; --accent: #f19a44; --line: rgba(250, 247, 242, 0.1); }
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      html, body { width: 1920px; height: 1080px; overflow: hidden; background: var(--night); }
+      #root { position: relative; width: 1920px; height: 1080px; overflow: hidden; background: var(--night); font-family: "MP Inter", sans-serif; }
+      #ground { position: absolute; inset: 0; background: var(--night); }
+      #glow { position: absolute; inset: 0; background: radial-gradient(1300px 420px at 960px 1130px, #3b2814 0%, #2a1d11 30%, #17110c 65%, #0c0a09 100%); }
+
+      /* The app window: real screenshots, cropped and pushed slowly toward what matters. */
+      #win { position: absolute; left: 650px; top: 171px; width: 1180px; height: 738px; border-radius: 18px; overflow: hidden; background: #1a1510; border: 1px solid var(--line); box-shadow: 0 30px 80px rgba(0, 0, 0, 0.45), 0 0 120px rgba(241, 154, 68, 0.05); opacity: 0; }
+      .shot { position: absolute; left: 0; top: 0; width: 1180px; height: 738px; opacity: 0; }
+      .shot img { position: absolute; left: 0; top: 0; width: 2560px; height: 1600px; transform-origin: 0 0; }
+
+      /* Step text, left column. */
+      .step { position: absolute; left: 96px; top: 0; width: 500px; height: 1080px; display: flex; flex-direction: column; justify-content: center; opacity: 0; }
+      .label { font: 600 16px/1 "MP Inter", sans-serif; letter-spacing: 0.16em; text-transform: uppercase; color: var(--accent); margin-bottom: 22px; }
+      .head { font: 500 54px/1.08 "MP Display", serif; letter-spacing: -0.01em; color: var(--ink); }
+      .line { margin-top: 24px; font: 400 23px/1.5 "MP Inter", sans-serif; color: var(--ink-2); text-wrap: pretty; }
+
+      /* Title cards, the build card, the end card. */
+      .card { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; opacity: 0; }
+      .big { font: 500 80px/1.08 "MP Display", serif; letter-spacing: -0.015em; color: var(--ink); }
+      .sub { margin-top: 28px; font: 400 30px/1.45 "MP Inter", sans-serif; color: var(--ink-2); max-width: 1180px; text-wrap: balance; }
+      .lockup { display: flex; align-items: center; gap: 28px; }
+      .lockup img { width: 120px; height: 120px; }
+      .wordmark { font: 600 112px/1 "MP Baloo", sans-serif; letter-spacing: -0.025em; color: var(--ink); }
+      #how .boxes { display: flex; gap: 28px; margin-top: 52px; }
+      #how .box { width: 440px; padding: 30px 32px; border-radius: 18px; border: 1px solid var(--line); background: rgba(26, 21, 16, 0.85); text-align: left; }
+      #how .box h3 { font: 600 26px/1.2 "MP Inter", sans-serif; color: var(--ink); }
+      #how .box p { margin-top: 12px; font: 400 21px/1.45 "MP Inter", sans-serif; color: var(--ink-2); }
+      #how .box .k { font: 600 14px/1 "MP Inter", sans-serif; letter-spacing: 0.16em; text-transform: uppercase; color: var(--accent); margin-bottom: 14px; }
+      #how .note { margin-top: 44px; font: 400 26px/1.4 "MP Inter", sans-serif; color: var(--ink); }
+      #how .foot { margin-top: 30px; font: 400 21px/1.4 "MP Inter", sans-serif; color: var(--ink-2); }
+      #end .tag { margin-top: 44px; font: 500 64px/1.1 "MP Display", serif; color: var(--ink); }
+      #end .url { margin-top: 34px; font: 600 32px/1 "MP Inter", sans-serif; color: var(--accent); }
+      #end .repo { margin-top: 16px; font: 400 22px/1 "MP Inter", sans-serif; color: var(--ink-3); }
+      #fade { position: absolute; inset: 0; background: #000; opacity: 0; }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-duration="97.5" data-width="1920" data-height="1080">
+      <div id="ground" class="clip" data-start="0" data-duration="97.5"><div id="glow"></div></div>
+      <div id="stage" class="clip" data-start="0" data-duration="97.5">
+        <div id="win"></div>
+        <div id="steps"></div>
+        <div class="card" id="t1"><div class="big" id="t1a">Every class takes notes.</div><div class="sub" id="t1b">Almost none of it reaches the rest of the class.</div></div>
+        <div class="card" id="t2">
+          <div class="lockup"><img src="assets/brand/pot-logo.png" alt="" /><div class="wordmark">meltingpot</div></div>
+          <div class="big" style="margin-top: 48px; font-size: 64px">One shared vault for each class.</div>
+          <div class="sub">MeltingPot gathers the notes a class shares into one place everyone can study from.</div>
+        </div>
+        <div class="card" id="how">
+          <div class="big" style="font-size: 64px">How it is built</div>
+          <div class="boxes">
+            <div class="box"><div class="k">The app</div><h3>Next.js and React</h3><p>One web app for students and teachers, with Clerk for sign-in.</p></div>
+            <div class="box"><div class="k">The data</div><h3>Supabase</h3><p>Postgres with row-level security on every table, plus file storage.</p></div>
+            <div class="box"><div class="k">The AI</div><h3>Google Gemini</h3><p>Drafts organized notes, summaries, flashcards, practice tests and the readout.</p></div>
+          </div>
+          <div class="note">A person approves every note and every correction.</div>
+          <div class="foot">Screens recorded from the real app on a local copy with sample class data. The model replies in this recording were prepared in advance.</div>
+        </div>
+        <div class="card" id="end">
+          <div class="lockup"><img src="assets/brand/pot-logo.png" alt="" /><div class="wordmark">meltingpot</div></div>
+          <div class="tag">The class knows more together.</div>
+          <div class="url">meltingpots.xyz</div>
+          <div class="repo">github.com/Rayrayyh/Meltingpot-CSC</div>
+        </div>
+      </div>
+      <div id="fade" class="clip" data-start="0" data-duration="97.5"></div>
+      <audio id="score" src="assets/audio/bed.wav" data-start="0" data-duration="97.5" data-track-index="9" data-volume="1"></audio>
+    </div>
+
+    <script>
+      const DUR = 97.5;
+      const tl = gsap.timeline({ paused: true });
+      const $ = (id) => document.getElementById(id);
+      window.__timelines = window.__timelines || {};
+      window.__timelines["main"] = tl;
+
+      // Steps: the left column's words. Times are on 96 BPM bars (2.5 s) so the music's phrases line up.
+      const STEPS = [
+        { t0: 15.0, t1: 22.5, label: "Join", head: "Join with the class code.", line: "Type the code your teacher or a classmate shares, see the class first, then join." },
+        { t0: 22.5, t1: 30.0, label: "Write", head: "Write it down. Keep moving.", line: "Rough notes, any way you like. No templates and no formatting." },
+        { t0: 30.0, t1: 40.0, label: "Organize", head: "The organizer tidies it up.", line: "AI drafts a title, a summary and key takeaways from the rough note." },
+        { t0: 40.0, t1: 47.5, label: "Share", head: "You decide what gets shared.", line: "Check the organized version against your original, which is always kept. Then share it." },
+        { t0: 47.5, t1: 55.0, label: "Correct", head: "Good notes get better.", line: "A classmate suggests a fix to one sentence and picks a reason." },
+        { t0: 55.0, t1: 62.5, label: "Review", head: "Every change has a history.", line: "A maintainer accepts it. The history credits the writer, the fixer and the reviewer." },
+        { t0: 62.5, t1: 72.5, label: "Study", head: "Turn notes into practice.", line: "Flashcards and practice tests are built from the notes the class has shared." },
+        { t0: 72.5, t1: 80.0, label: "Readout", head: "See what the class is missing.", line: "Whoever runs the Pot sees which topics the class missed, and what to try next." },
+      ];
+
+      // Shots: [screenshot, start, end, crop at start, crop at end]. A crop is [centre x, centre y, width] in the app's
+      // own 1280x800 layout pixels (the screenshots are 2x); its height follows the window's 1.6 aspect.
+      const SHOTS = [
+        ["012", 15.0, 16.4, [690, 200, 640], [690, 200, 620]],
+        ["013", 16.4, 18.4, [690, 200, 620], [690, 200, 600]],
+        ["015", 18.4, 20.6, [640, 410, 940], [640, 400, 880]],
+        ["017", 20.6, 22.5, [760, 380, 1040], [760, 360, 960]],
+        ["019", 22.5, 24.0, [760, 400, 820], [760, 400, 800]],
+        ["023", 24.0, 25.6, [760, 400, 800], [760, 400, 790]],
+        ["025", 25.6, 30.0, [760, 400, 790], [760, 380, 720]],
+        ["031", 30.0, 31.0, [640, 400, 760], [640, 400, 750]],
+        ["034", 31.0, 32.0, [640, 400, 750], [640, 400, 740]],
+        ["037", 32.0, 33.0, [640, 400, 740], [640, 400, 730]],
+        ["040", 33.0, 34.0, [640, 400, 730], [640, 400, 720]],
+        ["043", 34.0, 35.0, [640, 400, 720], [640, 400, 710]],
+        ["044", 35.0, 40.0, [760, 420, 1040], [1000, 500, 660]],
+        ["046", 40.0, 42.2, [760, 420, 1040], [760, 420, 980]],
+        ["047", 42.2, 44.0, [900, 560, 760], [930, 570, 720]],
+        ["050", 44.0, 47.5, [760, 340, 760], [760, 340, 700]],
+        ["059", 47.5, 49.0, [760, 440, 900], [760, 440, 880]],
+        ["061", 49.0, 50.4, [760, 440, 880], [760, 440, 870]],
+        ["069", 50.4, 52.0, [760, 440, 870], [760, 450, 860]],
+        ["071", 52.0, 53.7, [760, 400, 900], [760, 400, 860]],
+        ["073", 53.7, 55.0, [760, 400, 900], [760, 400, 880]],
+        ["076", 55.0, 57.5, [760, 430, 1000], [760, 450, 920]],
+        ["079", 57.5, 60.0, [760, 380, 900], [760, 330, 800]],
+        ["080", 60.0, 62.5, [740, 456, 1000], [720, 420, 880]],
+        ["094", 62.5, 64.5, [760, 560, 900], [760, 570, 860]],
+        ["095", 64.5, 66.5, [760, 570, 860], [760, 570, 840]],
+        ["113", 66.5, 68.5, [760, 430, 820], [760, 430, 780]],
+        ["119", 68.5, 70.0, [760, 400, 1000], [760, 400, 960]],
+        ["127", 70.0, 72.5, [760, 330, 1000], [720, 260, 820]],
+        ["145", 72.5, 80.0, [760, 330, 860], [770, 520, 760]],
+      ];
+      const WIN_W = 1180, WIN_H = 737.5, XFADE = 0.35;
+      function frame(c) {
+        const [cx, cy, w] = c, h = w / 1.6;
+        const x0 = Math.min(Math.max(cx - w / 2, 0), 1280 - w), y0 = Math.min(Math.max(cy - h / 2, 0), 800 - h);
+        const s = WIN_W / (w * 2);
+        return { x: -x0 * 2 * s, y: -y0 * 2 * s, scale: s };
+      }
+
+      function build() {
+        const win = $("win");
+        SHOTS.forEach(([id, t0, t1, c0, c1], i) => {
+          const d = document.createElement("div");
+          d.className = "shot";
+          d.style.zIndex = String(i + 1);
+          d.innerHTML = '<img src="assets/shots/' + id + '.jpg" alt="" />';
+          win.appendChild(d);
+          const img = d.querySelector("img");
+          const first = i === 0 || SHOTS[i - 1][2] !== t0;
+          gsap.set(img, frame(c0));
+          tl.to(img, Object.assign(frame(c1), { duration: t1 - t0 + XFADE, ease: "sine.inOut" }), t0);
+          tl.to(d, { opacity: 1, duration: first ? 0.01 : XFADE, ease: "none" }, t0);
+          const next = SHOTS[i + 1];
+          if (next && next[1] === t1) tl.set(d, { opacity: 0 }, t1 + XFADE);
+        });
+        // The window: in after the title cards, out before the build card.
+        tl.fromTo(win, { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 0.6, ease: "power2.out" }, 15.0);
+        tl.to(win, { opacity: 0, y: -16, duration: 0.45, ease: "power2.in" }, 79.55);
+
+        const steps = $("steps");
+        STEPS.forEach((s, i) => {
+          const d = document.createElement("div");
+          d.className = "step";
+          d.innerHTML = '<div class="label">' + s.label + '</div><div class="head">' + s.head + '</div><div class="line">' + s.line + "</div>";
+          steps.appendChild(d);
+          const parts = d.children;
+          tl.set(d, { opacity: 1 }, s.t0);
+          gsap.set(parts, { opacity: 0, y: 18 });
+          [...parts].forEach((p, k) => tl.to(p, { opacity: 1, y: 0, duration: 0.5, ease: "power2.out" }, s.t0 + 0.15 + k * 0.12));
+          tl.to(parts, { opacity: 0, y: -10, duration: 0.3, ease: "power1.in" }, s.t1 - 0.4);
+          tl.set(d, { opacity: 0 }, s.t1);
+        });
+
+        // Title cards.
+        const card = (id, t0, t1) => {
+          tl.set("#" + id, { opacity: 1 }, t0);
+          const kids = $(id).children;
+          gsap.set(kids, { opacity: 0, y: 20 });
+          [...kids].forEach((k, i) => tl.to(k, { opacity: 1, y: 0, duration: 0.7, ease: "power2.out" }, t0 + 0.3 + i * (id === "t1" ? 1.6 : 0.45)));
+          if (t1 < DUR) {
+            tl.to(kids, { opacity: 0, y: -12, duration: 0.4, ease: "power1.in" }, t1 - 0.5);
+            tl.set("#" + id, { opacity: 0 }, t1);
+          }
+        };
+        card("t1", 0.0, 7.5);
+        card("t2", 7.5, 15.0);
+        card("how", 80.0, 90.0);
+        card("end", 90.0, DUR);
+        tl.to("#fade", { opacity: 1, duration: 0.6, ease: "power2.in" }, 96.9);
+        // Keep the timeline exactly DUR long.
+        tl.set({}, {}, DUR);
+        tl.time(0.0001);
+        tl.time(0);
+      }
+
+      const FACES = ['500 54px "MP Display"', '400 23px "MP Inter"', '600 16px "MP Inter"', '600 112px "MP Baloo"'];
+      window.__hf = window.__hf || {};
+      window.__hf.buildReady = window.__hf.buildReady || {};
+      window.__hf.buildReady["demo"] = Promise.all(FACES.map((f) => document.fonts.load(f))).then(build);
+    </script>
+  </body>
+</html>

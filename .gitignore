@@ -32,3 +32,9 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# video work in progress (large renders and audio stay local)
+docs/videos/launch/
+docs/videos/demo/renders/
+*.wav
+__pycache__/

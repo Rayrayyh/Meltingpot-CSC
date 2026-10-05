@@ -56,21 +56,21 @@ Search reaches notes, sections, study summaries, and flashcards across every Pot
 
 Maintainers can take a note out of a Pot with a reason and put it back, delete a generated set, and delete cards. Removal is not deletion: the note leaves the feed, search, and study material, its page says who removed it and why, and every version and everyone credited stays on the record. Pot settings lists what is out with a way back. Deleting or archiving the Pot itself stays with the owner.
 
-Inside a Pot: a shared feed with section filters, full text search across titles, content, contributors, and attachments, file uploads (images including phone camera HEIC, PDFs, documents) and links that stay connected from draft through publication, version history with the complete attribution trail, and maintainer tools for sections, roles, class code regeneration, and archiving with a way back. Light and dark themes throughout, reduced motion respected, and a landing page whose scroll sequence melts a messy note into an organized one.
+Inside a Pot: a shared feed with section filters, full text search across titles, content, contributors, and attachments, file uploads (images including phone camera HEIC, PDFs, documents) and links that stay connected from draft through publication, version history with the complete attribution trail, and maintainer tools for sections, roles, class code regeneration, and archiving with a way back. Light and dark themes throughout, reduced motion respected, and a landing page that shows one shared note with its contributors' names on it, a feature grid, and a short demo film in a player drawn for the site.
 
 Account settings hold the theme (light by default, dark, or follow your device) with a one tap switch in the public header, and, for the people who run a Pot, two-step sign in with an authenticator app such as Google Authenticator. That one is enforced rather than advertised: turning it on adds a code step to every later sign in, and the test suite proves it by playing the authenticator itself.
 
-Connected classes bring a person's Google Classroom or Canvas courses in, read-only: assignments, quizzes, discussions, announcements, materials and calendar events, with due dates, kept in sync when someone opens a Pot, the Calendar or Home, and once an hour from the database when nobody does. A student can put a course in their own calendar; a maintainer can link one to a Pot so the whole class sees its Classwork tab. Nothing imported is ever a note: "Start a note from this" opens the ordinary composer with the assignment's words and its links, and sharing is the same act as for any note. Nothing is written back to the school, materials are links rather than downloads, and refresh tokens live encrypted in Supabase Vault behind a server key that never reaches a browser. `docs/CLASSWORK.md` has the setup and the design; `docs/CLASSWORK_VERIFICATION.md` the checklist.
+Connected classes bring a person's Google Classroom or Canvas courses in, read-only: assignments, quizzes, discussions, announcements, materials and calendar events, with due dates, kept in sync when someone opens a Pot, the Calendar or Home, and once an hour from the database when nobody does. A student can put a course in their own calendar; a maintainer can link one to a Pot so the whole class sees its Classwork tab. Nothing imported is ever a note: "Start a note from this" opens the ordinary composer with the assignment's words and its links, and sharing is the same act as for any note. Nothing is written back to the school, materials are links rather than downloads, and refresh tokens live encrypted in Supabase Vault behind a server key that never reaches a browser. `docs/CLASSWORK.md` has the setup and the design; `docs/CLASSWORK_VERIFICATION.md` the checklist. On meltingpots.xyz this is not switched on yet, so the page says it is not set up; the flows are exercised against a stub provider in the end to end suite (`web/tests/stub-lms/server.mjs`).
 
 Sign in is an email and a password, behind a provider seam in `web/lib/auth`: everything the app needs from an identity provider is described in the product's own words, so the provider is an implementation behind that interface rather than something every page knows about. On meltingpots.xyz that provider is Clerk, since 2026-09-08; local runs and the test suite still use Supabase Auth behind the same seam. `docs/AUTH.md` explains the contract; `docs/CLERK.md` records the switch.
 
 ## Screenshots
 
-The dashboard: your Pots, what is new across them, and your own contribution record:
+The dashboard of the person who runs a Pot, in the dark theme: corrections waiting for review, their Pots, and what is new across them:
 
 ![Dashboard](docs/screenshots/dashboard.png)
 
-Review before sharing: the organized note beside the preserved original, with the organizer's checks in view. Nothing is published until the writer approves:
+Review before sharing: the organized note beside the preserved original. Nothing is published until the writer approves:
 
 ![Review before sharing](docs/screenshots/review-before-sharing.png)
 
@@ -94,15 +94,44 @@ Account settings: theme, and two-step sign in for the person who runs the Pot:
 
 Everything here was designed and written from scratch, starting 17 August 2026. The repo is its own receipt: `docs/PLAN.md` holds the step by step execution plan with per step status, `docs/BUILDLOG.md` records what was built, found, and fixed in order, and `memory/` captures each architectural decision and hard won lesson at the moment it happened. The commit history walks through the whole build, day by day.
 
-Entered in the [CSC Back-to-School Hackathon](https://csc-back-to-school.devpost.com/). The project is open source under the MIT license (see `LICENSE`), hosted live at the URL above, and the two minute demo video is on the Devpost submission.
+Entered in the [CSC Back-to-School Hackathon](https://csc-back-to-school.devpost.com/). The project is open source under the MIT license (see `LICENSE`) and hosted live at the URL above. The demo video is linked from the Devpost entry, and a shorter film plays on the landing page.
+
+### Before and during this hackathon
+
+MeltingPot did not start at this hackathon. The first version was written from 17 August 2026 for earlier hackathons, and before 4 September it already had joining by class code, the organizer and review before sharing, corrections with maintainer review and version history, flashcards, practice tests, the teacher readout, search, moderation and the landing page. The dates are in the git history and `docs/BUILDLOG.md`.
+
+Built during the hackathon period (4 September to 4 October 2026):
+
+- Read-only import from Google Classroom and Canvas, with a calendar of due dates and an hourly sync run by the database (`memory/decisions/038`). Built and tested against a stub provider; not switched on for the live site yet.
+- Sign in moved to Clerk behind the app's own auth interface, on the new domain meltingpots.xyz, with existing accounts carried over (`memory/decisions/041`, `docs/CLERK.md`).
+- A standby model for study material when the primary model is overloaded (`memory/decisions/051`), and the fix for practice tests timing out (`memory/decisions/049`).
+- Bug passes over the code and the live database, with fixes in the app and in new migrations (`memory/decisions/039`, `043`).
+- A sidebar each person can arrange, a flashcard colour you choose, light as the default theme, friendlier error pages, and class codes that cannot contain look-alike characters.
+- A rebuilt landing page with a demo player (`memory/decisions/046` to `053`), and the demo video.
+
+## Team
+
+Built by Rayrayyh, metabender, thecozbroz and AnonymousDev, as credited in the site footer.
+
+## How we used AI
+
+AI tools were used throughout the build, and the repository keeps the record.
+
+- **Writing the code.** Most of the code, migrations, tests and written records here were written by Claude Code (Anthropic), in working sessions directed by the team. Commit authors and trailers show which commits those are. `CLAUDE.md` is the standing brief it worked from, and `docs/PLAN.md`, `docs/BUILDLOG.md` and `memory/` record each decision and lesson as it was made.
+- **People made the decisions.** The product brief, the stack, the brand, which features to build and which rules to lift were the team's calls, and each one is a note in `memory/decisions/` in the owner's words.
+- **An early pipeline written with GPT.** A teammate's branch used GPT to write the first Gemini pipeline and the study hub; it was merged on 20 August 2026 and reworked afterwards (`docs/BUILDLOG.md`).
+- **Design concepts.** Early brand art (an app icon, a pot illustration, a flashcard background) started as ChatGPT images. They are kept in `docs/reference/brand/` with "chatgpt" in their names.
+- **Checking AI-written work.** Every change went through lint, type checks, unit tests and the Playwright suite, and there were repeated bug passes in which one reviewer looked for faults and another tried to disprove each finding before anything changed.
+- **Inside the product.** Google's Gemini API organizes rough notes, reads image attachments, and writes class summaries, flashcards, practice tests and the teaching readout. Every reply is checked against a schema before anyone sees it. An organized note sits beside the writer's untouched original and is shared only when the writer approves it, and each one names the engine that organized it.
+- **The demo video.** It was recorded on a local copy of the app with fictional sample classmates. The app's own code ran for every step, but the model's replies in the recording were prepared in advance and passed the app's own checks, so the recording does not depend on the model being available.
 
 ## Under the hood
 
-Next.js 16 (App Router, TypeScript, Tailwind) in `web/`, on Supabase for Postgres, auth, and file storage, hosted on Netlify. Security is enforced in the database, not the client: row level security on every table, privileged transitions through security definer functions that re-validate the caller at time of use, database enforced rate limiting on every sensitive operation (sized so an entire class behind one school network can sign up together), and an API surface closed down to exactly what the app uses. Anonymous visitors can reach two functions: look up a class code and register. Shared notes and their versions can only be written through the reviewed publish paths.
+Next.js 16 (App Router, TypeScript, Tailwind) in `web/`, on Supabase for Postgres, auth, and file storage, hosted on Netlify. Security is enforced in the database, not the client: row level security on every table, privileged transitions through security definer functions that re-validate the caller at time of use, database enforced rate limiting on every sensitive operation (sized so an entire class behind one school network can sign up together), and an API surface closed down to exactly what the app uses. Anonymous visitors can reach one function the app uses: the class code lookup. Sign up belongs to Clerk on the live site, so the old registration functions are closed to everyone but the service role, and the only other anonymous grants are the functions the hourly classwork job calls, each of which demands the server key. Shared notes and their versions can only be written through the reviewed publish paths.
 
 Classwork tokens never touch a table: they sit in Supabase Vault, and only definer functions that also demand a server key can read one back. The hourly catch-up is a pg_cron job posting through pg_net to a route that runs as the anonymous role with that key and nothing else.
 
-The build is covered by 372 unit tests and a Playwright suite over the core flows, including the classwork walks against a stub provider, plus adversarial review passes whose confirmed findings, from access control holes to a diff that could hang a browser tab to a ledger trigger that had made every Pot undeletable, were all fixed and are documented in the build log. Both study sessions are written as reducers, so how a deck is walked and how a test is marked are unit tests rather than browser tests. A Checks workflow runs lint, types, unit tests, and a production build on every push and pull request.
+The build is covered by a vitest unit suite (the row level security checks in it run only when a project URL and public key are present) and a Playwright suite over the core flows, including the classwork walks against a stub provider, plus adversarial review passes whose confirmed findings, from access control holes to a diff that could hang a browser tab to a ledger trigger that had made every Pot undeletable, were all fixed and are documented in the build log. Both study sessions are written as reducers, so how a deck is walked and how a test is marked are unit tests rather than browser tests. A Checks workflow in `.github/workflows/ci.yml` is set up to run lint, types, unit tests, and a production build on pushes and pull requests.
 
 ## Running it locally
 
@@ -113,7 +142,7 @@ cp .env.example .env.local   # add Supabase values and a server-only model key
 pnpm dev
 ```
 
-Apply every migration in `supabase/migrations/` in filename order. For a development database with sample data, run `select public.dev_seed();` as the service role. Migration 0034 revoked `dev_reseed` from ordinary signed-in users, because it guarded itself on an email suffix anyone could register, so seeding is a deliberate service-role action now rather than something the app can trigger. 0013 is the production data cleanup and is only for a database going live, and it drops the seed functions, so a development database should stop before it.
+Apply every migration in `supabase/migrations/` in filename order. For a development database with sample data, run `select public.dev_seed();` as the service role. Migration 0034 revoked `dev_reseed` from ordinary signed-in users, because it guarded itself on an email suffix anyone could register, so seeding is a deliberate service-role action now rather than something the app can trigger. 0013 is the production data cleanup and is only for a database going live: it deletes the seed accounts and drops the seed functions, so a development database should apply every migration except 0013.
 
 Tests: `pnpm test:unit` (vitest) and `pnpm test:e2e` (Playwright, expects the dev seed).
 
@@ -146,21 +175,25 @@ the AI not being set up at all, so check all three before hunting for a bug.
 | --- | --- | --- |
 | `FAST_MODEL` | organizing a note, reading image attachments, class summaries, flashcards, practice tests | nearly every call goes here, so it wants something fast and cheap |
 | `REASONING_MODEL` | the class teaching readout | the one call with no rule-based fallback, where a wrong answer is worse than a slow one |
+| `FALLBACK_MODEL_API_KEY`, `FALLBACK_FAST_MODEL` | optional: a standby for study material when the primary model is overloaded | unset, there is no standby |
 
 The code never hardcodes a model name, because provider identifiers change on
 their own schedule. The two above were current when this was written, so if
 Google retires one, just set whatever replaces it.
 
-**This client only speaks Gemini.** The variable names look provider-neutral,
-but the code is not. `lib/mix/server.ts` posts to
+**The primary client speaks Gemini.** The variable names look provider-neutral,
+but the code is not. `lib/mix/providers.ts` posts to
 `generativelanguage.googleapis.com/v1beta/interactions`, sends your key as an
-`x-goog-api-key` header, and pins `Api-Revision: 2026-05-20`. Swapping in
-another provider means writing an adapter, not just changing the key.
+`x-goog-api-key` header, and pins `Api-Revision: 2026-05-20`. The study route
+alone can fail over to a standby on OpenAI's chat completions endpoint when the
+model is overloaded, but only if `FALLBACK_MODEL_API_KEY` and
+`FALLBACK_FAST_MODEL` are both set (decision 051). `lib/mix/server.ts` holds the
+retry and failover policy.
 
 **Cost and privacy.** The Google AI Studio free tier is enough to try every flow
-in the app. Every request sets `store: false`, so your prompts stay out of the
+in the app. Every request to Gemini sets `store: false`, so your prompts stay out of the
 provider's stored-content path. Calls share a deadline that sits under the
-hosting platform's function ceiling, and they retry up to four times when the
+hosting platform's function ceiling, and they make up to four attempts when the
 provider is busy.
 
 **Deploying it.** On Netlify, go to Site configuration, then Environment
