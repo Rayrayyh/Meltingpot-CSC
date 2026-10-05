@@ -233,7 +233,7 @@ FILM.scene({
     // the list gives way to the selected sentence, the reasons and the field; the page scrolls them up
     gsap.set(blockB, { opacity: 0 });
     tl.to(blockA, { opacity: 0, y: -6, duration: 0.2, ease: "power2.in" }, 49.55);
-    tl.fromTo(blockB, { opacity: 0, y: 12 }, { opacity: 1, y: 0, duration: 0.38, ease: "power3.out", immediateRender: false }, 49.62);
+    tl.fromTo(blockB, { opacity: 0, y: 12 }, { opacity: 1, y: 0, duration: 0.38, ease: "power3.out", immediateRender: false }, 49.75);
     var contBottom = F.inPage(cont).y + cont.offsetHeight - 40;
     var S2 = Math.max(0, Math.round(contBottom - 440 + 22));
     F.scroll(49.55, P2, S2, 0.45);

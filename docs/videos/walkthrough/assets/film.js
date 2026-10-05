@@ -268,15 +268,16 @@
     const scroller = el("div", "scroller", null, p);
     return { el: p, scroller };
   }
-  // The new page rises from y +16 on power3.out over 0.35 s.
+  // The new page fades in on power3.out over 0.35 s.
   function pageIn(t, p) {
-    tl.fromTo(p.el, { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.35, ease: "power3.out", immediateRender: false }, t);
+    // No vertical move: each page carries the app's chrome, so a rise doubled the top bar for a few frames (final check).
+    tl.fromTo(p.el, { opacity: 0, y: 0 }, { opacity: 1, y: 0, duration: 0.35, ease: "power3.out", immediateRender: false }, t);
     tl.set(p.el, { opacity: 0 }, 0);
     return t + 0.35;
   }
-  // The old page fades and drops 8 px on power2.in over 0.2 s.
+  // The old page fades out on power2.in over 0.2 s.
   function pageOut(t, p) {
-    tl.to(p.el, { opacity: 0, y: 8, duration: 0.2, ease: "power2.in" }, t);
+    tl.to(p.el, { opacity: 0, y: 0, duration: 0.2, ease: "power2.in" }, t);
     return t + 0.2;
   }
   // Content swap inside a still window (STYLE 2): 0.45 s, overlapping by 0.1 s.

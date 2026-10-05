@@ -300,7 +300,10 @@ FILM.scene({
     F.textAt(q(cFc, ".d-fcn"), [[0, "1 / 12"], [74.68, "2 / 12"]]);
     F.textAt(q(cFc, ".d-fck"), [[0, "0 know it · 0 still learning"], [74.68, "1 know it · 0 still learning"]]);
     tl.fromTo(fcBar, { scaleX: 0 }, { scaleX: 1 / 12, duration: 0.3, ease: EXPO, immediateRender: false }, 74.68);
-    tl.fromTo(fc1, { opacity: 1 }, { opacity: 0, duration: 0.12, ease: "power1.in", immediateRender: false }, 74.66);
+    // Fade the answer face, never the 3D card: opacity below 1 on the preserve-3d card flattens it and shows the
+    // question face mirrored through the back (final check, 74.67). The question face is hidden outright.
+    { const fr = q(fc1, ".fc-face.front"); F.driver((t) => { fr.style.visibility = t >= 74.66 ? "hidden" : ""; }); }
+    tl.fromTo(q(fc1, ".fc-face.back"), { opacity: 1 }, { opacity: 0, duration: 0.12, ease: "power1.in", immediateRender: false }, 74.66);
     tl.fromTo(fc2, { x: 36, opacity: 0 }, { x: 0, opacity: 1, duration: 0.44, ease: FLIP, immediateRender: false }, 74.7);
     drift(74.95, 250, -100, 0.7);                         // off the buttons, onto the card, while the next card settles
     drift(75.7, 10, -6, 0.9);
@@ -316,7 +319,7 @@ FILM.scene({
     const cPr = F.shell(pPr, { nav: "pots", tabs: ["Feed", "Study", "Members", "Settings"], tab: "Study", col: 640 });
     const OPTS = [["A", "From higher to lower solute concentration"], ["B", "From lower to higher solute concentration"], ["C", "Only out of the cell"], ["D", "Only into the cell"]];
     cPr.innerHTML = head +
-      '<div class="d-count"><span>Question 3 of 10</span><span class="d-ans">2 answered</span></div>' +
+      '<div class="d-count"><span>Question 3 of 10</span><span class="d-ans">9 answered</span></div>' +
       '<div class="bar d-bar"><i class="d-prbar"></i></div>' +
       '<div class="card d-qcard"><div class="d-qq">In osmosis, which way does water move across a selectively permeable membrane?</div>' +
       '<div class="d-cho">Choose one answer</div><div class="d-opts">' +
@@ -324,10 +327,10 @@ FILM.scene({
       '<div class="d-hint">You can change this answer until you hand the test in.</div></div>' +
       '<div class="d-nav"><span class="btn secondary">' + ic("arrow-left") + 'Previous</span><span class="btn primary">Next' + ic("arrow-right") + "</span></div>" +
       '<div class="d-jl">Jump to a question</div><div class="d-jump">' +
-      [1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((k) => '<span class="' + (k < 3 ? "done" : k === 3 ? "cur" : "") + '">' + k + "</span>").join("") + "</div>" +
+      [1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((k) => '<span class="' + (k !== 3 ? "done" : "cur") + '">' + k + "</span>").join("") + "</div>" +
       '<div class="d-rev"><span class="btn primary d-revb">Review and hand in</span></div>';
     const optB = cPr.querySelectorAll(".d-opt")[1], revB = q(cPr, ".d-revb"), j3 = cPr.querySelectorAll(".d-jump span")[2];
-    gsap.set(q(cPr, ".d-prbar"), { scaleX: 0.3 });
+    gsap.set(q(cPr, ".d-prbar"), { scaleX: 0.9 });
     F.swap(77.5, pFc, pPr);
     F.win.setUrl(77.6, "meltingpots.xyz/p/biology-101/study/practice");
     F.caption({ t0: 77.7, t1: 84.9, icon: "exam", bold: "Practice tests", rest: " marked with the answer and where it came from." });
@@ -336,7 +339,9 @@ FILM.scene({
     C.click(78.4, optB);
     F.classAt(optB, "d-sel", 78.48, 999);
     F.classAt(j3, "done", 78.48, 999);
-    F.textAt(q(cPr, ".d-ans"), [[0, "2 answered"], [78.48, "3 answered"]]);
+    // Question 3 is the last one Amy fills in, so the count and the bar agree with "10 of 10 answered" next (final check).
+    F.textAt(q(cPr, ".d-ans"), [[0, "9 answered"], [78.48, "10 answered"]]);
+    tl.fromTo(q(cPr, ".d-prbar"), { scaleX: 0.9 }, { scaleX: 1, duration: 0.3, ease: EXPO, immediateRender: false }, 78.48);
     // scroll so "Review and hand in" sits near the bottom of the view (the main area is 440 tall under the 40 top bar)
     const SPR = Math.max(0, Math.round(F.inPage(revB).y - 40 + revB.offsetHeight + 22 - 440));
     F.scroll(78.5, pPr, SPR, 0.8);
