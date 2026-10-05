@@ -10,9 +10,9 @@ Everything your class knows, in one Pot.
 
 Every class generates knowledge constantly, and almost all of it evaporates. One student writes brilliant notes nobody else sees. Another understands Tuesday's lecture but not Thursday's. The group chat has the answer somewhere, forty scrolls up. The tools that promise to fix this all fail the same way: they demand structure up front, and tired students between classes will not fill in templates.
 
-MeltingPot starts from the opposite bet. Write anything. A student pastes rough, unformatted, half-remembered notes exactly as they come out, and MeltingPot organizes them into a clean structured note with a title, a summary, and key takeaways. The student reads the organized version next to their untouched original and decides whether to share it with the class. Nothing is ever published without a person saying so.
+MeltingPot starts from the opposite bet. Write anything. A student pastes rough, unformatted, half-remembered notes exactly as they come out, and MeltingPot organizes them into a clean structured note with a title, a summary, and key takeaways. The student reads the organized version next to their untouched original and decides whether to share it with the class. No note reaches the class without its writer saying so, and no change to a note without a maintainer saying so.
 
-A class space is called a Pot. A teacher creates one and gets a six character class code; students type the code and are reading the class vault before they ever make an account. When someone spots a mistake in a shared note, they select the sentence, propose a fix, and a maintainer reviews it. Accepted corrections become a new version that credits the original author, the person who fixed it, and the reviewer. The original text of every note survives forever, one toggle away.
+A class space is called a Pot. A teacher creates one and gets a six character class code; students type the code and see a preview of the class before they ever make an account. When someone spots a mistake in a shared note, they select the sentence, propose a fix, and a maintainer reviews it. Accepted corrections become a new version that credits the original author, the person who fixed it, and the reviewer. The original text of every note survives forever, one toggle away.
 
 ## Try it in two minutes
 
@@ -26,7 +26,7 @@ Organization is the product, not a feature bolted onto it. Rough text is mixed i
 
 The Pot home is also a study hub: raw notes, a class-wide summary, flashcards, and a practice test generated from shared material. A fast model handles organization, vision, summaries, cards and practice tests; a stronger one is reserved for the teaching readout, the one call with no rule-based fallback. Both are named in configuration rather than in source. The deterministic organizer remains as a local fallback when neither is configured.
 
-Which engine did the work is always on screen. A note organized by the model says so and names it; a note the rule-based fallback had to finish says that instead, in plain words. The two produce visibly different writing and a reader cannot tell them apart from the output alone, so the app does not make them guess.
+The review screen always says which engine did the work. A note organized by the model says so and names it; a note the rule-based fallback had to finish says that instead, in plain words. The teaching readout names its model too. The two produce visibly different writing and a reader cannot tell them apart from the output alone, so the app does not make them guess.
 
 Generated material is stored per Pot and keyed by a fingerprint of the notes it was built from, so a class shares one deck rather than each student spending a generation on the same thing. Share a note, accept a correction, or remove one, and the fingerprint changes and the next request rebuilds. Nothing generated is ever put in an HTTP cache: the database is the only cache, and it is one a maintainer can look at and delete.
 
@@ -106,7 +106,7 @@ Built during the hackathon period (4 September to 4 October 2026):
 - Sign in moved to Clerk behind the app's own auth interface, on the new domain meltingpots.xyz, with existing accounts carried over (`memory/decisions/041`, `docs/CLERK.md`).
 - A standby model for study material when the primary model is overloaded (`memory/decisions/051`), and the fix for practice tests timing out (`memory/decisions/049`).
 - Bug passes over the code and the live database, with fixes in the app and in new migrations (`memory/decisions/039`, `043`).
-- A sidebar each person can arrange, a flashcard colour you choose, light as the default theme, friendlier error pages, and class codes that cannot contain look-alike characters.
+- A sidebar each person can arrange, a flashcard colour you choose, light restored as the default theme, friendlier error pages, and the database enforcing the class-code alphabet without look-alike characters that the generator always used.
 - A rebuilt landing page with a demo player (`memory/decisions/046` to `053`), and the demo video.
 
 ## Team
@@ -117,13 +117,13 @@ Built by Rayrayyh, metabender, thecozbroz and AnonymousDev, as credited in the s
 
 AI tools were used throughout the build, and the repository keeps the record.
 
-- **Writing the code.** Most of the code, migrations, tests and written records here were written by Claude Code (Anthropic), in working sessions directed by the team. Commit authors and trailers show which commits those are. `CLAUDE.md` is the standing brief it worked from, and `docs/PLAN.md`, `docs/BUILDLOG.md` and `memory/` record each decision and lesson as it was made.
-- **People made the decisions.** The product brief, the stack, the brand, which features to build and which rules to lift were the team's calls, and each one is a note in `memory/decisions/` in the owner's words.
+- **Writing the code.** Most of the code, migrations, tests and written records here, including `memory/` and `docs/BUILDLOG.md`, were written by Claude Code (Anthropic). The owner had it work autonomously in long sessions, run its own bug and design passes and log what it did and why (`memory/decisions/006`), then set the direction, answered its questions and reviewed the results. Commit authors and trailers show which commits those are. `CLAUDE.md` is the standing brief it worked from, and `docs/PLAN.md`, `docs/BUILDLOG.md` and `memory/` record each decision and lesson as it was made.
+- **People made the product decisions.** The product brief, the stack, the brand, which features to build and which rules to lift were the team's calls. Each is recorded in `memory/decisions/` or `CLAUDE.md`, several with the owner's words quoted.
 - **An early pipeline written with GPT.** A teammate's branch used GPT to write the first Gemini pipeline and the study hub; it was merged on 20 August 2026 and reworked afterwards (`docs/BUILDLOG.md`).
 - **Design concepts.** Early brand art (an app icon, a pot illustration, a flashcard background) started as ChatGPT images. They are kept in `docs/reference/brand/` with "chatgpt" in their names.
-- **Checking AI-written work.** Every change went through lint, type checks, unit tests and the Playwright suite, and there were repeated bug passes in which one reviewer looked for faults and another tried to disprove each finding before anything changed.
-- **Inside the product.** Google's Gemini API organizes rough notes, reads image attachments, and writes class summaries, flashcards, practice tests and the teaching readout. Every reply is checked against a schema before anyone sees it. An organized note sits beside the writer's untouched original and is shared only when the writer approves it, and each one names the engine that organized it.
-- **The demo video.** It was recorded on a local copy of the app with fictional sample classmates. The app's own code ran for every step, but the model's replies in the recording were prepared in advance and passed the app's own checks, so the recording does not depend on the model being available.
+- **Checking AI-written work.** Lint, type checks, unit tests and a production build were run before commits and recorded in `docs/BUILDLOG.md`, and the Playwright suite ran on repeated bug passes in which AI reviewers looked for faults and a separate reviewer tried to disprove each finding before anything changed.
+- **Inside the product.** Google's Gemini API organizes rough notes, reads image attachments, and writes class summaries, flashcards, practice tests and the teaching readout. Every reply is checked against a schema before anyone sees it. An organized note sits beside the writer's untouched original and is shared only when the writer approves it, and the review screen names the engine that organized it. Generated study material is the one thing saved to a Pot without a review step; maintainers can remove it.
+- **The demo video.** Claude Code assembled it from screenshots of one scripted run of the app on a local copy with made-up classmates, wrote its captions, and wrote its music as code (`docs/videos/demo/`). The app's own code ran for every step, but the model's replies in the run were prepared in advance and passed the app's own checks, so the recording does not depend on the model being available. The video says so on screen.
 
 ## Under the hood
 
